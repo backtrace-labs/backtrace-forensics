@@ -1,10 +1,10 @@
+import { CoronerResponse } from '../responses/common';
 import { FoldQueryResponse } from '../responses/fold';
 import {
     CoronerValueType,
     DynamicCommonCoronerQuery,
     DynamicQueryObject,
     DynamicQueryObjectValue,
-    ExecutableCoronerQuery,
     JoinDynamicQueryObject,
     QueryObject,
     StaticCommonCoronerQuery,
@@ -26,25 +26,24 @@ export type FoldOperator<T extends CoronerValueType> = T extends string
     ? BooleanFoldOperator
     : never;
 
-export interface FoldCoronerQuery<
+export interface StaticFoldCoronerQuery<
     T extends QueryObject<T>,
     F extends Folds = never,
     G extends (keyof T & string) | DefaultGroup = '*'
 > extends StaticCommonCoronerQuery<T> {
-    fold(): FoldedCoronerQuery<T, F, G>;
+    fold(): StaticFoldedCoronerQuery<T, F, G>;
     fold<A extends keyof T & string, O extends FoldOperator<T[A]>>(
         attribute: A,
         ...fold: O
-    ): FoldedCoronerQuery<T, JoinFolds<F, A, O>, G>;
-    group<A extends keyof T & string>(attribute: A): FoldedCoronerQuery<T, F, A>;
+    ): StaticFoldedCoronerQuery<T, JoinFolds<F, A, O>, G>;
+    group<A extends keyof T & string>(attribute: A): StaticFoldedCoronerQuery<T, F, A>;
 }
 
-export interface FoldedCoronerQuery<
+export interface StaticFoldedCoronerQuery<
     T extends QueryObject<T>,
     F extends Folds,
     G extends (keyof T & string) | DefaultGroup
-> extends FoldCoronerQuery<T, F, G>,
-        ExecutableCoronerQuery<FoldQueryResponse<T, F, G>> {}
+> extends StaticFoldCoronerQuery<T, F, G> {}
 
 export interface DynamicFoldCoronerQuery<
     T extends DynamicQueryObject,
@@ -63,8 +62,24 @@ export interface DynamicFoldedCoronerQuery<
     T extends DynamicQueryObject,
     F extends Folds,
     G extends (keyof T & string) | DefaultGroup
-> extends DynamicFoldCoronerQuery<T, F, G>,
-        ExecutableCoronerQuery<FoldQueryResponse<T, F, G>> {}
+> extends DynamicFoldCoronerQuery<T, F, G> {}
+
+export interface FoldedCoronerQueryExecutor {
+    execute<Q extends StaticFoldedCoronerQuery<never, never, never>>(
+        query: Q
+    ): Promise<
+        Q extends StaticFoldedCoronerQuery<infer T, infer F, infer G>
+            ? CoronerResponse<FoldQueryResponse<T, F, G>>
+            : never
+    >;
+    execute<Q extends DynamicFoldedCoronerQuery<never, never, never>>(
+        query: Q
+    ): Promise<
+        Q extends DynamicFoldedCoronerQuery<infer T, infer F, infer G>
+            ? CoronerResponse<FoldQueryResponse<T, F, G>>
+            : never
+    >;
+}
 
 export type Fold<A extends string, F extends FoldOperator<CoronerValueType>[]> = [A, F];
 

@@ -1,6 +1,5 @@
-import { CoronerResponse, QueryResponse } from '../responses/common';
-import { DynamicFoldCoronerQuery, FoldCoronerQuery } from './fold';
-import { DynamicSelectCoronerQuery, SelectCoronerQuery } from './select';
+import { DynamicFoldCoronerQuery, StaticFoldCoronerQuery } from './fold';
+import { DynamicSelectCoronerQuery, StaticSelectCoronerQuery } from './select';
 
 export type CoronerValueType = string | number | boolean | null;
 
@@ -46,14 +45,10 @@ export interface DynamicCommonCoronerQuery<T extends DynamicQueryObject<string, 
     ): DynamicCoronerQuery<JoinDynamicQueryObject<T, A, V>>;
 }
 
-export interface ExecutableCoronerQuery<R extends QueryResponse> {
-    execute(): Promise<CoronerResponse<any>>;
-}
-
 export interface StaticCoronerQuery<T extends QueryObject<T>>
     extends StaticCommonCoronerQuery<T>,
-        SelectCoronerQuery<T>,
-        FoldCoronerQuery<T> {}
+        StaticSelectCoronerQuery<T>,
+        StaticFoldCoronerQuery<T> {}
 
 export interface DynamicCoronerQuery<
     T extends DynamicQueryObject<string, CoronerValueType> = DynamicQueryObject<string, CoronerValueType>
