@@ -1,5 +1,7 @@
-import { CoronerValueType } from '../queries/common';
+import { QueryObject } from '../queries/common';
+import { BinFoldOperator, DefaultGroup, DistributionFoldOperator, Fold, FoldOperator, Folds } from '../queries/fold';
 import { QueryResponse } from './common';
+import { SimpleFoldRow } from './simple/fold';
 
 export interface QueryFactorDescription {
     readonly name: string;
@@ -18,27 +20,47 @@ export interface QueryCardinalities {
     readonly pagination: QueryCardinality;
 }
 
-export type SingleQueryColumnValue = [CoronerValueType];
+export type SingleQueryColumnValue<T extends QueryObject<T>, A extends keyof T> = [T[A]];
 export type BinQueryColumnValue = [number, number, number];
-export type RangeQueryColumnValue = [CoronerValueType, CoronerValueType];
+export type RangeQueryColumnValue<T extends QueryObject<T>, A extends keyof T> = [T[A], T[A]];
 
-export type DistributionQueryColumnValue = {
+export type DistributionQueryColumnValue<T extends QueryObject<T>, A extends keyof T> = {
     keys: number;
     tail?: number;
-    vals: [CoronerValueType, number][];
+    vals: [T[A], number][];
 };
 
-export type FoldQueryColumnValue =
-    | SingleQueryColumnValue
-    | BinQueryColumnValue[]
-    | RangeQueryColumnValue
-    | DistributionQueryColumnValue[]
-    | [];
+export type FoldQueryColumnValue<
+    T extends QueryObject<T>,
+    A extends keyof T & string,
+    F extends Fold<A, FoldOperator<T[A]>[]>
+> = F extends DistributionFoldOperator
+    ? DistributionQueryColumnValue<T, A>
+    : F extends BinFoldOperator
+    ? BinQueryColumnValue
+    : F extends ['range']
+    ? RangeQueryColumnValue<T, A>
+    : SingleQueryColumnValue<T, A>;
 
-export type FoldQueryRowValue = [string, FoldQueryColumnValue[], number];
+export type FoldQueryRowValue<
+    T extends QueryObject<T>,
+    A extends keyof T & string,
+    F extends Fold<A, FoldOperator<T[A]>[]>,
+    G extends keyof T | DefaultGroup
+> = [G, FoldQueryColumnValue<T, A, F>[], number];
 
-export interface FoldQueryResponse extends QueryResponse {
+export interface FoldQueryResponse<T extends QueryObject<T>, F extends Folds, G extends keyof T | DefaultGroup>
+    extends QueryResponse {
     readonly cardinalities: QueryCardinalities;
     readonly factors_desc?: QueryFactorDescription[];
-    readonly values: FoldQueryRowValue[];
+    readonly values: FoldQueryRowValue<
+        T,
+        keyof T & string,
+        // @ts-ignore - TS gives here an error, despite everything working correctly.
+        F[keyof T & string],
+        G
+    >[];
+
+    toArray(): SimpleFoldRow<T, F, G>[];
+    first(): SimpleFoldRow<T, F, G> | undefined;
 }
