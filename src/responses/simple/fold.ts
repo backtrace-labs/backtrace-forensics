@@ -1,5 +1,7 @@
-import { CoronerValueType, QueryObject } from '../../queries/common';
-import { BinFoldOperator, DefaultGroup, DistributionFoldOperator, FoldOperator, Folds } from '../../queries/fold';
+import { QueryObject } from '../../queries/common';
+import { DefaultGroup, Folds } from '../../queries/fold';
+import { CoronerValueType } from '../../requests/common';
+import { BinFoldOperator, DistributionFoldOperator, FoldOperator } from '../../requests/fold';
 
 export interface SimpleFoldDistributionValue<V extends CoronerValueType> {
     value: V;

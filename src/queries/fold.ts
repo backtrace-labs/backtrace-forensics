@@ -1,7 +1,8 @@
+import { CoronerValueType } from '../requests/common';
+import { FoldOperator, FoldQueryRequest } from '../requests/fold';
 import { CoronerResponse } from '../responses/common';
 import { FoldQueryResponse } from '../responses/fold';
 import {
-    CoronerValueType,
     DynamicCommonCoronerQuery,
     DynamicQueryObject,
     DynamicQueryObjectValue,
@@ -9,22 +10,6 @@ import {
     QueryObject,
     StaticCommonCoronerQuery,
 } from './common';
-
-export type DistributionFoldOperator = ['distribution', number];
-export type BinFoldOperator = ['bin', ...number[]];
-export type CommonFoldOperator = ['head'] | ['tail'] | ['unique'] | ['range'] | ['max'] | ['min'];
-
-export type NumberFoldOperator = BinFoldOperator | DistributionFoldOperator | CommonFoldOperator | ['mean'] | ['sum'];
-export type StringFoldOperator = CommonFoldOperator | DistributionFoldOperator;
-export type BooleanFoldOperator = BinFoldOperator | DistributionFoldOperator | CommonFoldOperator | ['mean'] | ['sum'];
-
-export type FoldOperator<T extends CoronerValueType> = T extends string
-    ? StringFoldOperator
-    : T extends number
-    ? NumberFoldOperator
-    : T extends boolean
-    ? BooleanFoldOperator
-    : never;
 
 export interface StaticFoldCoronerQuery<
     T extends QueryObject<T>,
@@ -43,7 +28,9 @@ export interface StaticFoldedCoronerQuery<
     T extends QueryObject<T>,
     F extends Folds,
     G extends (keyof T & string) | DefaultGroup
-> extends StaticFoldCoronerQuery<T, F, G> {}
+> extends StaticFoldCoronerQuery<T, F, G> {
+    getRequest(): FoldQueryRequest;
+}
 
 export interface DynamicFoldCoronerQuery<
     T extends DynamicQueryObject,
@@ -62,7 +49,9 @@ export interface DynamicFoldedCoronerQuery<
     T extends DynamicQueryObject,
     F extends Folds,
     G extends (keyof T & string) | DefaultGroup
-> extends DynamicFoldCoronerQuery<T, F, G> {}
+> extends DynamicFoldCoronerQuery<T, F, G> {
+    getRequest(): FoldQueryRequest;
+}
 
 export interface FoldedCoronerQueryExecutor {
     execute<Q extends StaticFoldedCoronerQuery<never, never, never>>(

@@ -1,7 +1,8 @@
+import { CoronerValueType } from '../requests/common';
+import { SelectQueryRequest } from '../requests/select';
 import { CoronerResponse } from '../responses/common';
 import { SelectQueryResponse } from '../responses/select';
 import {
-    CoronerValueType,
     DynamicCommonCoronerQuery,
     DynamicQueryObject,
     JoinDynamicQueryObject,
@@ -16,7 +17,9 @@ export interface StaticSelectCoronerQuery<T extends QueryObject<T>, S extends (k
 }
 
 export interface StaticSelectedCoronerQuery<T extends QueryObject<T>, S extends (keyof T)[]>
-    extends StaticSelectCoronerQuery<T, S> {}
+    extends StaticSelectCoronerQuery<T, S> {
+    getRequest(): SelectQueryRequest;
+}
 
 export interface DynamicSelectCoronerQuery<
     T extends DynamicQueryObject<string, CoronerValueType>,
@@ -31,7 +34,9 @@ export interface DynamicSelectCoronerQuery<
 export interface DynamicSelectedCoronerQuery<
     T extends DynamicQueryObject<string, CoronerValueType>,
     S extends (keyof T)[]
-> extends DynamicSelectCoronerQuery<T, S> {}
+> extends DynamicSelectCoronerQuery<T, S> {
+    getRequest(): SelectQueryRequest;
+}
 
 export interface SelectedCoronerQueryExecutor {
     execute<Q extends StaticSelectedCoronerQuery<never, never>>(

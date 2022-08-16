@@ -1,0 +1,44 @@
+export type CoronerValueType = string | number | boolean | null;
+
+export type StringFilterOperator =
+    | 'at-least'
+    | 'at-most'
+    | 'contains'
+    | 'not-contains'
+    | 'equal'
+    | 'not-equal'
+    | 'greater-than'
+    | 'less-than'
+    | 'regular-expression'
+    | 'inverse-regular-expression';
+
+export type NumberFilterOperator = 'at-least' | 'at-most' | 'equal' | 'not-equal' | 'greater-than' | 'less-than';
+
+export type BooleanFilterOperator = 'equal' | 'not-equal';
+
+export type FilterOperator<T extends CoronerValueType = CoronerValueType> = T extends string
+    ? StringFilterOperator
+    : T extends number
+    ? NumberFilterOperator
+    : T extends boolean
+    ? BooleanFilterOperator
+    : never;
+
+export type QueryAttributeFilter = [FilterOperator, CoronerValueType];
+
+export type QueryFilter = {
+    [attribute: string]: QueryAttributeFilter[];
+};
+
+export type QueryOrder = {
+    name: string;
+    ordering: 'descending' | 'ascending';
+};
+
+export interface CommonQueryRequest {
+    filter?: QueryFilter[];
+    order?: QueryOrder[];
+    limit?: number;
+    offset?: number;
+    template?: string;
+}

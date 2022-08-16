@@ -1,37 +1,13 @@
+import { CommonQueryRequest, CoronerValueType, FilterOperator } from '../requests/common';
 import { DynamicFoldCoronerQuery, StaticFoldCoronerQuery } from './fold';
 import { DynamicSelectCoronerQuery, StaticSelectCoronerQuery } from './select';
-
-export type CoronerValueType = string | number | boolean | null;
-
-export type StringFilterOperator =
-    | 'at-least'
-    | 'at-most'
-    | 'contains'
-    | 'not-contains'
-    | 'equal'
-    | 'not-equal'
-    | 'greater-than'
-    | 'less-than'
-    | 'regular-expression'
-    | 'inverse-regular-expression';
-
-export type NumberFilterOperator = 'at-least' | 'at-most' | 'equal' | 'not-equal' | 'greater-than' | 'less-than';
-
-export type BooleanFilterOperator = 'equal' | 'not-equal';
-
-export type FilterOperator<T extends CoronerValueType = CoronerValueType> = T extends string
-    ? StringFilterOperator
-    : T extends number
-    ? NumberFilterOperator
-    : T extends boolean
-    ? BooleanFilterOperator
-    : never;
 
 export interface CommonCoronerQuery {
     limit(count: number): this;
     offset(count: number): this;
     template(template: string): this;
 }
+
 export interface StaticCommonCoronerQuery<T extends QueryObject<T>> extends CommonCoronerQuery {
     filter<A extends keyof T>(attribute: A, operator: FilterOperator<T[A]>, value: T[A]): this;
 }
@@ -54,8 +30,8 @@ export interface DynamicCoronerQuery<
     T extends DynamicQueryObject<string, CoronerValueType> = DynamicQueryObject<string, CoronerValueType>
 > extends DynamicCommonCoronerQuery<T>,
         DynamicSelectCoronerQuery<T>,
-        DynamicFoldCoronerQuery<T> {}
-{
+        DynamicFoldCoronerQuery<T> {
+    getRequest(): CommonQueryRequest;
 }
 
 export type QueryObject<T> = {

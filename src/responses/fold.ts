@@ -1,5 +1,6 @@
 import { QueryObject } from '../queries/common';
-import { BinFoldOperator, DefaultGroup, DistributionFoldOperator, Fold, FoldOperator, Folds } from '../queries/fold';
+import { DefaultGroup, Fold, Folds } from '../queries/fold';
+import { BinFoldOperator, DistributionFoldOperator, FoldOperator } from '../requests/fold';
 import { QueryResponse } from './common';
 import { SimpleFoldRow } from './simple/fold';
 
