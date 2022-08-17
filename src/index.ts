@@ -1,10 +1,13 @@
-import { DynamicCoronerQuery, QueryObject, StaticCoronerQuery } from './queries/common';
-import { FoldedCoronerQueryExecutor } from './queries/fold';
-import { SelectedCoronerQueryExecutor } from './queries/select';
+import { Attribute, CoronerQuery } from './queries/common';
+import { FoldedCoronerQueryResponseProvider } from './queries/fold';
+import { SelectedCoronerQueryResponseProvider } from './queries/select';
 
 export interface CoronerQueryCreator {
-    create<T extends QueryObject<T> = never>(): [T] extends [never] ? DynamicCoronerQuery : StaticCoronerQuery<T>;
-    createStatic<T extends QueryObject<T>>(): StaticCoronerQuery<T>;
+    create<T extends Attribute = Attribute>(): CoronerQuery<T>;
 }
 
-export type CoronerQuery = FoldedCoronerQueryExecutor & SelectedCoronerQueryExecutor & CoronerQueryCreator;
+export type BacktraceForensic = //FoldedCoronerQueryRequestProvider &
+    FoldedCoronerQueryResponseProvider &
+        // SelectedCoronerQueryRequestProvider &
+        SelectedCoronerQueryResponseProvider &
+        CoronerQueryCreator;

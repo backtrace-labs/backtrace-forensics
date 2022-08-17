@@ -1,7 +1,7 @@
-import { QueryObject } from '../../queries/common';
-import { DefaultGroup, Folds } from '../../queries/fold';
+import { Attribute } from '../../queries/common';
+import { DefaultGroup } from '../../queries/fold';
 import { CoronerValueType } from '../../requests/common';
-import { BinFoldOperator, DistributionFoldOperator, FoldOperator } from '../../requests/fold';
+import { BinFoldOperator, DistributionFoldOperator, FoldOperator, Folds } from '../../requests/fold';
 
 export interface SimpleFoldDistributionValue<V extends CoronerValueType> {
     value: V;
@@ -25,7 +25,7 @@ export interface SimpleFoldBinValue<V extends CoronerValueType> {
     count: number;
 }
 
-export type SimpleFoldValue<T extends QueryObject<T>, A extends keyof T & string, F extends FoldOperator<T[A]>> = {
+export type SimpleFoldValue<T extends Attribute, A extends keyof T & string, F extends FoldOperator<T[A]>> = {
     [K in F[0]]: F extends DistributionFoldOperator
         ? SimpleFoldDistributionValues<T[A]>
         : F extends BinFoldOperator
@@ -37,13 +37,13 @@ export type SimpleFoldValue<T extends QueryObject<T>, A extends keyof T & string
         : T[A];
 };
 
-export type SimpleFoldGroup<T extends QueryObject<T>, A extends keyof T, G extends keyof T | DefaultGroup> = A extends G
+export type SimpleFoldGroup<T extends Attribute, A extends keyof T, G extends keyof T | DefaultGroup> = A extends G
     ? {
           groupKey: T[A];
       }
     : {};
 
-export type SimpleFoldAttributes<T extends QueryObject<T>, F extends Folds, G extends keyof T | DefaultGroup> = {
+export type SimpleFoldAttributes<T extends Attribute, F extends Folds, G extends keyof T | DefaultGroup> = {
     [A in keyof T & keyof F & string]: SimpleFoldValue<
         T,
         A,
@@ -53,7 +53,7 @@ export type SimpleFoldAttributes<T extends QueryObject<T>, F extends Folds, G ex
         SimpleFoldGroup<T, A, G>;
 };
 
-export interface SimpleFoldRow<T extends QueryObject<T>, F extends Folds, G extends keyof T | DefaultGroup> {
+export interface SimpleFoldRow<T extends Attribute, F extends Folds, G extends keyof T | DefaultGroup> {
     attributes: SimpleFoldAttributes<T, F, G>;
     count: number;
 }

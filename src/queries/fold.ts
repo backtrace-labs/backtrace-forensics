@@ -1,80 +1,33 @@
 import { CoronerValueType } from '../requests/common';
-import { FoldOperator, FoldQueryRequest } from '../requests/fold';
+import { Fold, FoldOperator, FoldQueryRequest, Folds } from '../requests/fold';
 import { CoronerResponse } from '../responses/common';
 import { FoldQueryResponse } from '../responses/fold';
-import {
-    DynamicCommonCoronerQuery,
-    DynamicQueryObject,
-    DynamicQueryObjectValue,
-    JoinDynamicQueryObject,
-    QueryObject,
-    StaticCommonCoronerQuery,
-} from './common';
+import { Attribute, CommonCoronerQuery, JoinAttributes, QueryObjectValue } from './common';
 
-export interface StaticFoldCoronerQuery<
-    T extends QueryObject<T>,
-    F extends Folds = never,
-    G extends (keyof T & string) | DefaultGroup = '*'
-> extends StaticCommonCoronerQuery<T> {
-    fold(): StaticFoldedCoronerQuery<T, F, G>;
-    fold<A extends keyof T & string, O extends FoldOperator<T[A]>>(
+export interface FoldCoronerQuery<T extends Attribute, F extends Folds = never, G extends string | DefaultGroup = '*'>
+    extends CommonCoronerQuery<T> {
+    fold<A extends string>(): FoldedCoronerQuery<T, [F] extends [never] ? Folds<A> : F, string>;
+    fold<A extends string, G extends string>(): FoldedCoronerQuery<T, [F] extends [never] ? Folds<A> : F, G>;
+    fold<A extends string, V extends QueryObjectValue<T, A>, O extends FoldOperator<V>>(
         attribute: A,
         ...fold: O
-    ): StaticFoldedCoronerQuery<T, JoinFolds<F, A, O>, G>;
-    group<A extends keyof T & string>(attribute: A): StaticFoldedCoronerQuery<T, F, A>;
+    ): FoldedCoronerQuery<JoinAttributes<T, A, V>, JoinFolds<F, A, O>, G>;
+    group<A extends string>(attribute: A): FoldedCoronerQuery<T, F, A>;
 }
 
-export interface StaticFoldedCoronerQuery<
-    T extends QueryObject<T>,
-    F extends Folds,
-    G extends (keyof T & string) | DefaultGroup
-> extends StaticFoldCoronerQuery<T, F, G> {
-    getRequest(): FoldQueryRequest;
+export interface FoldedCoronerQuery<T extends Attribute, F extends Folds, G extends string | DefaultGroup>
+    extends FoldCoronerQuery<T, F, G> {
+    getRequest(): FoldQueryRequest<T, F, G>;
+    getResponse(): Promise<CoronerResponse<FoldQueryResponse<T, F, G>>>;
 }
 
-export interface DynamicFoldCoronerQuery<
-    T extends DynamicQueryObject,
-    F extends Folds = never,
-    G extends (keyof T & string) | DefaultGroup = '*'
-> extends DynamicCommonCoronerQuery<T> {
-    fold(): DynamicFoldedCoronerQuery<T, F, G>;
-    fold<A extends string, V extends DynamicQueryObjectValue<T, A>, O extends FoldOperator<V>>(
-        attribute: A,
-        ...fold: O
-    ): DynamicFoldedCoronerQuery<JoinDynamicQueryObject<T, A, V>, JoinFolds<F, A, O>, G>;
-    group<A extends keyof T & string>(attribute: A): DynamicFoldedCoronerQuery<T, F, A>;
-}
-
-export interface DynamicFoldedCoronerQuery<
-    T extends DynamicQueryObject,
-    F extends Folds,
-    G extends (keyof T & string) | DefaultGroup
-> extends DynamicFoldCoronerQuery<T, F, G> {
-    getRequest(): FoldQueryRequest;
-}
-
-export interface FoldedCoronerQueryExecutor {
-    execute<Q extends StaticFoldedCoronerQuery<never, never, never>>(
+export interface FoldedCoronerQueryResponseProvider {
+    getResponse<Q extends FoldedCoronerQuery<never, never, never>>(
         query: Q
     ): Promise<
-        Q extends StaticFoldedCoronerQuery<infer T, infer F, infer G>
-            ? CoronerResponse<FoldQueryResponse<T, F, G>>
-            : never
-    >;
-    execute<Q extends DynamicFoldedCoronerQuery<never, never, never>>(
-        query: Q
-    ): Promise<
-        Q extends DynamicFoldedCoronerQuery<infer T, infer F, infer G>
-            ? CoronerResponse<FoldQueryResponse<T, F, G>>
-            : never
+        Q extends FoldedCoronerQuery<infer T, infer F, infer G> ? CoronerResponse<FoldQueryResponse<T, F, G>> : never
     >;
 }
-
-export type Fold<A extends string, F extends FoldOperator<CoronerValueType>[]> = [A, F];
-
-export type Folds = {
-    [A in string]: Fold<A, FoldOperator<CoronerValueType>[]>;
-};
 
 export type JoinFolds<F extends Folds, A extends string, O extends FoldOperator<CoronerValueType>> = [F] extends [never]
     ? { [K in A]: Fold<K, [O]> }

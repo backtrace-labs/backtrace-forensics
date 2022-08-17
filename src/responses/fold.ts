@@ -1,6 +1,6 @@
-import { QueryObject } from '../queries/common';
-import { DefaultGroup, Fold, Folds } from '../queries/fold';
-import { BinFoldOperator, DistributionFoldOperator, FoldOperator } from '../requests/fold';
+import { Attribute } from '../queries/common';
+import { DefaultGroup } from '../queries/fold';
+import { BinFoldOperator, DistributionFoldOperator, Fold, FoldOperator, Folds } from '../requests/fold';
 import { QueryResponse } from './common';
 import { SimpleFoldRow } from './simple/fold';
 
@@ -21,18 +21,18 @@ export interface QueryCardinalities {
     readonly pagination: QueryCardinality;
 }
 
-export type SingleQueryColumnValue<T extends QueryObject<T>, A extends keyof T> = [T[A]];
+export type SingleQueryColumnValue<T extends Attribute, A extends keyof T> = [T[A]];
 export type BinQueryColumnValue = [number, number, number];
-export type RangeQueryColumnValue<T extends QueryObject<T>, A extends keyof T> = [T[A], T[A]];
+export type RangeQueryColumnValue<T extends Attribute, A extends keyof T> = [T[A], T[A]];
 
-export type DistributionQueryColumnValue<T extends QueryObject<T>, A extends keyof T> = {
+export type DistributionQueryColumnValue<T extends Attribute, A extends keyof T> = {
     keys: number;
     tail?: number;
     vals: [T[A], number][];
 };
 
 export type FoldQueryColumnValue<
-    T extends QueryObject<T>,
+    T extends Attribute,
     A extends keyof T & string,
     F extends Fold<A, FoldOperator<T[A]>[]>
 > = F extends DistributionFoldOperator
@@ -44,13 +44,13 @@ export type FoldQueryColumnValue<
     : SingleQueryColumnValue<T, A>;
 
 export type FoldQueryRowValue<
-    T extends QueryObject<T>,
+    T extends Attribute,
     A extends keyof T & string,
     F extends Fold<A, FoldOperator<T[A]>[]>,
     G extends keyof T | DefaultGroup
 > = [G, FoldQueryColumnValue<T, A, F>[], number];
 
-export interface FoldQueryResponse<T extends QueryObject<T>, F extends Folds, G extends keyof T | DefaultGroup>
+export interface FoldQueryResponse<T extends Attribute, F extends Folds, G extends keyof T | DefaultGroup>
     extends QueryResponse {
     readonly cardinalities: QueryCardinalities;
     readonly factors_desc?: QueryFactorDescription[];

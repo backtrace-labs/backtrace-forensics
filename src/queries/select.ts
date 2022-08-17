@@ -2,51 +2,21 @@ import { CoronerValueType } from '../requests/common';
 import { SelectQueryRequest } from '../requests/select';
 import { CoronerResponse } from '../responses/common';
 import { SelectQueryResponse } from '../responses/select';
-import {
-    DynamicCommonCoronerQuery,
-    DynamicQueryObject,
-    JoinDynamicQueryObject,
-    QueryObject,
-    StaticCommonCoronerQuery,
-} from './common';
-
-export interface StaticSelectCoronerQuery<T extends QueryObject<T>, S extends (keyof T)[] = []>
-    extends StaticCommonCoronerQuery<T> {
-    select<A extends keyof T & string>(): StaticSelectedCoronerQuery<T, A[]>;
-    select<A extends keyof T & string>(attribute: A): StaticSelectedCoronerQuery<T, [...S, A]>;
-}
-
-export interface StaticSelectedCoronerQuery<T extends QueryObject<T>, S extends (keyof T)[]>
-    extends StaticSelectCoronerQuery<T, S> {
-    getRequest(): SelectQueryRequest;
-}
-
-export interface DynamicSelectCoronerQuery<
-    T extends DynamicQueryObject<string, CoronerValueType>,
-    S extends (keyof T)[] = []
-> extends DynamicCommonCoronerQuery<T> {
-    select<A extends string>(): DynamicSelectedCoronerQuery<T, A[]>;
-    select<A extends string, V extends CoronerValueType>(
+import { Attribute, CommonCoronerQuery, JoinAttributes } from './common';
+export interface SelectCoronerQuery<T extends Attribute, S extends string[] = []> extends CommonCoronerQuery<T> {
+    select<A extends string>(): SelectedCoronerQuery<T, A[]>;
+    select<V extends CoronerValueType, A extends string>(
         attribute: A
-    ): DynamicSelectedCoronerQuery<JoinDynamicQueryObject<T, A, V>, [...S, A]>;
+    ): SelectedCoronerQuery<JoinAttributes<T, A, V>, [...S, A]>;
 }
 
-export interface DynamicSelectedCoronerQuery<
-    T extends DynamicQueryObject<string, CoronerValueType>,
-    S extends (keyof T)[]
-> extends DynamicSelectCoronerQuery<T, S> {
-    getRequest(): SelectQueryRequest;
+export interface SelectedCoronerQuery<T extends Attribute, S extends string[] = []> extends SelectCoronerQuery<T, S> {
+    getRequest(): SelectQueryRequest<T, S>;
+    getResponse(): Promise<CoronerResponse<SelectQueryResponse<T, S>>>;
 }
 
-export interface SelectedCoronerQueryExecutor {
-    execute<Q extends StaticSelectedCoronerQuery<never, never>>(
+export interface SelectedCoronerQueryResponseProvider {
+    getResponse<Q extends SelectedCoronerQuery<never, never>>(
         query: Q
-    ): Promise<
-        Q extends StaticSelectedCoronerQuery<infer T, infer S> ? CoronerResponse<SelectQueryResponse<T, S>> : never
-    >;
-    execute<Q extends DynamicSelectedCoronerQuery<never, never>>(
-        query: Q
-    ): Promise<
-        Q extends DynamicSelectedCoronerQuery<infer T, infer S> ? CoronerResponse<SelectQueryResponse<T, S>> : never
-    >;
+    ): Promise<Q extends SelectedCoronerQuery<infer T, infer S> ? CoronerResponse<SelectQueryResponse<T, S>> : never>;
 }

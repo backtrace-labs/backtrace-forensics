@@ -1,3 +1,5 @@
+import { Attribute } from '../queries/common';
+import { DefaultGroup } from '../queries/fold';
 import { CommonQueryRequest, CoronerValueType } from './common';
 
 export type DistributionFoldOperator = ['distribution', number];
@@ -16,9 +18,18 @@ export type FoldOperator<T extends CoronerValueType> = T extends string
     ? BooleanFoldOperator
     : never;
 
-export type QueryFold = { [attribute: string]: (NumberFoldOperator | StringFoldOperator | BooleanFoldOperator)[] };
+export type Fold<A extends string, F extends FoldOperator<CoronerValueType>[]> = [A, F];
 
-export interface FoldQueryRequest extends CommonQueryRequest {
-    group?: CoronerValueType[];
-    fold?: QueryFold;
+export type Folds<K extends string = never> = {
+    [A in [K] extends [never] ? string : K]: Fold<A, FoldOperator<CoronerValueType>[]>;
+};
+
+export type QueryFold<T extends Attribute, F extends Folds> = {
+    [A in keyof T & keyof F & string]: FoldOperator<CoronerValueType>[];
+};
+
+export interface FoldQueryRequest<T extends Attribute, F extends Folds, G extends keyof T | DefaultGroup>
+    extends CommonQueryRequest {
+    group?: [G];
+    fold?: Partial<QueryFold<T, F>>;
 }
