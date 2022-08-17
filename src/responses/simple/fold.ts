@@ -25,16 +25,18 @@ export interface SimpleFoldBinValue<V extends CoronerValueType> {
     count: number;
 }
 
-export type SimpleFoldValue<T extends Attribute, A extends keyof T & string, F extends FoldOperator<T[A]>> = {
-    [K in F[0]]: F extends DistributionFoldOperator
-        ? SimpleFoldDistributionValues<T[A]>
-        : F extends BinFoldOperator
-        ? SimpleFoldBinValue<T[A]>
-        : F extends ['range']
-        ? SimpleFoldRangeValue<T[A]>
-        : F extends ['unique']
-        ? number
-        : T[A];
+export type SimpleFoldValue<V extends CoronerValueType, F extends FoldOperator<V>> = F extends DistributionFoldOperator
+    ? SimpleFoldDistributionValues<V>
+    : F extends BinFoldOperator
+    ? SimpleFoldBinValue<V>[]
+    : F extends ['range']
+    ? SimpleFoldRangeValue<V>
+    : F extends ['unique']
+    ? number
+    : V;
+
+export type SimpleFoldValues<V extends CoronerValueType, F extends FoldOperator<V>> = {
+    [K in F[0]]: SimpleFoldValue<V, F>;
 };
 
 export type SimpleFoldGroup<T extends Attribute, A extends keyof T, G extends keyof T | DefaultGroup> = A extends G
@@ -44,9 +46,8 @@ export type SimpleFoldGroup<T extends Attribute, A extends keyof T, G extends ke
     : {};
 
 export type SimpleFoldAttributes<T extends Attribute, F extends Folds, G extends keyof T | DefaultGroup> = {
-    [A in keyof T & keyof F & string]: SimpleFoldValue<
-        T,
-        A,
+    [A in keyof T & keyof F & string]: SimpleFoldValues<
+        T[A],
         // @ts-ignore - TS gives here an error, despite everything working correctly.
         F[A][1][number]
     > &

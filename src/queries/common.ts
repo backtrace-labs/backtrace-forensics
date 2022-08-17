@@ -1,4 +1,4 @@
-import { CommonQueryRequest, CoronerValueType, FilterOperator } from '../requests/common';
+import { CoronerValueType, FilterOperator, QueryRequest } from '../requests/common';
 import { FoldCoronerQuery } from './fold';
 import { SelectCoronerQuery } from './select';
 
@@ -11,7 +11,7 @@ export interface CommonCoronerQuery<T extends Attribute> {
         operator: FilterOperator<V>,
         value: V
     ): this;
-    getRequest(): CommonQueryRequest;
+    getRequest(): QueryRequest;
 }
 
 export interface CoronerQuery<T extends Attribute>

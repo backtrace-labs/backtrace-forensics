@@ -1,11 +1,13 @@
+import { ICoronerQueryExecutor } from '../../interfaces/ICoronerQueryExecutor';
+import { IFoldCoronerSimpleResponseBuilder } from '../../interfaces/responses/IFoldCoronerSimpleResponseBuilder';
+import { QuerySource } from '../../models/QuerySource';
 import { Attribute, JoinAttributes, QueryObjectValue } from '../../queries/common';
 import { DefaultGroup, FoldedCoronerQuery, JoinFolds } from '../../queries/fold';
-import { CommonQueryRequest, CoronerValueType } from '../../requests/common';
+import { CoronerValueType, QueryRequest } from '../../requests/common';
 import { FoldOperator, FoldQueryRequest, Folds } from '../../requests/fold';
 import { CoronerResponse } from '../../responses/common';
 import { FoldQueryResponse } from '../../responses/fold';
-import { CoronerQueryExecutor } from '../CoronerQueryExecutor';
-import { cloneFoldRequest } from './cloneRequest';
+import { cloneFoldRequest } from '../requests/cloneRequest';
 import { CommonCoronerQueryBuilder } from './CommonCoronerQueryBuilder';
 
 export class FoldedCoronerQueryBuilder<
@@ -17,12 +19,18 @@ export class FoldedCoronerQueryBuilder<
     implements FoldedCoronerQuery<T, F, G>
 {
     readonly #request: FoldQueryRequest<T, F, G>;
-    readonly #executor: CoronerQueryExecutor;
+    readonly #executor: ICoronerQueryExecutor;
+    readonly #simpleResponseBuilder: IFoldCoronerSimpleResponseBuilder;
 
-    constructor(request: FoldQueryRequest<T, F, G>, executor: CoronerQueryExecutor) {
+    constructor(
+        request: FoldQueryRequest<T, F, G>,
+        executor: ICoronerQueryExecutor,
+        builder: IFoldCoronerSimpleResponseBuilder
+    ) {
         super(request);
         this.#request = request;
         this.#executor = executor;
+        this.#simpleResponseBuilder = builder;
     }
 
     public fold<A extends string>(): FoldedCoronerQuery<T, [F] extends [never] ? Folds<A> : F, string>;
@@ -73,11 +81,20 @@ export class FoldedCoronerQueryBuilder<
         return this.#request;
     }
 
-    public getResponse(): Promise<CoronerResponse<FoldQueryResponse<T, F, G>>> {
-        return this.#executor.execute(this.#request);
+    public async getResponse(source?: Partial<QuerySource>): Promise<CoronerResponse<FoldQueryResponse<T, F, G>>> {
+        if (!this.#request.fold || !this.#request.group) {
+            throw new Error('Fold or group query expected.');
+        }
+
+        const response = await this.#executor.execute<FoldQueryResponse<T, F, G>>(this.#request, source);
+        if (!response.error) {
+            response.response.first = () => this.#simpleResponseBuilder.first(response.response);
+            response.response.toArray = () => this.#simpleResponseBuilder.toArray(response.response);
+        }
+        return response;
     }
 
-    protected createInstance(request: CommonQueryRequest): this {
-        return new FoldedCoronerQueryBuilder<T, F, G>(request, this.#executor) as this;
+    protected createInstance(request: QueryRequest): this {
+        return new FoldedCoronerQueryBuilder<T, F, G>(request, this.#executor, this.#simpleResponseBuilder) as this;
     }
 }

@@ -1,10 +1,11 @@
 import { Attribute } from '../queries/common';
 import { DefaultGroup } from '../queries/fold';
-import { CommonQueryRequest, CoronerValueType } from './common';
+import { CoronerValueType, QueryRequest } from './common';
 
 export type DistributionFoldOperator = ['distribution', number];
 export type BinFoldOperator = ['bin', ...number[]];
 export type CommonFoldOperator = ['head'] | ['tail'] | ['unique'] | ['range'] | ['max'] | ['min'];
+export type UnaryFoldOperator = ['head'] | ['tail'] | ['unique'] | ['max'] | ['min'] | ['mean'] | ['sum'];
 
 export type NumberFoldOperator = BinFoldOperator | DistributionFoldOperator | CommonFoldOperator | ['mean'] | ['sum'];
 export type StringFoldOperator = CommonFoldOperator | DistributionFoldOperator;
@@ -29,7 +30,7 @@ export type QueryFold<T extends Attribute, F extends Folds> = {
 };
 
 export interface FoldQueryRequest<T extends Attribute, F extends Folds, G extends keyof T | DefaultGroup>
-    extends CommonQueryRequest {
+    extends QueryRequest {
     group?: [G];
     fold?: Partial<QueryFold<T, F>>;
 }

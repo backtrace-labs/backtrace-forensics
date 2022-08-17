@@ -1,6 +1,6 @@
 import { Attribute } from '../../queries/common';
 import { DefaultGroup } from '../../queries/fold';
-import { CommonQueryRequest, CoronerValueType } from '../../requests/common';
+import { CoronerValueType, QueryRequest } from '../../requests/common';
 import { FoldOperator, FoldQueryRequest, Folds, QueryFold } from '../../requests/fold';
 import { SelectQueryRequest } from '../../requests/select';
 
@@ -43,7 +43,7 @@ function cloneSelect(select?: string[]) {
     return [...select];
 }
 
-export function cloneRequest(request: CommonQueryRequest): CommonQueryRequest {
+export function cloneRequest(request: QueryRequest): QueryRequest {
     if ('fold' in request || 'group' in request) {
         const foldRequest = request as FoldQueryRequest<Attribute, Folds, DefaultGroup>;
         const result: FoldQueryRequest<Attribute, Folds, DefaultGroup> = {

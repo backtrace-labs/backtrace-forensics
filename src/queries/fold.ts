@@ -1,3 +1,4 @@
+import { QuerySource } from '../models/QuerySource';
 import { CoronerValueType } from '../requests/common';
 import { Fold, FoldOperator, FoldQueryRequest, Folds } from '../requests/fold';
 import { CoronerResponse } from '../responses/common';
@@ -18,15 +19,7 @@ export interface FoldCoronerQuery<T extends Attribute, F extends Folds = never, 
 export interface FoldedCoronerQuery<T extends Attribute, F extends Folds, G extends string | DefaultGroup>
     extends FoldCoronerQuery<T, F, G> {
     getRequest(): FoldQueryRequest<T, F, G>;
-    getResponse(): Promise<CoronerResponse<FoldQueryResponse<T, F, G>>>;
-}
-
-export interface FoldedCoronerQueryResponseProvider {
-    getResponse<Q extends FoldedCoronerQuery<never, never, never>>(
-        query: Q
-    ): Promise<
-        Q extends FoldedCoronerQuery<infer T, infer F, infer G> ? CoronerResponse<FoldQueryResponse<T, F, G>> : never
-    >;
+    getResponse(source?: Partial<QuerySource>): Promise<CoronerResponse<FoldQueryResponse<T, F, G>>>;
 }
 
 export type JoinFolds<F extends Folds, A extends string, O extends FoldOperator<CoronerValueType>> = [F] extends [never]

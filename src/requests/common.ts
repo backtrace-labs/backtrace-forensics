@@ -35,7 +35,7 @@ export type QueryOrder = {
     ordering: 'descending' | 'ascending';
 };
 
-export interface CommonQueryRequest {
+export interface QueryRequest {
     filter?: QueryFilter[];
     order?: QueryOrder[];
     limit?: number;

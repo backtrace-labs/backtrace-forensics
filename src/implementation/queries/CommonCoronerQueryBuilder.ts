@@ -1,11 +1,11 @@
 import { Attribute, CommonCoronerQuery, QueryObjectValue } from '../../queries/common';
-import { CommonQueryRequest, FilterOperator, QueryFilter } from '../../requests/common';
-import { cloneRequest } from './cloneRequest';
+import { FilterOperator, QueryFilter, QueryRequest } from '../../requests/common';
+import { cloneRequest } from '../requests/cloneRequest';
 
 export abstract class CommonCoronerQueryBuilder<T extends Attribute> implements CommonCoronerQuery<T> {
-    readonly #request: CommonQueryRequest;
+    readonly #request: QueryRequest;
 
-    constructor(request: CommonQueryRequest) {
+    constructor(request: QueryRequest) {
         this.#request = request;
     }
 
@@ -46,9 +46,9 @@ export abstract class CommonCoronerQueryBuilder<T extends Attribute> implements 
         return this.createInstance(request);
     }
 
-    public getRequest(): CommonQueryRequest {
+    public getRequest(): QueryRequest {
         return this.#request;
     }
 
-    protected abstract createInstance(request: CommonQueryRequest): this;
+    protected abstract createInstance(request: QueryRequest): this;
 }

@@ -23,7 +23,6 @@ export interface QueryResponse {
 
 export interface SuccessfulCoronerResponse<R extends QueryResponse> {
     response: R;
-    _: never;
     error: undefined;
 }
 

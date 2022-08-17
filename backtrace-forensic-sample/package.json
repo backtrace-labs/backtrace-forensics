@@ -1,0 +1,13 @@
+{
+    "name": "backtrace-forensic-sample",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "devDependencies": {},
+    "scripts": {
+        "start": "node dist/index.js",
+        "build": "tsc"
+    },
+    "author": "",
+    "license": "ISC"
+}

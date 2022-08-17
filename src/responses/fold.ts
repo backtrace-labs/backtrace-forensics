@@ -1,6 +1,14 @@
 import { Attribute } from '../queries/common';
 import { DefaultGroup } from '../queries/fold';
-import { BinFoldOperator, DistributionFoldOperator, Fold, FoldOperator, Folds } from '../requests/fold';
+import { CoronerValueType } from '../requests/common';
+import {
+    BinFoldOperator,
+    DistributionFoldOperator,
+    Fold,
+    FoldOperator,
+    Folds,
+    UnaryFoldOperator,
+} from '../requests/fold';
 import { QueryResponse } from './common';
 import { SimpleFoldRow } from './simple/fold';
 
@@ -21,27 +29,35 @@ export interface QueryCardinalities {
     readonly pagination: QueryCardinality;
 }
 
-export type SingleQueryColumnValue<T extends Attribute, A extends keyof T> = [T[A]];
-export type BinQueryColumnValue = [number, number, number];
-export type RangeQueryColumnValue<T extends Attribute, A extends keyof T> = [T[A], T[A]];
+export type SingleQueryColumnValue<V extends CoronerValueType> = [V?];
+export type BinQueryColumnValue = [number, number, number][];
+export type RangeQueryColumnValue<V extends CoronerValueType> = [V, V];
 
-export type DistributionQueryColumnValue<T extends Attribute, A extends keyof T> = {
-    keys: number;
-    tail?: number;
-    vals: [T[A], number][];
-};
+export type DistributionQueryColumnValue<V extends CoronerValueType> = [
+    {
+        keys: number;
+        tail?: number;
+        vals: [V, number][];
+    }
+];
 
 export type FoldQueryColumnValue<
     T extends Attribute,
     A extends keyof T & string,
     F extends Fold<A, FoldOperator<T[A]>[]>
 > = F extends DistributionFoldOperator
-    ? DistributionQueryColumnValue<T, A>
+    ? DistributionQueryColumnValue<T[A]>
     : F extends BinFoldOperator
     ? BinQueryColumnValue
     : F extends ['range']
-    ? RangeQueryColumnValue<T, A>
-    : SingleQueryColumnValue<T, A>;
+    ? RangeQueryColumnValue<T[A]>
+    : F extends UnaryFoldOperator
+    ? SingleQueryColumnValue<T[A]>
+    :
+          | DistributionQueryColumnValue<T[A]>
+          | BinQueryColumnValue
+          | RangeQueryColumnValue<T[A]>
+          | SingleQueryColumnValue<T[A]>;
 
 export type FoldQueryRowValue<
     T extends Attribute,

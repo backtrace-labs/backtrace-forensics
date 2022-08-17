@@ -12,7 +12,7 @@ export interface QueryOrder {
 
 type SelectQueryRowValues<T extends Attribute, S extends (keyof T)[]> = {
     [I in keyof S]: SelectQueryRowValue<T, S[I]>;
-};
+} & Array<{}>;
 
 export interface SelectQueryResponse<T extends Attribute, S extends QueryObjectKey<T>[]> extends QueryResponse {
     readonly objects: SelectQueryObject[];
