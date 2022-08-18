@@ -1,3 +1,4 @@
+import http from 'http';
 import https from 'https';
 import { ICoronerQueryMaker } from '../interfaces/ICoronerQueryMaker';
 import { QuerySource } from '../models/QuerySource';
@@ -12,9 +13,10 @@ export class NodeCoronerQueryMaker implements ICoronerQueryMaker {
         const data = JSON.stringify(request);
 
         const url = new URL(source.address);
+        const protocol = url.protocol.startsWith('https') ? https : http;
 
-        return new Promise((resolve, reject) => {
-            const req = https.request(
+        return new Promise<CoronerResponse<R>>((resolve, reject) => {
+            const req = protocol.request(
                 {
                     hostname: url.hostname,
                     path: `/api/query?project=${source.project}`,
@@ -22,11 +24,32 @@ export class NodeCoronerQueryMaker implements ICoronerQueryMaker {
                     headers: {
                         'Content-Type': 'application/json',
                         'Content-Length': data.length,
-                        'X-Coroner-Location': source.address,
+                        'X-Coroner-Location': source.location ?? source.address,
                         'X-Coroner-Token': source.token,
                     },
                 },
                 (res) => {
+                    switch (res.statusCode) {
+                        case 200:
+                        case 403: // we want to return the error from data
+                            break;
+                        case 301:
+                        case 302:
+                            if (res.headers.location) {
+                                return this.query<R>(
+                                    {
+                                        ...source,
+                                        address: res.headers.location,
+                                    },
+                                    request
+                                )
+                                    .then(resolve)
+                                    .catch(reject);
+                            }
+                        default:
+                            reject(new Error(`Invalid coroner status code: ${res.statusCode}.`));
+                    }
+
                     res.on('data', (d: string) => {
                         resolve(JSON.parse(d));
                     });

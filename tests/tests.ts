@@ -1,9 +1,9 @@
-import { BacktraceForensic } from '.';
-import { Attribute } from './queries/common';
-import { Folds } from './requests/fold';
-import { CoronerResponse } from './responses/common';
-import { FoldQueryResponse } from './responses/fold';
-import { SelectQueryResponse } from './responses/select';
+import { BacktraceForensic } from '../src';
+import { Attribute } from '../src/queries/common';
+import { Folds } from '../src/requests/fold';
+import { CoronerResponse } from '../src/responses/common';
+import { FoldQueryResponse } from '../src/responses/fold';
+import { SelectQueryResponse } from '../src/responses/select';
 
 // TESTING STUFF
 (async () => {

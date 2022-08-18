@@ -17,7 +17,7 @@ export class CoronerQueryExecutor implements ICoronerQueryExecutor {
         request: QueryRequest,
         source?: Partial<QuerySource>
     ): Promise<CoronerResponse<R>> {
-        let { address, token, project } = Object.assign({}, this.#defaultSource, source);
+        let { address, token, project, location } = Object.assign({}, this.#defaultSource, source);
         if (!address) {
             throw new Error('Coroner address is not available.');
         }
@@ -30,6 +30,6 @@ export class CoronerQueryExecutor implements ICoronerQueryExecutor {
             throw new Error('Coroner project is not available.');
         }
 
-        return this.#queryMaker.query<R>({ address, token, project }, request);
+        return this.#queryMaker.query<R>({ address, token, project, location }, request);
     }
 }

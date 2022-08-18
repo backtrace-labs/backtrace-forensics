@@ -48,6 +48,11 @@ async function staticSelect() {
         .filter('fingerprint', 'equal', fp)
         .select('callstack', 'randomInt', 'fingerprint');
 
+    const response = await query.getResponse();
+    if (!response.error) {
+        response.response.first()?.fingerprint;
+    }
+
     await displayDetails(query);
 }
 
@@ -98,9 +103,12 @@ async function staticFold() {
         .fold('timestamp', 'min')
         .fold('timestamp', 'range')
         .fold('randomInt', 'distribution', 3)
-        .group('fingerprint');
+        .group('asdasd'); // TODO: Fix the group not appearing in attributes when it is not folded on
 
     // const response = await query.getResponse();
+    // if (!response.error) {
+    //     response.response.first()?.attributes.
+    // }
     await displayDetails(query);
 }
 

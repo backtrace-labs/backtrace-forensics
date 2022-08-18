@@ -36,9 +36,44 @@ export type QueryOrder = {
 };
 
 export interface QueryRequest {
+    /**
+     * Attributes to filter on.
+     * @example
+     * request.filter = {
+     *     timestamp: [['at-least', 123], ['at-most', 456]],
+     *     fingerprint: [['equal', 'xyz']]
+     * };
+     */
     filter?: QueryFilter[];
+
+    /**
+     * Attributes to order on.
+     * @example
+     * request.order = [{
+     *     name: 'timestamp',
+     *     ordering: 'descending'
+     * }];
+     */
     order?: QueryOrder[];
+
+    /**
+     * Limits the number of rows in response.
+     * @example
+     * request.limit = 20;
+     */
     limit?: number;
+
+    /**
+     * How much rows to skip for response.
+     * @example
+     * request.offset = 20;
+     */
     offset?: number;
+
+    /**
+     * Template for the response. May determine which attributes are returned.
+     * @example
+     * request.template = 'workflow';
+     */
     template?: string;
 }

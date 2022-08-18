@@ -4,12 +4,20 @@ import { CoronerValueType, QueryRequest } from './common';
 
 export type DistributionFoldOperator = ['distribution', number];
 export type BinFoldOperator = ['bin', ...number[]];
-export type CommonFoldOperator = ['head'] | ['tail'] | ['unique'] | ['range'] | ['max'] | ['min'];
+export type CommonFoldOperator =
+    | DistributionFoldOperator
+    | ['head']
+    | ['tail']
+    | ['unique']
+    | ['range']
+    | ['max']
+    | ['min'];
+
 export type UnaryFoldOperator = ['head'] | ['tail'] | ['unique'] | ['max'] | ['min'] | ['mean'] | ['sum'];
 
-export type NumberFoldOperator = BinFoldOperator | DistributionFoldOperator | CommonFoldOperator | ['mean'] | ['sum'];
-export type StringFoldOperator = CommonFoldOperator | DistributionFoldOperator;
-export type BooleanFoldOperator = BinFoldOperator | DistributionFoldOperator | CommonFoldOperator | ['mean'] | ['sum'];
+export type NumberFoldOperator = CommonFoldOperator | BinFoldOperator | ['mean'] | ['sum'];
+export type StringFoldOperator = CommonFoldOperator;
+export type BooleanFoldOperator = CommonFoldOperator | BinFoldOperator | ['mean'] | ['sum'];
 
 export type FoldOperator<T extends CoronerValueType> = T extends string
     ? StringFoldOperator
@@ -29,8 +37,25 @@ export type QueryFold<T extends Attribute, F extends Folds> = {
     [A in keyof T & keyof F & string]: FoldOperator<CoronerValueType>[];
 };
 
-export interface FoldQueryRequest<T extends Attribute, F extends Folds, G extends keyof T | DefaultGroup>
-    extends QueryRequest {
+export interface FoldQueryRequest<
+    T extends Attribute = Attribute,
+    F extends Folds = Folds,
+    G extends keyof T | DefaultGroup = string
+> extends QueryRequest {
+    /**
+     * Attribute to group on.
+     * @example
+     * request.group = ['a'];
+     */
     group?: [G];
+
+    /**
+     * Attributes to fold on.
+     * @example
+     * request.fold = {
+     *     timestamp: [['head'], ['distribution', 3]],
+     *     fingerprint: [['tail']]
+     * };
+     */
     fold?: Partial<QueryFold<T, F>>;
 }
