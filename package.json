@@ -1,14 +1,15 @@
 {
     "name": "backtrace-forensic",
-    "version": "1.0.0",
-    "description": "",
+    "version": "0.1.0",
+    "description": "Simplifies making and parsing queries to and from Coroner.",
     "main": "lib/index.js",
+    "types": "./lib/index.d.ts",
     "scripts": {
         "build": "tsc",
         "test": "NODE_ENV=test jest"
     },
-    "author": "",
-    "license": "ISC",
+    "author": "Backtrace <team@backtrace.io>",
+    "license": "LicenseRef-LICENSE",
     "devDependencies": {
         "@types/jest": "^28.1.7",
         "@types/node": "^18.7.6",

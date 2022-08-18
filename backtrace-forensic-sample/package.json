@@ -8,6 +8,6 @@
         "start": "node dist/index.js",
         "build": "tsc"
     },
-    "author": "",
-    "license": "ISC"
+    "author": "Backtrace <team@backtrace.io>",
+    "license": "LicenseRef-LICENSE"
 }
