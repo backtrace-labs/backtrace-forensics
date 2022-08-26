@@ -2,7 +2,7 @@ import { CoronerValueType, FilterOperator, QueryRequest } from '../requests/comm
 import { FoldCoronerQuery } from './fold';
 import { SelectCoronerQuery } from './select';
 
-export interface CommonCoronerQuery<T extends Attribute> {
+export interface CommonCoronerQuery {
     /**
      * Sets limit of rows in response.
      *
@@ -49,11 +49,7 @@ export interface CommonCoronerQuery<T extends Attribute> {
      *      .filter('timestamp', 'at-least', 1660000000)
      *      .filter('timestamp', 'at-most', 1660747935)
      */
-    filter<A extends keyof T & string, V extends QueryObjectValue<T, A>>(
-        attribute: A,
-        operator: FilterOperator<V>,
-        value: V
-    ): this;
+    filter<A extends string, V extends CoronerValueType>(attribute: A, operator: FilterOperator<V>, value: V): this;
 
     /**
      * Returns the built request.
@@ -61,21 +57,4 @@ export interface CommonCoronerQuery<T extends Attribute> {
     getRequest(): QueryRequest;
 }
 
-export interface CoronerQuery<T extends Attribute>
-    extends CommonCoronerQuery<T>,
-        SelectCoronerQuery<T>,
-        FoldCoronerQuery<T> {}
-
-export type Attribute<A extends string = string, V extends CoronerValueType = CoronerValueType> = {
-    [key in A]: V;
-};
-
-export type JoinAttributes<
-    T extends Attribute<string, CoronerValueType>,
-    A extends string,
-    V extends CoronerValueType
-> = [T] extends [never] ? Attribute<A, V> : T & Attribute<A, V>;
-
-export type QueryObjectKey<T extends Attribute> = [T] extends [never] ? string : keyof T & string;
-
-export type QueryObjectValue<T extends Attribute, A extends string> = CoronerValueType;
+export interface CoronerQuery extends CommonCoronerQuery, SelectCoronerQuery, FoldCoronerQuery {}

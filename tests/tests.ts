@@ -1,6 +1,6 @@
 import { BacktraceForensic } from '../src';
-import { Attribute } from '../src/queries/common';
-import { Folds } from '../src/requests/fold';
+import { createFoldRequest, FoldQueryRequest } from '../src/requests/fold';
+import { createSelectRequest, SelectQueryRequest } from '../src/requests/select';
 import { CoronerResponse } from '../src/responses/common';
 import { FoldQueryResponse } from '../src/responses/fold';
 import { SelectQueryResponse } from '../src/responses/select';
@@ -15,9 +15,27 @@ import { SelectQueryResponse } from '../src/responses/select';
 
     const coronerQuery = {} as BacktraceForensic;
 
+    let dynamicFold = coronerQuery.create().fold();
+    dynamicFold = dynamicFold.fold('something_user_provdes', 'head');
+
+    // keep only the last fold of a type, e.g. keep only distribution 5 below
+    // @up its not valid, Coroner allows for multiple folds on the same fold type
+    dynamicFold = dynamicFold.fold('awkfhajhfaw', 'head').fold('a1', 'distribution', 3).fold('a1', 'distribution', 5);
+    const response = await dynamicFold.getResponse();
+    if (!response.error) {
+        const results = response.response.rows();
+        for (const result of results.rows) {
+            for (const attribute in result.attributes) {
+                const values = result.attributes[attribute];
+                const headValueOrNull = response.response.first()?.fold('something_user_provdes', 'distribution', 3);
+                const a = response.response.first()?.fold('asdsa', 'bin');
+            }
+        }
+    }
+
     const staticQuery = coronerQuery.create();
     const dynamicQuery = coronerQuery.create();
-    let runtimeStaticFold = staticQuery.fold<keyof Test>();
+    let runtimeStaticFold = staticQuery.fold();
     let runtimeDynamicFold = dynamicQuery.fold();
 
     const attrs: (keyof Test)[] = ['timestamp', 'fingerprint', '_deleted'];
@@ -31,8 +49,8 @@ import { SelectQueryResponse } from '../src/responses/select';
 
     const groupedFold = runtimeStaticFold.group('timestamp');
 
-    runtimeStaticFold.getResponse().then((r) => !r.error && r.response.first()?.attributes.fingerprint.distribution);
-    groupedFold.getResponse().then((r) => !r.error && r.response.first()?.attributes);
+    runtimeStaticFold.getResponse().then((r) => !r.error && r.response.first()?.attributes.fingerprint[0]);
+    groupedFold.getResponse().then((r) => !r.error && r.response.first()?.attributes.asdasda);
 
     const staticFold = staticQuery
         .fold('timestamp', 'distribution', 1)
@@ -46,10 +64,10 @@ import { SelectQueryResponse } from '../src/responses/select';
     if (!staticFoldResult.error) {
         const test = staticFoldResult.response;
         const simpleTest = test.first();
-        simpleTest?.attributes.timestamp.distribution;
+        simpleTest?.attributes.timestamp;
     }
 
-    let runtimeStaticSelect = staticQuery.select<keyof Test>();
+    let runtimeStaticSelect = staticQuery.select();
     let runtimeDynamicSelect = dynamicQuery.select();
 
     for (const attr of attrs) {
@@ -95,25 +113,20 @@ import { SelectQueryResponse } from '../src/responses/select';
         .fold('a', 'head')
         .fold('a', 'min')
         .fold('c', 'sum')
+        .fold('c', 'range')
+        .fold('c', 'distribution', 3)
+        .fold('c', 'distribution', 5)
+        .fold('c', 'distribution', 6)
         .group('a');
 
     const dynamicFoldResult = await dynamicFoldQuery.getResponse(); // const dynamicFoldResult = await coronerQuery.getResponse(dynamicFoldQuery);
     if (!dynamicFoldResult.error) {
         const test = dynamicFoldResult.response.first();
         if (test) {
-            test.attributes.a.groupKey;
-            test.attributes.a.min;
-            test.attributes.a.head;
-            test.attributes.c.sum;
+            test.tryFold('c', 'distribution', 6);
+            test.attributes.a;
         }
     }
-
-    let semiRuntimeFold = staticQuery.fold('timestamp', 'head').fold('fingerprint', 'min');
-    if (true) {
-        semiRuntimeFold = semiRuntimeFold.fold('_deleted', 'max');
-    }
-
-    semiRuntimeFold.getResponse().then((r) => !r.error && r.response.first()?.attributes);
 })();
 
 type Test<A extends string, B extends boolean> = [A, B];
@@ -125,10 +138,29 @@ type TestObject<A extends Test<string, boolean>[]> = {
 
 const a = {} as TestObject<[['a', true], ['b', false]]>;
 
-const testFoldResponse: CoronerResponse<FoldQueryResponse<Attribute, Folds, string>> = {
+const foldReq = createFoldRequest({
+    fold: {
+        a: [['head'], ['head'], ['distribution', 3], ['distribution', 5], ['min']],
+        b: [['range'], ['head']],
+    },
+    group: ['a'],
+} as const);
+
+const foldRes = {} as FoldQueryResponse<typeof foldReq>;
+const azzz = foldRes.first()!.tryFold('a', 'distribution', 3);
+
+const selectReq = createSelectRequest({
+    select: ['a', 'b', 'c', 'a'],
+} as const);
+
+const selectResponse = {} as SelectQueryResponse<typeof selectReq>;
+const v = selectResponse.first()?.values;
+
+const testFoldResponse: CoronerResponse<FoldQueryResponse<FoldQueryRequest>> = {
+    // const testFoldResponse = {
     error: undefined,
     response: {
-        toArray: () => {
+        rows: () => {
             throw new Error('not implemented');
         },
         first: () => {
@@ -510,14 +542,14 @@ const testFoldResponse: CoronerResponse<FoldQueryResponse<Attribute, Folds, stri
     },
 };
 
-const testSelectResponse: CoronerResponse<SelectQueryResponse<Attribute, string[]>> = {
+const testSelectResponse: CoronerResponse<SelectQueryResponse<SelectQueryRequest>> = {
     error: undefined,
     response: {
-        toArray: () => {
-            throw new Error('doopa');
+        rows: () => {
+            throw new Error('not implemented');
         },
         first: () => {
-            throw new Error('doopa');
+            throw new Error('not implemented');
         },
         version: '1.2.0',
         seq: 37,

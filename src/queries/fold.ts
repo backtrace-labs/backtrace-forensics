@@ -1,12 +1,12 @@
 import { QuerySource } from '../models/QuerySource';
-import { CoronerValueType } from '../requests/common';
-import { Fold, FoldOperator, FoldQueryRequest, Folds } from '../requests/fold';
+import { CoronerValueType } from '../requests';
+import { FoldOperator, FoldQueryRequest, Folds } from '../requests/fold';
 import { CoronerResponse } from '../responses/common';
 import { FoldQueryResponse } from '../responses/fold';
-import { Attribute, CommonCoronerQuery, JoinAttributes, QueryObjectValue } from './common';
+import { CommonCoronerQuery } from './common';
 
-export interface FoldCoronerQuery<T extends Attribute, F extends Folds = never, G extends string | DefaultGroup = '*'>
-    extends CommonCoronerQuery<T> {
+export interface FoldCoronerQuery<R extends FoldQueryRequest = FoldQueryRequest<never, ['*']>>
+    extends CommonCoronerQuery {
     /**
      * Returns the query as dynamic fold. Use this to assign folds in runtime, without knowing the types.
      * @example
@@ -14,7 +14,7 @@ export interface FoldCoronerQuery<T extends Attribute, F extends Folds = never, 
      * query = query.fold('fingerprint', 'head');
      * query = query.fold('timestamp', 'tail');
      */
-    fold<A extends string>(): FoldedCoronerQuery<T, [F] extends [never] ? Folds<A> : F, string>;
+    fold(): FoldedCoronerQuery<FoldQueryRequest<Folds>>;
 
     /**
      * Adds provided fold to the request.
@@ -27,10 +27,10 @@ export interface FoldCoronerQuery<T extends Attribute, F extends Folds = never, 
      *      .fold('fingerprint', 'tail')
      *      .fold('timestamp', 'distribution', 3)
      */
-    fold<A extends string, V extends QueryObjectValue<T, A>, O extends FoldOperator<V>>(
+    fold<A extends string, V extends CoronerValueType, O extends FoldOperator<V>>(
         attribute: A,
         ...fold: O
-    ): FoldedCoronerQuery<JoinAttributes<T, A, V>, JoinFolds<F, A, O>, G>;
+    ): FoldedCoronerQuery<AddFold<R, A, O>>;
 
     /**
      * Sets the request group-by attribute. The attribute grouped by will be visible as `groupKey` in simple response.
@@ -40,15 +40,14 @@ export interface FoldCoronerQuery<T extends Attribute, F extends Folds = never, 
      * @example
      * query.group('fingerprint')
      */
-    group<A extends string>(attribute: A): FoldedCoronerQuery<T, F, A>;
+    group<A extends string>(attribute: A): FoldedCoronerQuery<SetFoldGroup<R, A>>;
 }
 
-export interface FoldedCoronerQuery<T extends Attribute, F extends Folds, G extends string | DefaultGroup>
-    extends FoldCoronerQuery<T, F, G> {
+export interface FoldedCoronerQuery<R extends FoldQueryRequest> extends FoldCoronerQuery<R> {
     /**
      * Returns the built request.
      */
-    getRequest(): FoldQueryRequest<T, F, G>;
+    getRequest(): R;
 
     /**
      * Makes a POST call to Coroner with the built request. You need to make at least a single fold or group.
@@ -61,13 +60,20 @@ export interface FoldedCoronerQuery<T extends Attribute, F extends Folds, G exte
      *     const b = row.attributes.b.groupKey;
      * }
      */
-    getResponse(source?: Partial<QuerySource>): Promise<CoronerResponse<FoldQueryResponse<T, F, G>>>;
+    getResponse(source?: Partial<QuerySource>): Promise<CoronerResponse<FoldQueryResponse<R>>>;
 }
 
-export type JoinFolds<F extends Folds, A extends string, O extends FoldOperator<CoronerValueType>> = [F] extends [never]
-    ? { [K in A]: Fold<K, [O]> }
-    : F extends { [K in A]: Fold<A, infer AF> }
-    ? { [K in A]: Fold<A, [...AF, O]> } & Pick<F, Exclude<keyof F, A>>
-    : F & { [K in A]: Fold<K, [O]> };
+export type AddFold<R extends FoldQueryRequest, A extends string, O extends FoldOperator> = R extends FoldQueryRequest<
+    infer F,
+    infer G
+>
+    ? [F] extends [never]
+        ? FoldQueryRequest<Folds<A, readonly [O]>, G>
+        : A extends keyof F
+        ? FoldQueryRequest<Omit<F, A> & Folds<A, [...F[A], O]>, G>
+        : FoldQueryRequest<F & Folds<A, readonly [O]>, G>
+    : never;
+
+export type SetFoldGroup<R extends FoldQueryRequest, A extends string> = FoldQueryRequest<NonNullable<R['fold']>, [A]>;
 
 export type DefaultGroup = '*';

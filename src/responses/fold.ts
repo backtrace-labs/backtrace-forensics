@@ -1,16 +1,13 @@
-import { Attribute } from '../queries/common';
-import { DefaultGroup } from '../queries/fold';
 import { CoronerValueType } from '../requests/common';
 import {
     BinFoldOperator,
     DistributionFoldOperator,
-    Fold,
     FoldOperator,
-    Folds,
+    FoldQueryRequest,
     UnaryFoldOperator,
 } from '../requests/fold';
 import { QueryResponse } from './common';
-import { SimpleFoldRow } from './simple/fold';
+import { SimpleFoldRow, SimpleFoldRows } from './simple/fold';
 
 export interface QueryFactorDescription {
     readonly name: string;
@@ -29,11 +26,11 @@ export interface QueryCardinalities {
     readonly pagination: QueryCardinality;
 }
 
-export type SingleQueryColumnValue<V extends CoronerValueType> = [V?];
+export type SingleQueryColumnValue<V extends CoronerValueType = CoronerValueType> = [V?];
 export type BinQueryColumnValue = [number, number, number][];
-export type RangeQueryColumnValue<V extends CoronerValueType> = [V, V];
+export type RangeQueryColumnValue<V extends CoronerValueType = CoronerValueType> = [V, V];
 
-export type DistributionQueryColumnValue<V extends CoronerValueType> = [
+export type DistributionQueryColumnValue<V extends CoronerValueType = CoronerValueType> = [
     {
         keys: number;
         tail?: number;
@@ -42,42 +39,29 @@ export type DistributionQueryColumnValue<V extends CoronerValueType> = [
 ];
 
 export type FoldQueryColumnValue<
-    T extends Attribute,
-    A extends keyof T & string,
-    F extends Fold<A, FoldOperator<T[A]>[]>
+    F extends FoldOperator,
+    V extends CoronerValueType = CoronerValueType
 > = F extends DistributionFoldOperator
-    ? DistributionQueryColumnValue<T[A]>
+    ? DistributionQueryColumnValue<V>
     : F extends BinFoldOperator
     ? BinQueryColumnValue
     : F extends ['range']
-    ? RangeQueryColumnValue<T[A]>
+    ? RangeQueryColumnValue<V>
     : F extends UnaryFoldOperator
-    ? SingleQueryColumnValue<T[A]>
-    :
-          | DistributionQueryColumnValue<T[A]>
-          | BinQueryColumnValue
-          | RangeQueryColumnValue<T[A]>
-          | SingleQueryColumnValue<T[A]>;
+    ? SingleQueryColumnValue<V>
+    : DistributionQueryColumnValue<V> | BinQueryColumnValue | RangeQueryColumnValue<V> | SingleQueryColumnValue<V>;
 
-export type FoldQueryRowValue<
-    T extends Attribute,
-    A extends keyof T & string,
-    F extends Fold<A, FoldOperator<T[A]>[]>,
-    G extends keyof T | DefaultGroup
-> = [G, FoldQueryColumnValue<T, A, F>[], number];
+export type FoldQueryRowValue<F extends readonly FoldOperator[]> = [
+    CoronerValueType,
+    FoldQueryColumnValue<F[number]>[],
+    number
+];
 
-export interface FoldQueryResponse<T extends Attribute, F extends Folds, G extends keyof T | DefaultGroup>
-    extends QueryResponse {
+export interface FoldQueryResponse<R extends FoldQueryRequest> extends QueryResponse {
     readonly cardinalities: QueryCardinalities;
     readonly factors_desc?: QueryFactorDescription[];
-    readonly values: FoldQueryRowValue<
-        T,
-        keyof T & string,
-        // @ts-ignore - TS gives here an error, despite everything working correctly.
-        F[keyof T & string],
-        G
-    >[];
+    readonly values: FoldQueryRowValue<NonNullable<R['fold']>[string]>[];
 
-    toArray(): SimpleFoldRow<T, F, G>[];
-    first(): SimpleFoldRow<T, F, G> | undefined;
+    rows(): SimpleFoldRows<R>;
+    first(): SimpleFoldRow<R> | undefined;
 }

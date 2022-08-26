@@ -24,10 +24,10 @@ export type FilterOperator<T extends CoronerValueType = CoronerValueType> = T ex
     ? BooleanFilterOperator
     : never;
 
-export type QueryAttributeFilter = [FilterOperator, CoronerValueType];
+export type QueryAttributeFilter = readonly [FilterOperator, CoronerValueType];
 
 export type QueryFilter = {
-    [attribute: string]: QueryAttributeFilter[];
+    [attribute: string]: readonly QueryAttributeFilter[];
 };
 
 export type QueryOrder = {
@@ -44,7 +44,7 @@ export interface QueryRequest {
      *     fingerprint: [['equal', 'xyz']]
      * };
      */
-    filter?: QueryFilter[];
+    filter?: readonly QueryFilter[];
 
     /**
      * Attributes to order on.
@@ -54,7 +54,7 @@ export interface QueryRequest {
      *     ordering: 'descending'
      * }];
      */
-    order?: QueryOrder[];
+    order?: readonly QueryOrder[];
 
     /**
      * Limits the number of rows in response.

@@ -1,11 +1,8 @@
-import { Attribute } from '../../queries/common';
+import { SelectQueryRequest } from '../../requests';
 import { SelectQueryResponse } from '../../responses/select';
-import { SimpleSelectRow } from '../../responses/simple/select';
+import { SimpleSelectRow, SimpleSelectRows } from '../../responses/simple/select';
 
 export interface ISelectCoronerSimpleResponseBuilder {
-    first<T extends Attribute, S extends string[] = []>(
-        response: SelectQueryResponse<T, S>
-    ): SimpleSelectRow<T, S> | undefined;
-
-    toArray<T extends Attribute, S extends string[] = []>(response: SelectQueryResponse<T, S>): SimpleSelectRow<T, S>[];
+    first<R extends SelectQueryRequest>(response: SelectQueryResponse<R>): SimpleSelectRow<R> | undefined;
+    rows<R extends SelectQueryRequest>(response: SelectQueryResponse<R>): SimpleSelectRows<R>;
 }

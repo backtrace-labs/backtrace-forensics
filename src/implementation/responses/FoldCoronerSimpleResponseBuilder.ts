@@ -1,8 +1,6 @@
+import { inspect } from 'util';
 import { IFoldCoronerSimpleResponseBuilder } from '../../interfaces/responses/IFoldCoronerSimpleResponseBuilder';
-import { Attribute } from '../../queries/common';
-import { DefaultGroup } from '../../queries/fold';
-import { CoronerValueType } from '../../requests/common';
-import { FoldOperator, Folds } from '../../requests/fold';
+import { FoldOperator, FoldQueryRequest, Folds } from '../../requests/fold';
 import {
     BinQueryColumnValue,
     DistributionQueryColumnValue,
@@ -10,6 +8,7 @@ import {
     RangeQueryColumnValue,
 } from '../../responses/fold';
 import {
+    SimpleFold,
     SimpleFoldAttributes,
     SimpleFoldBinValue,
     SimpleFoldDistributionValue,
@@ -17,28 +16,29 @@ import {
     SimpleFoldGroup,
     SimpleFoldRangeValue,
     SimpleFoldRow,
+    SimpleFoldRows,
     SimpleFoldValue,
 } from '../../responses/simple/fold';
 
 export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleResponseBuilder {
-    public first<T extends Attribute, F extends Folds = never, G extends string | DefaultGroup = '*'>(
-        response: FoldQueryResponse<T, F, G>
-    ): SimpleFoldRow<T, F, G> | undefined {
-        return this.buildRows<T, F, G>(response, 1)[0];
+    public first<R extends FoldQueryRequest>(
+        response: FoldQueryResponse<R>,
+        request?: R
+    ): SimpleFoldRow<R> | undefined {
+        return this.buildRows<R>(response, request, 1).rows[0];
     }
 
-    public toArray<T extends Attribute, F extends Folds = never, G extends string | DefaultGroup = '*'>(
-        response: FoldQueryResponse<T, F, G>
-    ): SimpleFoldRow<T, F, G>[] {
-        return this.buildRows<T, F, G>(response);
+    public rows<R extends FoldQueryRequest>(response: FoldQueryResponse<R>, request?: R): SimpleFoldRows<R> {
+        return this.buildRows<R>(response, request);
     }
 
-    private buildRows<T extends Attribute, F extends Folds = never, G extends string | DefaultGroup = '*'>(
-        response: FoldQueryResponse<T, F, G>,
+    private buildRows<R extends FoldQueryRequest>(
+        response: FoldQueryResponse<R>,
+        request?: R,
         limit?: number
-    ): SimpleFoldRow<T, F, G>[] {
+    ): SimpleFoldRows<R> {
         const keyDescription = response.factors_desc ? response.factors_desc[0] : null;
-        const results: SimpleFoldRow<T, F, G>[] = [];
+        const rows: SimpleFoldRow<FoldQueryRequest>[] = [];
 
         for (let i = 0; i < response.values.length && (limit == null || i < limit); i++) {
             const group = response.values[i];
@@ -46,17 +46,16 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
             const groupColumns = group[1];
             const groupCount = group[2];
 
-            const attributes = {} as SimpleFoldAttributes<T, F, G>;
+            const attributes = {} as SimpleFoldAttributes<Folds, string[]>;
 
             if (keyDescription) {
                 const key = keyDescription.name as keyof typeof attributes;
                 if (!attributes[key]) {
-                    (attributes[key] as unknown as SimpleFoldGroup<T, string, string>) = {
-                        groupKey: groupKey as unknown as T[string],
+                    (attributes[key] as SimpleFoldGroup<string, string[]>) = {
+                        groupKey,
                     };
                 } else {
-                    (attributes[key] as unknown as SimpleFoldGroup<T, string, string>).groupKey =
-                        groupKey as unknown as T[string];
+                    (attributes[key] as SimpleFoldGroup<string, string[]>).groupKey = groupKey;
                 }
             }
 
@@ -67,38 +66,195 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
                 }
 
                 const columnValue = this.getColumnValue(columnDesc.op, groupColumns[cIndex]);
+                if (columnValue === undefined) {
+                    continue;
+                }
+
                 const key = columnDesc.name as keyof typeof attributes;
-                const op = columnDesc.op as keyof typeof attributes[typeof key];
-                if (!attributes[key]) {
-                    attributes[key] = { [op]: columnValue } as typeof attributes[typeof key];
-                } else if (!attributes[key][op]) {
-                    attributes[key][op] = columnValue as typeof attributes[typeof key][typeof op];
+                const op = columnDesc.op as FoldOperator[0];
+
+                let attribute = attributes[key];
+                if (!attribute) {
+                    attribute = attributes[key] = {} as typeof attribute;
+                }
+
+                const rawFold = request ? this.getRawFold(request, response, key, op, cIndex) : undefined;
+
+                const fold: SimpleFold<FoldOperator[], FoldOperator>[number] = {
+                    fold: op,
+                    rawFold: rawFold ?? ([op] as any),
+                    value: columnValue,
+                };
+
+                let attributeFold = attribute[op];
+                if (!attributeFold) {
+                    attribute[op] = [fold] as typeof attributeFold;
+                } else {
+                    attribute[op] = [...attributeFold, fold] as any;
                 }
             }
 
-            const row: SimpleFoldRow<T, F, G> = {
+            const row: SimpleFoldRow<FoldQueryRequest> = {
                 attributes,
                 count: groupCount,
+                fold(attribute, ...search) {
+                    const result = row.tryFold(attribute, ...search);
+                    if (!result) {
+                        throw new Error(`Attribute "${attribute}" or fold ${inspect(search)} does not exist.`);
+                    }
+                    return result;
+                },
+                tryFold: (attribute: string, ...search: FoldOperator) => {
+                    const result = this.filterFolds(row, attribute, ...search);
+                    if (result.length > 1) {
+                        throw new Error(
+                            'Ambiguous results found. This can happen when there are two columns with the same fold operator. ' +
+                                'Try providing the built request to the simple response builder.'
+                        );
+                    }
+
+                    return result[0];
+                },
+                group(attribute) {
+                    const result = row.tryGroup(attribute);
+                    if (!result) {
+                        throw new Error(`Attribute "${attribute}" does not exist or wasn't grouped on.`);
+                    }
+                    return result;
+                },
+                tryGroup(attribute?: string) {
+                    for (const key in row.attributes) {
+                        if (attribute != null && key !== attribute) {
+                            continue;
+                        }
+
+                        const attributeValues = row.attributes[key];
+                        if ('groupKey' in attributeValues) {
+                            return attributeValues.groupKey;
+                        }
+                    }
+
+                    if (!attribute) {
+                        return '*';
+                    }
+
+                    return undefined;
+                },
             };
 
-            results.push(row);
+            rows.push(row);
         }
 
-        return results;
+        const result: SimpleFoldRows<FoldQueryRequest> = {
+            rows,
+            fold(attribute, ...search) {
+                return rows.map((r) => r.fold(attribute, ...search));
+            },
+            tryFold(attribute: string, ...search: FoldOperator) {
+                const result = rows.map((r) => r.tryFold(attribute, ...search));
+                if (result.some((r) => r === undefined)) {
+                    // all overloads accept undefined as return param, but TS fails for some reason
+                    return undefined as any;
+                }
+                return result;
+            },
+            group(attribute) {
+                const group = result.tryGroup(attribute);
+                if (!group) {
+                    throw new Error(`Attribute "${attribute}" does not exist or wasn't grouped on.`);
+                }
+                return group;
+            },
+            tryGroup(attribute?: string) {
+                const groups = rows.map((r) => r.tryGroup(attribute));
+                const group = groups.find((g) => !!g);
+                if (!group) {
+                    return undefined;
+                }
+                return group;
+            },
+        };
+
+        return result as unknown as SimpleFoldRows<R>;
     }
 
-    private getColumnValue<V extends CoronerValueType, F extends FoldOperator<V>>(
-        op: string,
-        columnValue: unknown[]
-    ): SimpleFoldValue<V, F> | undefined {
+    private filterFolds(row: SimpleFoldRow<FoldQueryRequest>, attribute: string, ...search: FoldOperator) {
+        const result: SimpleFoldValue[] = [];
+        if (!row.attributes[attribute] || !row.attributes[attribute][search[0]]) {
+            return result;
+        }
+
+        const folds = row.attributes[attribute][search[0]];
+        for (const fold of folds) {
+            for (let i = 0; i < fold.rawFold.length; i++) {
+                // As Coroner doesn't return provided arguments for specific folds,
+                // we have to pull these from the request. If the request is not provided though,
+                // we have no method of resolving this. So, if the first argument is equal,
+                // and the second is undefined, we still return this value.
+                const currentFold = fold.rawFold[i];
+                if (i > 0 && !currentFold) {
+                    result.push(fold.value);
+                    break;
+                }
+
+                const searchedFold = search[i];
+                if (currentFold !== searchedFold) {
+                    break;
+                }
+
+                // If we're at the last element, and we got here, this means we found the value
+                if (i === fold.rawFold.length - 1) {
+                    result.push(fold.value);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private getRawFold<R extends FoldQueryRequest>(
+        request: R,
+        response: FoldQueryResponse<R>,
+        attribute: string,
+        operator: FoldOperator[0],
+        columnIndex: number
+    ) {
+        const folds = request.fold && request.fold[attribute];
+        if (!folds) {
+            return undefined;
+        }
+
+        let foldCount = 0;
+        for (let i = 0; i < columnIndex + 1; i++) {
+            const { name, op } = response.columns_desc[i];
+            if (name === attribute && op === operator) {
+                foldCount++;
+            }
+        }
+
+        for (let i = 0; i < folds.length; i++) {
+            const op = folds[i][0];
+            if (op === operator) {
+                foldCount--;
+            }
+
+            if (foldCount === 0) {
+                return folds[i];
+            }
+        }
+
+        return undefined;
+    }
+
+    private getColumnValue(op: string, columnValue: unknown[]): SimpleFoldValue<FoldOperator[0]> | undefined {
         if (!columnValue) {
             return undefined;
         }
 
         switch (op) {
             case 'distribution': {
-                const distribution = columnValue[0] as DistributionQueryColumnValue<V>[0];
-                const result: SimpleFoldDistributionValues<V> = {
+                const distribution = columnValue[0] as DistributionQueryColumnValue[0];
+                const result: SimpleFoldDistributionValues = {
                     keys: distribution.keys,
                     tail: distribution.tail ?? 0,
                     values: distribution.vals.reduce((c, v) => {
@@ -107,30 +263,30 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
                             count: v[1],
                         });
                         return c;
-                    }, [] as SimpleFoldDistributionValue<V>[]),
+                    }, [] as SimpleFoldDistributionValue[]),
                 };
-                return result as SimpleFoldValue<V, F>;
+                return result;
             }
             case 'bin': {
                 const bin = columnValue as BinQueryColumnValue;
-                const result: SimpleFoldBinValue<CoronerValueType>[] = bin.map((m) => ({
+                const result: SimpleFoldBinValue[] = bin.map((m) => ({
                     from: m[0],
                     to: m[1],
                     count: m[2],
                 }));
-                return result as SimpleFoldValue<V, F>;
+                return result;
             }
             case 'range': {
-                const range = columnValue as RangeQueryColumnValue<CoronerValueType>;
-                const result: SimpleFoldRangeValue<CoronerValueType> = {
+                const range = columnValue as RangeQueryColumnValue;
+                const result: SimpleFoldRangeValue = {
                     from: range[0],
                     to: range[1],
                 };
-                return result as SimpleFoldValue<V, F>;
+                return result;
             }
             case 'unique':
             default:
-                return (columnValue[0] as SimpleFoldValue<V, F>) ?? undefined;
+                return (columnValue[0] ?? null) as SimpleFoldValue;
         }
     }
 }

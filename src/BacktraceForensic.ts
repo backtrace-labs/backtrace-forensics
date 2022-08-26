@@ -10,7 +10,7 @@ import { ISelectCoronerQueryBuilderFactory } from './interfaces/factories/ISelec
 import { ICoronerQueryExecutor } from './interfaces/ICoronerQueryExecutor';
 import { ICoronerQueryMaker } from './interfaces/ICoronerQueryMaker';
 import { QuerySource } from './models/QuerySource';
-import { Attribute, CoronerQuery } from './queries/common';
+import { CoronerQuery } from './queries/common';
 import { QueryRequest } from './requests/common';
 
 export interface BacktraceForensicOptions {
@@ -71,7 +71,7 @@ export class BacktraceForensic {
      * const instance = new BacktraceForensic();
      * const query = instance.create().filter(...).fold(...);
      */
-    public create<T extends Attribute = Attribute>(request?: QueryRequest): CoronerQuery<T> {
+    public create(request?: QueryRequest): CoronerQuery {
         return new CoronerQueryBuilder(request ?? {}, this.#foldFactory, this.#selectFactory);
     }
 
@@ -82,10 +82,7 @@ export class BacktraceForensic {
      * @example
      * const query = BacktraceForensic.create().filter(...).fold(...);
      */
-    public static create<T extends Attribute = Attribute>(
-        options?: Partial<BacktraceForensicOptions>,
-        request?: QueryRequest
-    ): CoronerQuery<T> {
+    public static create(options?: Partial<BacktraceForensicOptions>, request?: QueryRequest): CoronerQuery {
         return new BacktraceForensic(options).create(request);
     }
 

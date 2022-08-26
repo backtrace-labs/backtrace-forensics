@@ -1,8 +1,8 @@
-import { Attribute, CommonCoronerQuery, QueryObjectValue } from '../../queries/common';
-import { FilterOperator, QueryFilter, QueryRequest } from '../../requests/common';
+import { CommonCoronerQuery } from '../../queries/common';
+import { CoronerValueType, FilterOperator, QueryFilter, QueryRequest } from '../../requests/common';
 import { cloneRequest } from '../requests/cloneRequest';
 
-export abstract class CommonCoronerQueryBuilder<T extends Attribute> implements CommonCoronerQuery<T> {
+export abstract class CommonCoronerQueryBuilder implements CommonCoronerQuery {
     readonly #request: QueryRequest;
 
     constructor(request: QueryRequest) {
@@ -27,7 +27,7 @@ export abstract class CommonCoronerQueryBuilder<T extends Attribute> implements 
         return this.createInstance(request);
     }
 
-    public filter<A extends keyof T & string, V extends QueryObjectValue<T, A>>(
+    public filter<A extends string, V extends CoronerValueType>(
         attribute: A,
         operator: FilterOperator<V>,
         value: V
@@ -40,7 +40,7 @@ export abstract class CommonCoronerQueryBuilder<T extends Attribute> implements 
         } else if (!request.filter[0][attribute]) {
             request.filter[0][attribute] = [[operator, value]];
         } else {
-            request.filter[0][attribute].push([operator, value]);
+            request.filter[0][attribute] = [...request.filter[0][attribute], [operator, value]];
         }
 
         return this.createInstance(request);

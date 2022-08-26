@@ -1,26 +1,23 @@
 import { ISelectCoronerSimpleResponseBuilder } from '../../interfaces/responses/ISelectCoronerSimpleResponseBuilder';
-import { Attribute } from '../../queries/common';
+import { CoronerValueType } from '../../requests';
+import { SelectQueryRequest } from '../../requests/select';
 import { SelectQueryResponse } from '../../responses/select';
-import { SimpleSelectRow } from '../../responses/simple/select';
+import { SimpleSelectRow, SimpleSelectRows } from '../../responses/simple/select';
 
 export class SelectCoronerSimpleResponseBuilder implements ISelectCoronerSimpleResponseBuilder {
-    public first<T extends Attribute, S extends string[] = []>(
-        response: SelectQueryResponse<T, S>
-    ): SimpleSelectRow<T, S> | undefined {
-        return this.buildRows<T, S>(response, 1)[0];
+    public first<R extends SelectQueryRequest>(response: SelectQueryResponse<R>): SimpleSelectRow<R> | undefined {
+        return this.buildRows<R>(response, 1).rows[0];
     }
 
-    public toArray<T extends Attribute, S extends string[] = []>(
-        response: SelectQueryResponse<T, S>
-    ): SimpleSelectRow<T, S>[] {
-        return this.buildRows<T, S>(response);
+    public rows<R extends SelectQueryRequest>(response: SelectQueryResponse<R>): SimpleSelectRows<R> {
+        return this.buildRows<R>(response);
     }
 
-    private buildRows<T extends Attribute, S extends string[] = []>(
-        response: SelectQueryResponse<T, S>,
+    private buildRows<R extends SelectQueryRequest>(
+        response: SelectQueryResponse<R>,
         limit?: number
-    ): SimpleSelectRow<T, S>[] {
-        const results: SimpleSelectRow<T, string[]>[] = [];
+    ): SimpleSelectRows<R> {
+        const rows: SimpleSelectRow<R>[] = [];
         for (let cIndex = 0; cIndex < response.columns_desc.length; cIndex++) {
             const columnDesc = response.columns_desc[cIndex];
             const columnValues = response.values[cIndex];
@@ -30,15 +27,50 @@ export class SelectCoronerSimpleResponseBuilder implements ISelectCoronerSimpleR
 
             let rIndex = 0;
             for (let i = 1; i < columnValues.length && (limit == null || i < limit + 1); i++) {
-                const columnValue = columnValues[i][0] as T[string];
+                const columnValue = columnValues[i][0];
                 const columnCount = columnValues[i][1] as number;
 
                 for (let j = 0; j < columnCount; j++, rIndex++) {
-                    const result = results[rIndex] ?? (results[rIndex] = {});
-                    result[columnDesc.name] = columnValue;
+                    const row: SimpleSelectRow<R> =
+                        rows[rIndex] ??
+                        (rows[rIndex] = {
+                            values: {} as never,
+                            select(attribute: string) {
+                                if (!(attribute in row.values)) {
+                                    throw new Error(`Attribute "${attribute}" does not exist.`);
+                                }
+
+                                const value = row.trySelect(attribute);
+                                if (value === undefined) {
+                                    throw new Error(`Value for attribute "${attribute} does not exist.`);
+                                }
+
+                                return value;
+                            },
+                            trySelect(attribute) {
+                                return row.values[attribute as keyof typeof row.values];
+                            },
+                        });
+
+                    row.values[columnDesc.name as keyof typeof row.values] = columnValue;
                 }
             }
         }
-        return results;
+
+        const result: SimpleSelectRows<R> = {
+            rows,
+            select(attribute: string) {
+                return rows.map((r) => r.select(attribute));
+            },
+            trySelect(attribute: string) {
+                const result = rows.map((r) => r.trySelect(attribute));
+                if (result.some((r) => r === undefined)) {
+                    return undefined as any;
+                }
+                return result as CoronerValueType[];
+            },
+        };
+
+        return result;
     }
 }

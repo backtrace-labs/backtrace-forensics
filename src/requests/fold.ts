@@ -1,25 +1,30 @@
-import { Attribute } from '../queries/common';
-import { DefaultGroup } from '../queries/fold';
 import { CoronerValueType, QueryRequest } from './common';
 
-export type DistributionFoldOperator = ['distribution', number];
-export type BinFoldOperator = ['bin', ...number[]];
+export type DistributionFoldOperator = readonly ['distribution', number];
+export type BinFoldOperator = readonly ['bin', ...number[]];
 export type CommonFoldOperator =
     | DistributionFoldOperator
-    | ['head']
-    | ['tail']
-    | ['unique']
-    | ['range']
-    | ['max']
-    | ['min'];
+    | readonly ['head']
+    | readonly ['tail']
+    | readonly ['unique']
+    | readonly ['range']
+    | readonly ['max']
+    | readonly ['min'];
 
-export type UnaryFoldOperator = ['head'] | ['tail'] | ['unique'] | ['max'] | ['min'] | ['mean'] | ['sum'];
+export type UnaryFoldOperator =
+    | readonly ['head']
+    | readonly ['tail']
+    | readonly ['unique']
+    | readonly ['max']
+    | readonly ['min']
+    | readonly ['mean']
+    | readonly ['sum'];
 
-export type NumberFoldOperator = CommonFoldOperator | BinFoldOperator | ['mean'] | ['sum'];
+export type NumberFoldOperator = CommonFoldOperator | BinFoldOperator | readonly ['mean'] | readonly ['sum'];
 export type StringFoldOperator = CommonFoldOperator;
-export type BooleanFoldOperator = CommonFoldOperator | BinFoldOperator | ['mean'] | ['sum'];
+export type BooleanFoldOperator = CommonFoldOperator | BinFoldOperator | readonly ['mean'] | readonly ['sum'];
 
-export type FoldOperator<T extends CoronerValueType> = T extends string
+export type FoldOperator<T extends CoronerValueType = CoronerValueType> = T extends string
     ? StringFoldOperator
     : T extends number
     ? NumberFoldOperator
@@ -27,27 +32,19 @@ export type FoldOperator<T extends CoronerValueType> = T extends string
     ? BooleanFoldOperator
     : never;
 
-export type Fold<A extends string, F extends FoldOperator<CoronerValueType>[]> = [A, F];
+export type Folds<
+    A extends string = string,
+    O extends readonly FoldOperator<CoronerValueType>[] = readonly FoldOperator<CoronerValueType>[]
+> = Record<A, O>;
 
-export type Folds<K extends string = never> = {
-    [A in [K] extends [never] ? string : K]: Fold<A, FoldOperator<CoronerValueType>[]>;
-};
-
-export type QueryFold<T extends Attribute, F extends Folds> = {
-    [A in keyof T & keyof F & string]: FoldOperator<CoronerValueType>[];
-};
-
-export interface FoldQueryRequest<
-    T extends Attribute = Attribute,
-    F extends Folds = Folds,
-    G extends keyof T | DefaultGroup = string
-> extends QueryRequest {
+export interface FoldQueryRequest<F extends Folds = Folds, G extends readonly string[] = readonly string[]>
+    extends QueryRequest {
     /**
      * Attribute to group on.
      * @example
      * request.group = ['a'];
      */
-    group?: [G];
+    group?: G;
 
     /**
      * Attributes to fold on.
@@ -57,5 +54,11 @@ export interface FoldQueryRequest<
      *     fingerprint: [['tail']]
      * };
      */
-    fold?: Partial<QueryFold<T, F>>;
+    fold?: F;
+}
+
+export type InferFoldQueryRequest<T> = T extends FoldQueryRequest<infer F, infer G> ? FoldQueryRequest<F, G> : never;
+
+export function createFoldRequest<T extends FoldQueryRequest>(request: T): InferFoldQueryRequest<T> {
+    return request as unknown as InferFoldQueryRequest<T>;
 }

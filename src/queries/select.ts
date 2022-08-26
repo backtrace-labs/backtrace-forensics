@@ -1,11 +1,10 @@
 import { QuerySource } from '../models/QuerySource';
-import { CoronerValueType } from '../requests/common';
 import { SelectQueryRequest } from '../requests/select';
 import { CoronerResponse } from '../responses/common';
 import { SelectQueryResponse } from '../responses/select';
-import { Attribute, CommonCoronerQuery, JoinAttributes } from './common';
+import { CommonCoronerQuery } from './common';
 
-export interface SelectCoronerQuery<T extends Attribute, S extends string[] = []> extends CommonCoronerQuery<T> {
+export interface SelectCoronerQuery<R extends SelectQueryRequest = SelectQueryRequest> extends CommonCoronerQuery {
     /**
      * Returns the query as dynamic select. Use this to assign select attributes in runtime, without knowing the types.
      * @example
@@ -13,7 +12,7 @@ export interface SelectCoronerQuery<T extends Attribute, S extends string[] = []
      * query = query.select('a');
      * query = query.select('b');
      */
-    select<A extends string>(): SelectedCoronerQuery<T, A[]>;
+    select(): SelectedCoronerQuery<SelectQueryRequest<string[]>>;
 
     /**
      * Adds provided attributes to the select request. You can add multiple attributes at once, or chain `select` calls.
@@ -24,20 +23,22 @@ export interface SelectCoronerQuery<T extends Attribute, S extends string[] = []
      * query.select('a').select('b').select('c');
      * query.select('a', 'b', 'c');
      */
-    select<V extends CoronerValueType, A extends string>(
-        ...attributes: A[]
-    ): SelectedCoronerQuery<JoinAttributes<T, A, V>, [...S, A]>;
+    select<A extends string[]>(...attributes: A): SelectedCoronerQuery<AddSelect<R, A>>;
 }
 
-export interface SelectedCoronerQuery<T extends Attribute, S extends string[] = []> extends SelectCoronerQuery<T, S> {
+export interface SelectedCoronerQuery<R extends SelectQueryRequest> extends SelectCoronerQuery<R> {
     /**
      * Returns the built request.
      */
-    getRequest(): SelectQueryRequest<T, S>;
+    getRequest(): R;
 
     /**
      * Makes a POST call to Coroner with the built request.
      * @param source Where to make the request. If not specified, will supply data from default source.
      */
-    getResponse(source?: Partial<QuerySource>): Promise<CoronerResponse<SelectQueryResponse<T, S>>>;
+    getResponse(source?: Partial<QuerySource>): Promise<CoronerResponse<SelectQueryResponse<R>>>;
 }
+
+export type AddSelect<R extends SelectQueryRequest, S extends string[]> = SelectQueryRequest<
+    [...NonNullable<R['select']>, ...S]
+>;

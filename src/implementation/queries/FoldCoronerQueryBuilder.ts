@@ -1,100 +1,86 @@
 import { ICoronerQueryExecutor } from '../../interfaces/ICoronerQueryExecutor';
 import { IFoldCoronerSimpleResponseBuilder } from '../../interfaces/responses/IFoldCoronerSimpleResponseBuilder';
 import { QuerySource } from '../../models/QuerySource';
-import { Attribute, JoinAttributes, QueryObjectValue } from '../../queries/common';
-import { DefaultGroup, FoldedCoronerQuery, JoinFolds } from '../../queries/fold';
-import { CoronerValueType, QueryRequest } from '../../requests/common';
+import { AddFold, FoldedCoronerQuery, SetFoldGroup } from '../../queries/fold';
+import { CoronerValueType } from '../../requests/common';
 import { FoldOperator, FoldQueryRequest, Folds } from '../../requests/fold';
 import { CoronerResponse } from '../../responses/common';
 import { FoldQueryResponse } from '../../responses/fold';
 import { cloneFoldRequest } from '../requests/cloneRequest';
 import { CommonCoronerQueryBuilder } from './CommonCoronerQueryBuilder';
 
-export class FoldedCoronerQueryBuilder<
-        T extends Attribute,
-        F extends Folds = never,
-        G extends string | DefaultGroup = '*'
-    >
-    extends CommonCoronerQueryBuilder<T>
-    implements FoldedCoronerQuery<T, F, G>
+export class FoldedCoronerQueryBuilder<R extends FoldQueryRequest = FoldQueryRequest<never, ['*']>>
+    extends CommonCoronerQueryBuilder
+    implements FoldedCoronerQuery<R>
 {
-    readonly #request: FoldQueryRequest<T, F, G>;
+    readonly #request: R;
     readonly #executor: ICoronerQueryExecutor;
     readonly #simpleResponseBuilder: IFoldCoronerSimpleResponseBuilder;
 
-    constructor(
-        request: FoldQueryRequest<T, F, G>,
-        executor: ICoronerQueryExecutor,
-        builder: IFoldCoronerSimpleResponseBuilder
-    ) {
+    constructor(request: R, executor: ICoronerQueryExecutor, builder: IFoldCoronerSimpleResponseBuilder) {
         super(request);
         this.#request = request;
         this.#executor = executor;
         this.#simpleResponseBuilder = builder;
     }
 
-    public fold<A extends string>(): FoldedCoronerQuery<T, [F] extends [never] ? Folds<A> : F, string>;
-    public fold<A extends string, G extends string>(): FoldedCoronerQuery<T, [F] extends [never] ? Folds<A> : F, G>;
-    public fold<A extends string, V extends QueryObjectValue<T, A>, O extends FoldOperator<V>>(
+    public fold(): FoldedCoronerQuery<FoldQueryRequest<Folds>>;
+    public fold<A extends string, V extends CoronerValueType, O extends FoldOperator<V>>(
         attribute: A,
         ...fold: O
-    ): FoldedCoronerQuery<JoinAttributes<T, A, V>, JoinFolds<F, A, O>, G>;
-    public fold<A extends string, V extends QueryObjectValue<T, A>, O extends FoldOperator<V>>(
+    ): FoldedCoronerQuery<AddFold<R, A, O>>;
+    public fold<A extends string, V extends CoronerValueType, O extends FoldOperator<V>>(
         attribute?: A,
-        ...foldOrUndefined: O | undefined[]
-    ):
-        | FoldedCoronerQuery<T, [F] extends [never] ? Folds<A> : F, string>
-        | FoldedCoronerQuery<T, [F] extends [never] ? Folds<A> : F, G>
-        | FoldedCoronerQuery<JoinAttributes<T, A, V>, JoinFolds<F, A, O>, G> {
+        ...fold: O
+    ): FoldedCoronerQuery<FoldQueryRequest<Folds>> | FoldedCoronerQuery<AddFold<R, A, O>> {
         if (!attribute) {
-            return this as FoldedCoronerQuery<T, [F] extends [never] ? Folds<A> : F, string>;
+            return this as FoldedCoronerQuery<FoldQueryRequest<Folds>>;
         }
 
-        const request = cloneFoldRequest<JoinAttributes<T, A, V>, JoinFolds<F, A, O>, G>(this.#request);
-        const fold = foldOrUndefined as FoldOperator<CoronerValueType>;
+        const request = cloneFoldRequest(this.#request);
 
         if (!request.fold) {
             request.fold = {};
         }
 
         if (request.fold[attribute]) {
-            request.fold[attribute]!.push(fold);
+            request.fold[attribute] = [...request.fold[attribute], fold];
         } else {
             request.fold[attribute] = [fold];
         }
 
-        return this.createInstance(request) as FoldedCoronerQuery<JoinAttributes<T, A, V>, JoinFolds<F, A, O>, G>;
+        return this.createInstance(request) as unknown as FoldedCoronerQuery<AddFold<R, A, O>>;
     }
 
-    public group<A extends string>(attribute: A): FoldedCoronerQuery<T, F, A> {
-        const request = cloneFoldRequest<T, F, A>(this.#request);
+    public group<A extends string>(attribute: A): FoldedCoronerQuery<SetFoldGroup<R, A>> {
+        const request = cloneFoldRequest(this.#request);
         if (attribute === '*') {
             request.group = undefined;
         } else {
             request.group = [attribute];
         }
 
-        return this.createInstance(request) as FoldedCoronerQuery<T, F, A>;
+        return this.createInstance(request) as unknown as FoldedCoronerQuery<SetFoldGroup<R, A>>;
     }
 
-    public getRequest(): FoldQueryRequest<T, F, G> {
+    public getRequest(): R {
         return this.#request;
     }
 
-    public async getResponse(source?: Partial<QuerySource>): Promise<CoronerResponse<FoldQueryResponse<T, F, G>>> {
+    public async getResponse(source?: Partial<QuerySource>): Promise<CoronerResponse<FoldQueryResponse<R>>> {
         if (!this.#request.fold || !this.#request.group) {
             throw new Error('Fold or group query expected.');
         }
 
-        const response = await this.#executor.execute<FoldQueryResponse<T, F, G>>(this.#request, source);
+        const response = await this.#executor.execute<FoldQueryResponse<R>>(this.#request, source);
         if (!response.error) {
-            response.response.first = () => this.#simpleResponseBuilder.first(response.response);
-            response.response.toArray = () => this.#simpleResponseBuilder.toArray(response.response);
+            response.response.first = () => this.#simpleResponseBuilder.first(response.response, this.#request);
+            response.response.rows = () => this.#simpleResponseBuilder.rows(response.response, this.#request);
         }
         return response;
     }
 
-    protected createInstance(request: QueryRequest): this {
-        return new FoldedCoronerQueryBuilder<T, F, G>(request, this.#executor, this.#simpleResponseBuilder) as this;
+    protected createInstance(request: R): this {
+        return new FoldedCoronerQueryBuilder<R>(request, this.#executor, this.#simpleResponseBuilder) as this;
     }
 }

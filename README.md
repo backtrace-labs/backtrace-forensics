@@ -277,6 +277,7 @@ const coronerResponse = await query
     .fold('a', 'range')
     .fold('b', 'min')
     .fold('b', 'distribution', 3)
+    .fold('b', 'distribution', 5)
     .group('c')
     .fold('c', 'bin', 3)
     .fold('c', 'unique')
@@ -292,20 +293,29 @@ for (const row of rows) {
     console.log(row.count); // displays the group count
     console.log(row.attributes.c.groupKey); // displays the group key
 
-    console.log(row.attributes.a.head, row.attributes.b.min); // displays the head and min values of attributes a and b
-    console.log(row.attributes.a.range.from, row.attributes.a.range.to); // displays the range of attribute a
+    console.log(row.attributes.a.head[0].value, row.attributes.b.min[0].value); // displays the head and min values of attributes a and b
+    console.log(row.attributes.a.range[0].value.from, row.attributes.a.range[0].value.to); // displays the range of attribute a
 
-    console.log(row.attributes.c.unique); // displays the count of unique values of attribute c
+    console.log(row.attributes.c.unique[0].value); // displays the count of unique values of attribute c
 
-    // displays all the details of distribution of b attribute
-    const distributionOfB = row.attributes.b.distribution;
-    console.log(distributionOfB.keys, distributionOfB.tails);
-    for (const value of distributionOfB.values) {
+    // displays all the details of [distribution, 3] of b attribute
+    console.log(row.attributes.b.distribution[0].fold); // prints "distribution"
+    console.log(row.attributes.b.distribution[0].rawFold); // prints ["distribution", 3]
+    const distributionOfB3 = row.attributes.b.distribution[0].value;
+    console.log(distributionOfB3.keys, distributionOfB3.tails);
+    for (const value of distributionOfB3.values) {
+        console.log(value);
+    }
+
+    // displays all the details of [distribution, 5] of b attribute
+    const distributionOfB5 = row.attributes.b.distribution[1];
+    console.log(distributionOfB5.keys, distributionOfB5.tails);
+    for (const value of distributionOfB5.values) {
         console.log(value);
     }
 
     // displays all the details of bins of c attribute
-    const binOfC = row.attributes.c.bin;
+    const binOfC = row.attributes.c.bin[0].value;
     for (const bin of binOfC) {
         console.log(bin.from, bin.to, bin.count);
     }

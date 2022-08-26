@@ -1,7 +1,6 @@
 import { ISelectCoronerQueryBuilderFactory } from '../../interfaces/factories/ISelectCoronerQueryBuilderFactory';
 import { ICoronerQueryExecutor } from '../../interfaces/ICoronerQueryExecutor';
 import { ISelectCoronerSimpleResponseBuilder } from '../../interfaces/responses/ISelectCoronerSimpleResponseBuilder';
-import { Attribute } from '../../queries/common';
 import { SelectCoronerQuery } from '../../queries/select';
 import { SelectQueryRequest } from '../../requests/select';
 import { SelectedCoronerQueryBuilder } from '../queries/SelectCoronerQueryBuilder';
@@ -15,9 +14,7 @@ export class SelectCoronerQueryBuilderFactory implements ISelectCoronerQueryBuil
         this.#simpleResponseBuilder = builder;
     }
 
-    public create<T extends Attribute, S extends string[] = []>(
-        request: SelectQueryRequest<T, S>
-    ): SelectCoronerQuery<T, S> {
+    public create<R extends SelectQueryRequest>(request: R): SelectCoronerQuery<R> {
         return new SelectedCoronerQueryBuilder(request, this.#executor, this.#simpleResponseBuilder);
     }
 }

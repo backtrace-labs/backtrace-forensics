@@ -1,5 +1,17 @@
-import { Attribute } from '../../queries/common';
+import { CoronerValueType, SelectQueryRequest } from '../../requests';
 
-export type SimpleSelectRow<T extends Attribute, S extends (keyof T)[]> = {
-    [A in S[number]]: T[A];
-};
+export interface SimpleSelectRow<R extends SelectQueryRequest> {
+    values: { [A in NonNullable<R['select']>[number]]: CoronerValueType };
+
+    select(attribute: NonNullable<R['select']>[number]): CoronerValueType;
+    trySelect(attribute: NonNullable<R['select']>[number]): CoronerValueType;
+    trySelect(attribute: string): CoronerValueType | undefined;
+}
+
+export interface SimpleSelectRows<R extends SelectQueryRequest> {
+    rows: SimpleSelectRow<R>[];
+
+    select(attribute: NonNullable<R['select']>[number]): CoronerValueType[];
+    trySelect(attribute: NonNullable<R['select']>[number]): CoronerValueType[] | undefined;
+    trySelect(attribute: string): CoronerValueType[] | undefined;
+}

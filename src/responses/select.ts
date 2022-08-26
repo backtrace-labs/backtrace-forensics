@@ -1,24 +1,23 @@
-import { Attribute, QueryObjectKey } from '../queries/common';
+import { CoronerValueType, SelectQueryRequest } from '../requests';
 import { QueryResponse } from './common';
-import { SimpleSelectRow } from './simple/select';
+import { SimpleSelectRow, SimpleSelectRows } from './simple/select';
 
 export type SelectQueryObject = ['*', ([number] | [number, number])[]];
-export type SelectQueryRowValue<T extends Attribute, A extends keyof T> = ['*', ...[T[A], number][]];
 
 export interface QueryOrder {
     name: string;
     order: string;
 }
 
-type SelectQueryRowValues<T extends Attribute, S extends (keyof T)[]> = {
-    [I in keyof S]: SelectQueryRowValue<T, S[I]>;
+type SelectQueryRowValues<S extends readonly string[]> = {
+    [I in keyof S]: ['*', ...[CoronerValueType, number][]];
 } & Array<{}>;
 
-export interface SelectQueryResponse<T extends Attribute, S extends QueryObjectKey<T>[]> extends QueryResponse {
+export interface SelectQueryResponse<R extends SelectQueryRequest> extends QueryResponse {
     readonly objects: SelectQueryObject[];
-    readonly values: SelectQueryRowValues<T, S>;
+    readonly values: SelectQueryRowValues<NonNullable<R['select']>>;
     readonly order?: QueryOrder[];
 
-    toArray(): SimpleSelectRow<T, S>[];
-    first(): SimpleSelectRow<T, S> | undefined;
+    rows(): SimpleSelectRows<R>;
+    first(): SimpleSelectRow<R> | undefined;
 }
