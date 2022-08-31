@@ -737,6 +737,22 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
         expect(actual).toEqual('*');
     });
 
+    it('[non-grouped] should return * from group when searching via group with *', () => {
+        const queryable = new FoldCoronerSimpleResponseBuilder();
+        const element = queryable.first(testResponse, testRequest);
+        assert(element);
+        const actual = element.group('*');
+        expect(actual).toEqual('*');
+    });
+
+    it('[non-grouped] should return * from group when searching via group with *', () => {
+        const queryable = new FoldCoronerSimpleResponseBuilder();
+        const element = queryable.rows(testResponse, testRequest);
+        assert(element);
+        const actual = element.group('*');
+        expect(actual).toEqual('*');
+    });
+
     it('[grouped] should return group value via group', () => {
         const queryable = new FoldCoronerSimpleResponseBuilder();
         const element = queryable.first(testGroupResponse, testGroupRequest);
@@ -774,6 +790,26 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
 
         const expected = 'f9be5fab68692b9792f33335798a01e89a7e0b9a42ee75548b4517de9e5da3a0';
         const actual = element.group();
+        expect(actual).toEqual(expected);
+    });
+
+    it('[grouped] should return group value via group with * value', () => {
+        const queryable = new FoldCoronerSimpleResponseBuilder();
+        const element = queryable.first(testGroupResponse, testGroupRequest);
+        assert(element);
+
+        const expected = 'f9be5fab68692b9792f33335798a01e89a7e0b9a42ee75548b4517de9e5da3a0';
+        const actual = element.group('*' as 'fingerprint');
+        expect(actual).toEqual(expected);
+    });
+
+    it('[grouped] should return group value via group with * value on rows', () => {
+        const queryable = new FoldCoronerSimpleResponseBuilder();
+        const element = queryable.rows(testGroupResponse, testGroupRequest);
+        assert(element);
+
+        const expected = 'f9be5fab68692b9792f33335798a01e89a7e0b9a42ee75548b4517de9e5da3a0';
+        const actual = element.group('*' as 'fingerprint');
         expect(actual).toEqual(expected);
     });
 

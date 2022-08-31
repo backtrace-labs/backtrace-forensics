@@ -123,6 +123,10 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
                     return result;
                 },
                 tryGroup(attribute?: string) {
+                    if (attribute === '*') {
+                        attribute = undefined;
+                    }
+
                     for (const key in row.attributes) {
                         if (attribute != null && key !== attribute) {
                             continue;
