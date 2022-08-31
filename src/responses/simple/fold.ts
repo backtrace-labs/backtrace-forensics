@@ -56,9 +56,9 @@ export type SimpleFoldAttribute<O extends readonly FoldOperator[]> = {
 };
 
 export type SimpleFoldAttributes<F extends Folds, G extends readonly string[]> = {
-    [A in keyof F & string]: (F extends Record<A, infer O extends readonly FoldOperator[]>
+    [A in (keyof F & string) | (G[number] & string)]: (F extends Record<A, infer O extends readonly FoldOperator[]>
         ? SimpleFoldAttribute<O>
-        : never) &
+        : {}) &
         SimpleFoldGroup<A, G>;
 };
 

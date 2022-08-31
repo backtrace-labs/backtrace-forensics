@@ -14,7 +14,7 @@ export interface FoldCoronerQuery<R extends FoldQueryRequest = FoldQueryRequest<
      * query = query.fold('fingerprint', 'head');
      * query = query.fold('timestamp', 'tail');
      */
-    fold(): FoldedCoronerQuery<FoldQueryRequest<Folds>>;
+    dynamicFold(): FoldedCoronerQuery<FoldQueryRequest<Folds>>;
 
     /**
      * Adds provided fold to the request.

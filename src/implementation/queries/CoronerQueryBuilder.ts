@@ -2,7 +2,7 @@ import { IFoldCoronerQueryBuilderFactory } from '../../interfaces/factories/IFol
 import { ISelectCoronerQueryBuilderFactory } from '../../interfaces/factories/ISelectCoronerQueryBuilderFactory';
 import { CoronerQuery } from '../../queries/common';
 import { FoldedCoronerQuery, SetFoldGroup } from '../../queries/fold';
-import { SelectedCoronerQuery } from '../../queries/select';
+import { AddSelect, SelectedCoronerQuery } from '../../queries/select';
 import { SelectQueryRequest } from '../../requests';
 import { CoronerValueType, QueryRequest } from '../../requests/common';
 import { FoldOperator, FoldQueryRequest, Folds } from '../../requests/fold';
@@ -24,34 +24,27 @@ export class CoronerQueryBuilder extends CommonCoronerQueryBuilder implements Co
         this.#selectQueryFactory = selectQueryFactory;
     }
 
-    public select(): SelectedCoronerQuery<SelectQueryRequest<string[]>>;
-    public select<A extends string[]>(...attributes: A): SelectedCoronerQuery<SelectQueryRequest<A>>;
-    public select<A extends string[]>(
-        ...attributes: A
-    ): SelectedCoronerQuery<SelectQueryRequest<string[]>> | SelectedCoronerQuery<SelectQueryRequest<A>> {
+    public select<A extends string[]>(...attributes: A): SelectedCoronerQuery<AddSelect<SelectQueryRequest<[]>, A>> {
         const query = this.#selectQueryFactory.create(this.#request);
-        if (!attributes || !attributes.length) {
-            return query.select();
-        }
-
-        return query.select(...attributes) as unknown as SelectedCoronerQuery<SelectQueryRequest<A>>;
+        return query.select(...attributes) as SelectedCoronerQuery<AddSelect<SelectQueryRequest<[]>, A>>;
     }
 
-    public fold(): FoldedCoronerQuery<FoldQueryRequest<Folds>>;
+    public dynamicSelect(): SelectedCoronerQuery<SelectQueryRequest<string[]>> {
+        const query = this.#selectQueryFactory.create(this.#request);
+        return query.dynamicSelect();
+    }
+
     public fold<A extends string, V extends CoronerValueType, O extends FoldOperator<V>>(
         attribute: A,
         ...fold: O
-    ): FoldedCoronerQuery<FoldQueryRequest<Folds<A, [O]>, ['*']>>;
-    public fold<A extends string, V extends CoronerValueType, O extends FoldOperator<V>>(
-        attribute?: A,
-        ...fold: O
-    ): FoldedCoronerQuery<FoldQueryRequest<Folds>> | FoldedCoronerQuery<FoldQueryRequest<Folds<A, [O]>, ['*']>> {
+    ): FoldedCoronerQuery<FoldQueryRequest<Folds<A, [O]>, ['*']>> {
         const query = this.#foldQueryFactory.create(this.#request as FoldQueryRequest);
-        if (!attribute) {
-            return query.fold();
-        }
-
         return query.fold(attribute, ...fold) as unknown as FoldedCoronerQuery<FoldQueryRequest<Folds<A, [O]>, ['*']>>;
+    }
+
+    public dynamicFold(): FoldedCoronerQuery<FoldQueryRequest<Folds>> {
+        const query = this.#foldQueryFactory.create(this.#request as FoldQueryRequest);
+        return query.dynamicFold();
     }
 
     public group<A extends string>(attribute: A): FoldedCoronerQuery<SetFoldGroup<FoldQueryRequest<never>, A>> {

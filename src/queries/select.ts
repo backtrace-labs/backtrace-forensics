@@ -12,7 +12,7 @@ export interface SelectCoronerQuery<R extends SelectQueryRequest = SelectQueryRe
      * query = query.select('a');
      * query = query.select('b');
      */
-    select(): SelectedCoronerQuery<SelectQueryRequest<string[]>>;
+    dynamicSelect(): SelectedCoronerQuery<SelectQueryRequest<string[]>>;
 
     /**
      * Adds provided attributes to the select request. You can add multiple attributes at once, or chain `select` calls.

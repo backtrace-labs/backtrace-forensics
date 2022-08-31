@@ -24,19 +24,10 @@ export class FoldedCoronerQueryBuilder<R extends FoldQueryRequest = FoldQueryReq
         this.#simpleResponseBuilder = builder;
     }
 
-    public fold(): FoldedCoronerQuery<FoldQueryRequest<Folds>>;
     public fold<A extends string, V extends CoronerValueType, O extends FoldOperator<V>>(
         attribute: A,
         ...fold: O
-    ): FoldedCoronerQuery<AddFold<R, A, O>>;
-    public fold<A extends string, V extends CoronerValueType, O extends FoldOperator<V>>(
-        attribute?: A,
-        ...fold: O
-    ): FoldedCoronerQuery<FoldQueryRequest<Folds>> | FoldedCoronerQuery<AddFold<R, A, O>> {
-        if (!attribute) {
-            return this as FoldedCoronerQuery<FoldQueryRequest<Folds>>;
-        }
-
+    ): FoldedCoronerQuery<AddFold<R, A, O>> {
         const request = cloneFoldRequest(this.#request);
 
         if (!request.fold) {
@@ -50,6 +41,10 @@ export class FoldedCoronerQueryBuilder<R extends FoldQueryRequest = FoldQueryReq
         }
 
         return this.createInstance(request) as unknown as FoldedCoronerQuery<AddFold<R, A, O>>;
+    }
+
+    public dynamicFold(): FoldedCoronerQuery<FoldQueryRequest<Folds>> {
+        return this as FoldedCoronerQuery<FoldQueryRequest<Folds>>;
     }
 
     public group<A extends string>(attribute: A): FoldedCoronerQuery<SetFoldGroup<R, A>> {

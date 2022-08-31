@@ -5,4 +5,3 @@ export { QuerySource } from './models/QuerySource';
 export { CoronerValueType } from './requests/common';
 export { BacktraceForensics };
 export default BacktraceForensics;
-

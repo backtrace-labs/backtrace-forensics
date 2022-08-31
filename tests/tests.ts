@@ -20,7 +20,7 @@ import { SelectQueryResponse } from '../src/responses/select';
         },
     });
 
-    let dynamicFold = coronerQuery.create().fold();
+    let dynamicFold = coronerQuery.create().dynamicFold();
     dynamicFold = dynamicFold.fold('something_user_provdes', 'head');
 
     // keep only the last fold of a type, e.g. keep only distribution 5 below
@@ -31,7 +31,7 @@ import { SelectQueryResponse } from '../src/responses/select';
         const results = response.response.rows();
         for (const result of results.rows) {
             for (const attribute in result.attributes) {
-                const values = result.attributes[attribute];
+                const values = result.attributes;
                 const headValueOrNull = response.response.first()?.fold('something_user_provdes', 'distribution', 3);
                 const a = response.response.first()?.fold('asdsa', 'bin');
             }
@@ -40,36 +40,28 @@ import { SelectQueryResponse } from '../src/responses/select';
 
     const staticQuery = coronerQuery.create();
     const dynamicQuery = coronerQuery.create();
-    let runtimeStaticFold = staticQuery.fold();
-    let runtimeDynamicFold = dynamicQuery.fold();
+    let runtimeDynamicFold = dynamicQuery.dynamicFold();
 
     const attrs: (keyof Test)[] = ['timestamp', 'fingerprint', '_deleted'];
     for (const attr of attrs) {
-        runtimeStaticFold = runtimeStaticFold.fold(attr, 'head');
         runtimeDynamicFold = runtimeDynamicFold.fold(attr, 'head');
     }
 
-    runtimeStaticFold = runtimeStaticFold.group<string>('timestamp');
     runtimeDynamicFold = runtimeDynamicFold.group<string>('timestamp');
-
-    const groupedFold = runtimeStaticFold.group('timestamp');
-
-    runtimeStaticFold.getResponse().then((r) => !r.error && r.response.first()?.attributes.fingerprint[0]);
-    groupedFold.getResponse().then((r) => !r.error && r.response.first()?.attributes.asdasda);
 
     const staticFold = staticQuery
         .fold('timestamp', 'distribution', 1)
         .fold('_deleted', 'max')
         .fold('_deleted', 'min')
         .fold('_deleted', 'head')
-        .group('_deleted');
+        .group('rower');
 
     const staticFoldResult = await staticFold.getResponse();
 
     if (!staticFoldResult.error) {
         const test = staticFoldResult.response;
         const simpleTest = test.first();
-        simpleTest?.attributes.timestamp;
+        simpleTest?.attributes;
     }
 
     let runtimeStaticSelect = staticQuery.select();

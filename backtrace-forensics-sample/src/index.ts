@@ -1,6 +1,7 @@
 import { stdin as input, stdout as output } from 'process';
 import readline from 'readline';
 import { BacktraceForensics, QuerySource } from '../../lib';
+import { FoldedCoronerQuery, SelectedCoronerQuery } from '../../lib/queries';
 import { CoronerValueType } from '../../lib/requests/common';
 import { FoldOperator } from '../../lib/requests/fold';
 
@@ -26,7 +27,7 @@ async function question(msg: string) {
     });
 }
 
-async function displayDetails(query: any) {
+async function displayDetails(query: FoldedCoronerQuery<any> | SelectedCoronerQuery<any>) {
     const request = query.getRequest();
     console.log('Request: ', JSON.stringify(request, null, '\t'));
 
@@ -101,12 +102,12 @@ async function staticFold() {
         .fold('timestamp', 'min')
         .fold('timestamp', 'range')
         .fold('randomInt', 'distribution', 3)
-        .group('asdasd'); // TODO: Fix the group not appearing in attributes when it is not folded on
+        .group('randomInt');
 
-    // const response = await query.getResponse();
-    // if (!response.error) {
-    //     response.response.first()?.attributes.
-    // }
+    const response = await query.getResponse();
+    if (!response.error) {
+        response.response.first()!.attributes.randomInt.groupKey;
+    }
     await displayDetails(query);
 }
 

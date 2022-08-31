@@ -23,15 +23,7 @@ export class SelectedCoronerQueryBuilder<R extends SelectQueryRequest>
         this.#simpleResponseBuilder = builder;
     }
 
-    public select(): SelectedCoronerQuery<SelectQueryRequest<string[]>>;
-    public select<A extends string[]>(...attributes: A): SelectedCoronerQuery<AddSelect<R, A>>;
-    public select<A extends string[]>(
-        ...attributes: A
-    ): SelectedCoronerQuery<SelectQueryRequest<string[]>> | SelectedCoronerQuery<AddSelect<R, A>> {
-        if (!attributes || !attributes.length) {
-            return this as unknown as SelectedCoronerQuery<SelectQueryRequest<string[]>>;
-        }
-
+    public select<A extends string[]>(...attributes: A): SelectedCoronerQuery<AddSelect<R, A>> {
         const request = cloneSelectRequest(this.#request);
         if (!request.select) {
             request.select = attributes;
@@ -40,6 +32,10 @@ export class SelectedCoronerQueryBuilder<R extends SelectQueryRequest>
         }
 
         return this.createInstance(request) as unknown as SelectedCoronerQuery<AddSelect<R, A>>;
+    }
+
+    public dynamicSelect(): SelectedCoronerQuery<SelectQueryRequest<string[]>> {
+        return this as unknown as SelectedCoronerQuery<SelectQueryRequest<string[]>>;
     }
 
     public getRequest(): R {
