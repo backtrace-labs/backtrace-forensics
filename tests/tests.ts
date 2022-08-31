@@ -1,4 +1,4 @@
-import { BacktraceForensic } from '../src';
+import { BacktraceForensics } from '../src';
 import { createFoldRequest, FoldQueryRequest } from '../src/requests/fold';
 import { createSelectRequest, SelectQueryRequest } from '../src/requests/select';
 import { CoronerResponse } from '../src/responses/common';
@@ -13,7 +13,12 @@ import { SelectQueryResponse } from '../src/responses/select';
         _deleted: boolean;
     }
 
-    const coronerQuery = {} as BacktraceForensic;
+    // const coronerQuery = {} as BacktraceForensics;
+    const coronerQuery = new BacktraceForensics({
+        defaultSource: {
+            token: 'b34b35e46c398160de59e81b048ab5d85c515407d26fa17bf0c4b82976a2e640',
+        },
+    });
 
     let dynamicFold = coronerQuery.create().fold();
     dynamicFold = dynamicFold.fold('something_user_provdes', 'head');
@@ -127,6 +132,48 @@ import { SelectQueryResponse } from '../src/responses/select';
             test.attributes.a;
         }
     }
+
+    // const staticFold1 = await coronerQuery.create().fold('a', 'head').fold('a', 'distribution', 3).getResponse();
+    // if (!staticFold1.error) {
+    //     const firstRow = staticFold1.response.first();
+    //     if (firstRow) {
+    //         firstRow.fold('a', 'head');
+    //         firstRow.fold('a', 'distribution', 3);
+    //         firstRow.fold('b', 'head'); // will throw, and fails type checking
+    //         firstRow.fold('a', 'min'); // will throw, and fails type checking
+    //         firstRow.fold('a', 'distribution', 5); // will throw, and fails type checking
+
+    //         firstRow.tryFold('a', 'head');
+    //         firstRow.tryFold('a', 'distribution', 3);
+    //         firstRow.tryFold('b', 'head'); // will return undefined
+    //         firstRow.tryFold('a', 'min'); // will return undefined
+    //         firstRow.tryFold('a', 'distribution', 5); // will return undefined
+
+    //         firstRow.attributes.a.distribution[0].value.tail
+    //     }
+    // }
+
+    // // dynamic fold
+    // const dynamicFold1 = await coronerQuery.create().fold().fold('a', 'head').getResponse();
+    // if (!dynamicFold1.error) {
+    //     const firstRow = dynamicFold1.response.first();
+    //     if (firstRow) {
+    //         firstRow.fold('a', 'head');
+    //         firstRow.fold('a', 'distribution', 3);
+    //         firstRow.fold('b', 'head'); // will throw
+    //         firstRow.fold('a', 'min'); // will throw
+    //         firstRow.fold('a', 'distribution', 5); // will throw
+
+    //         firstRow.tryFold('a', 'head');
+    //         firstRow.tryFold('a', 'distribution', 3);
+    //         firstRow.tryFold('b', 'head'); // will return undefined
+    //         firstRow.tryFold('a', 'min'); // will return undefined
+    //         firstRow.tryFold('a', 'distribution', 5); // will return undefined
+
+    //         firstRow.attributes.a.distribution[0].value.tail
+    //         firstRow.attributes.whatnot.distribution[0].value.tail // will fail as a null ref
+    //     }
+    // }
 })();
 
 type Test<A extends string, B extends boolean> = [A, B];

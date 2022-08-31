@@ -43,7 +43,7 @@ export interface BacktraceForensicOptions {
     queryMaker?: ICoronerQueryMaker;
 }
 
-export class BacktraceForensic {
+export class BacktraceForensics {
     public readonly options: BacktraceForensicOptions;
 
     readonly #executor: ICoronerQueryExecutor;
@@ -68,7 +68,7 @@ export class BacktraceForensic {
      * Creates a new query with options from the instance.
      * @param request Request to use with the query. If not provided, will create an empty request.
      * @example
-     * const instance = new BacktraceForensic();
+     * const instance = new BacktraceForensics();
      * const query = instance.create().filter(...).fold(...);
      */
     public create(request?: QueryRequest): CoronerQuery {
@@ -80,10 +80,10 @@ export class BacktraceForensic {
      * @param request Request to use with the query. If not provided, will create an empty request.
      * @param options Options to be used with the query.
      * @example
-     * const query = BacktraceForensic.create().filter(...).fold(...);
+     * const query = BacktraceForensics.create().filter(...).fold(...);
      */
     public static create(options?: Partial<BacktraceForensicOptions>, request?: QueryRequest): CoronerQuery {
-        return new BacktraceForensic(options).create(request);
+        return new BacktraceForensics(options).create(request);
     }
 
     private getDefaultOptions(options?: BacktraceForensicOptions) {

@@ -1,8 +1,6 @@
 import { stdin as input, stdout as output } from 'process';
 import readline from 'readline';
-import { BacktraceForensic, QuerySource } from '../../lib';
-import { FoldedCoronerQuery } from '../../lib/queries/fold';
-import { SelectedCoronerQuery } from '../../lib/queries/select';
+import { BacktraceForensics, QuerySource } from '../../lib';
 import { CoronerValueType } from '../../lib/requests/common';
 import { FoldOperator } from '../../lib/requests/fold';
 
@@ -28,7 +26,7 @@ async function question(msg: string) {
     });
 }
 
-async function displayDetails(query: FoldedCoronerQuery<any, any, any> | SelectedCoronerQuery<any, any>) {
+async function displayDetails(query: any) {
     const request = query.getRequest();
     console.log('Request: ', JSON.stringify(request, null, '\t'));
 
@@ -38,26 +36,26 @@ async function displayDetails(query: FoldedCoronerQuery<any, any, any> | Selecte
     }
 
     console.log('Response: ', JSON.stringify(result.response, null, '\t'));
-    console.log('Rows: ', JSON.stringify(result.response.toArray(), null, '\t'));
+    console.log('Rows: ', JSON.stringify(result.response.rows(), null, '\t'));
 }
 
 async function staticSelect() {
     const fp = await question('enter fingerprint: ');
 
-    const query = BacktraceForensic.create({ defaultSource: source })
+    const query = BacktraceForensics.create({ defaultSource: source })
         .filter('fingerprint', 'equal', fp)
         .select('callstack', 'randomInt', 'fingerprint');
 
     const response = await query.getResponse();
     if (!response.error) {
-        response.response.first()?.fingerprint;
+        response.response.first()?.values.fingerprint;
     }
 
     await displayDetails(query);
 }
 
 async function select() {
-    const query = BacktraceForensic.create({ defaultSource: source });
+    const query = BacktraceForensics.create({ defaultSource: source });
     const fp = await question('enter fingerprint: ');
 
     let selectQuery = query.filter('fingerprint', 'equal', fp).select();
@@ -79,7 +77,7 @@ async function fold() {
     const keysStr = await question('enter comma-delimited keys to fold on: ');
     const opStr = [await question('enter operator: ')] as FoldOperator<CoronerValueType>;
 
-    let query = BacktraceForensic.create({ defaultSource: source }).fold().group(groupStr);
+    let query = BacktraceForensics.create({ defaultSource: source }).fold().group(groupStr);
 
     for (const key of keysStr.split(',')) {
         query = query.fold(key, ...opStr);
@@ -96,7 +94,7 @@ async function fold() {
 async function staticFold() {
     const fp = await question('enter fingerprint: ');
 
-    const query = BacktraceForensic.create({ defaultSource: source })
+    const query = BacktraceForensics.create({ defaultSource: source })
         .filter('fingerprint', 'equal', fp)
         .fold('callstack', 'head')
         .fold('fingerprint', 'head')

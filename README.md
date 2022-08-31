@@ -21,21 +21,21 @@ npm run test
 
 You can create a query in two ways:
 
-1. Create a `BacktraceForensic` instance and create queries from there:
+1. Create a `BacktraceForensics` instance and create queries from there:
 
     ```typescript
-    import { BacktraceForensic } from 'backtrace-forensic';
-    const instance = new BacktraceForensic({
+    import { BacktraceForensics } from 'backtrace-forensics';
+    const instance = new BacktraceForensics({
         /* any options here */
     });
     const query = instance.create();
     ```
 
-2. Use the static function from `BacktraceForensic`:
+2. Use the static function from `BacktraceForensics`:
 
     ```typescript
-    import { BacktraceForensic } from 'backtrace-forensic';
-    const query = BacktraceForensic.create({
+    import { BacktraceForensics } from 'backtrace-forensics';
+    const query = BacktraceForensics.create({
         /* any options here */
     });
     ```
@@ -383,13 +383,13 @@ In addition to common folds, there are additional folds available:
 
 By default, the query maker is using `http`/`https` modules in Node, and `XMLHttpRequest` in browser.
 
-If you want to use your own implementation for making the query, provide an implementation of `ICoronerQueryMaker` to the `BacktraceForensic` options.
+If you want to use your own implementation for making the query, provide an implementation of `ICoronerQueryMaker` to the `BacktraceForensics` options.
 
 A Typescript class implementation of a query maker using `axios` may look like this:
 
 ```typescript
 import axios from 'axios';
-import { ICoronerQueryMaker } from 'backtrace-forensic';
+import { ICoronerQueryMaker } from 'backtrace-forensics';
 
 class AxiosCoronerQueryMaker implements ICoronerQueryMaker {
     public async query<R extends QueryResponse>(
