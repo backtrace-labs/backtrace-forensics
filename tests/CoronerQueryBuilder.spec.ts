@@ -14,6 +14,8 @@ describe('CoronerQueryBuilder', () => {
         filter: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
         offset: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
+        orderByCount: jest.fn().mockReturnThis(),
     };
 
     const foldFactory: IFoldCoronerQueryBuilderFactory = {
@@ -29,6 +31,7 @@ describe('CoronerQueryBuilder', () => {
         filter: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
         offset: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
     };
 
     const selectFactory: ISelectCoronerQueryBuilderFactory = {

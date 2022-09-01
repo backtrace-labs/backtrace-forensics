@@ -122,7 +122,14 @@ import { SelectQueryResponse } from '../src/responses/select';
         }
     }
 
-    // const staticFold1 = await coronerQuery.create().fold('a', 'head').fold('a', 'distribution', 3).getResponse();
+    const staticFold1 = await coronerQuery
+        .create()
+        .fold('a', 'head')
+        .fold('a', 'distribution', 3)
+        .fold('a', 'distribution', 5)
+        .order('a', 'descending', 1)
+        .order('a', 'descending', 'distribution', 5)
+        .getResponse();
     // if (!staticFold1.error) {
     //     const firstRow = staticFold1.response.first();
     //     if (firstRow) {
@@ -143,7 +150,12 @@ import { SelectQueryResponse } from '../src/responses/select';
     // }
 
     // // dynamic fold
-    // const dynamicFold1 = await coronerQuery.create().fold().fold('a', 'head').getResponse();
+    const dynamicFold1 = await coronerQuery
+        .create()
+        .dynamicFold()
+        .fold('a', 'head')
+        .order('a', 'descending', 'min')
+        .getResponse();
     // if (!dynamicFold1.error) {
     //     const firstRow = dynamicFold1.response.first();
     //     if (firstRow) {

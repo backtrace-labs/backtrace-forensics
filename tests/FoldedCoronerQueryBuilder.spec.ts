@@ -1,7 +1,7 @@
 import { FoldedCoronerQueryBuilder } from '../src/implementation/queries/FoldCoronerQueryBuilder';
 import { ICoronerQueryExecutor } from '../src/interfaces/ICoronerQueryExecutor';
 import { IFoldCoronerSimpleResponseBuilder } from '../src/interfaces/responses/IFoldCoronerSimpleResponseBuilder';
-import { FoldQueryRequest } from '../src/requests/fold';
+import { createFoldRequest, FoldQueryRequest } from '../src/requests/fold';
 
 describe('FoldedCoronerQueryBuilder', () => {
     const executorMock: ICoronerQueryExecutor = {
@@ -59,6 +59,144 @@ describe('FoldedCoronerQueryBuilder', () => {
             a: [['head']],
             b: [['max']],
         });
+    });
+
+    it('should add order by fold for a new attribute when initial order is empty', () => {
+        const request = createFoldRequest({
+            fold: {
+                a: [['tail'], ['head']],
+            },
+        } as const);
+
+        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const newRequest = queryable.order('a', 'ascending', 'head').getRequest();
+
+        expect(newRequest.order).toEqual([
+            {
+                name: 'a;1',
+                ordering: 'ascending',
+            },
+        ]);
+    });
+
+    it('should add order by fold for a new attribute when initial order is not empty', () => {
+        const request = createFoldRequest({
+            fold: {
+                a: [['tail'], ['head']],
+            },
+            order: [
+                {
+                    name: 'a;0',
+                    ordering: 'ascending',
+                },
+            ],
+        } as const);
+
+        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const newRequest = queryable.order('a', 'ascending', 'head').getRequest();
+
+        expect(newRequest.order).toEqual([
+            {
+                name: 'a;0',
+                ordering: 'ascending',
+            },
+            {
+                name: 'a;1',
+                ordering: 'ascending',
+            },
+        ]);
+    });
+
+    it('should add order by index for a new attribute when initial order is empty', () => {
+        const request = createFoldRequest({
+            fold: {
+                a: [['head']],
+            },
+        } as const);
+
+        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const newRequest = queryable.order('a', 'ascending', 1).getRequest();
+
+        expect(newRequest.order).toEqual([
+            {
+                name: 'a;1',
+                ordering: 'ascending',
+            },
+        ]);
+    });
+
+    it('should add order by index for a new attribute when initial order is not empty', () => {
+        const request = createFoldRequest({
+            fold: {
+                a: [['head']],
+            },
+            order: [
+                {
+                    name: 'a;0',
+                    ordering: 'ascending',
+                },
+            ],
+        } as const);
+
+        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const newRequest = queryable.order('a', 'ascending', 1).getRequest();
+
+        expect(newRequest.order).toEqual([
+            {
+                name: 'a;0',
+                ordering: 'ascending',
+            },
+            {
+                name: 'a;1',
+                ordering: 'ascending',
+            },
+        ]);
+    });
+
+    it('should add order by count when initial order is empty', () => {
+        const request = createFoldRequest({
+            fold: {
+                a: [['tail'], ['head']],
+            },
+        } as const);
+
+        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const newRequest = queryable.orderByCount('ascending').getRequest();
+
+        expect(newRequest.order).toEqual([
+            {
+                name: ';count',
+                ordering: 'ascending',
+            },
+        ]);
+    });
+
+    it('should add order by count when initial order is not empty', () => {
+        const request = createFoldRequest({
+            fold: {
+                a: [['tail'], ['head']],
+            },
+            order: [
+                {
+                    name: 'a;0',
+                    ordering: 'ascending',
+                },
+            ],
+        } as const);
+
+        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const newRequest = queryable.orderByCount('ascending').getRequest();
+
+        expect(newRequest.order).toEqual([
+            {
+                name: 'a;0',
+                ordering: 'ascending',
+            },
+            {
+                name: ';count',
+                ordering: 'ascending',
+            },
+        ]);
     });
 
     it('should throw on getResponse when fold or group was not made', async () => {

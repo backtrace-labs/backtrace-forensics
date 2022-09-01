@@ -1,4 +1,5 @@
 import { QuerySource } from '../models/QuerySource';
+import { OrderDirection } from '../requests';
 import { SelectQueryRequest } from '../requests/select';
 import { CoronerResponse } from '../responses/common';
 import { SelectQueryResponse } from '../responses/select';
@@ -27,6 +28,16 @@ export interface SelectCoronerQuery<R extends SelectQueryRequest = SelectQueryRe
 }
 
 export interface SelectedCoronerQuery<R extends SelectQueryRequest> extends SelectCoronerQuery<R> {
+    /**
+     * Adds order on attribute with direction specified.
+     * @param attribute Attribute to order by.
+     * @param direction Order direction. Attribute must be selected, else the query will fail.
+     * @example
+     * // This will order descending on attribute 'a', then ascending on attribute 'b'
+     * query.select('a').select('b').order('a', 'descending').order('b', 'ascending')
+     */
+    order<A extends string>(attribute: A, direction: OrderDirection): SelectedCoronerQuery<R>;
+
     /**
      * Returns the built request.
      */

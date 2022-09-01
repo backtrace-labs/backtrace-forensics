@@ -1,4 +1,4 @@
-import { CoronerValueType, QueryRequest } from './common';
+import { CoronerValueType, OrderDirection, QueryRequest } from './common';
 
 export type DistributionFoldOperator = readonly ['distribution', number];
 export type BinFoldOperator = readonly ['bin', ...number[]];
@@ -32,6 +32,16 @@ export type FoldOperator<T extends CoronerValueType = CoronerValueType> = T exte
     ? BooleanFoldOperator
     : never;
 
+export type FoldOrder<A extends string = string, I extends number = number> = {
+    name: `${A};${I}`;
+    ordering: OrderDirection;
+};
+
+export type CountFoldOrder = {
+    name: `;count`;
+    ordering: OrderDirection;
+};
+
 export type Folds<
     A extends string = string,
     O extends readonly FoldOperator<CoronerValueType>[] = readonly FoldOperator<CoronerValueType>[]
@@ -55,9 +65,14 @@ export interface FoldQueryRequest<F extends Folds = Folds, G extends readonly st
      * };
      */
     fold?: F;
+
+    order?: readonly (FoldOrder | CountFoldOrder)[];
 }
 
 export type InferFoldQueryRequest<T> = T extends FoldQueryRequest<infer F, infer G> ? FoldQueryRequest<F, G> : never;
+
+export type GetRequestFold<R extends FoldQueryRequest> = R extends FoldQueryRequest<infer F, infer _> ? F : never;
+export type GetRequestGroup<R extends FoldQueryRequest> = R extends FoldQueryRequest<infer _, infer G> ? G : never;
 
 export function createFoldRequest<T extends FoldQueryRequest>(request: T): InferFoldQueryRequest<T> {
     return request as unknown as InferFoldQueryRequest<T>;

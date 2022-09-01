@@ -30,10 +30,7 @@ export type QueryFilter = {
     [attribute: string]: readonly QueryAttributeFilter[];
 };
 
-export type QueryOrder = {
-    name: string;
-    ordering: 'descending' | 'ascending';
-};
+export type OrderDirection = 'descending' | 'ascending';
 
 export interface QueryRequest {
     /**
@@ -45,16 +42,6 @@ export interface QueryRequest {
      * };
      */
     filter?: readonly QueryFilter[];
-
-    /**
-     * Attributes to order on.
-     * @example
-     * request.order = [{
-     *     name: 'timestamp',
-     *     ordering: 'descending'
-     * }];
-     */
-    order?: readonly QueryOrder[];
 
     /**
      * Limits the number of rows in response.

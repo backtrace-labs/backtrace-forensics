@@ -2,7 +2,8 @@ import { ICoronerQueryExecutor } from '../../interfaces/ICoronerQueryExecutor';
 import { ISelectCoronerSimpleResponseBuilder } from '../../interfaces/responses/ISelectCoronerSimpleResponseBuilder';
 import { QuerySource } from '../../models/QuerySource';
 import { AddSelect, SelectedCoronerQuery } from '../../queries/select';
-import { SelectQueryRequest } from '../../requests/select';
+import { OrderDirection } from '../../requests';
+import { SelectOrder, SelectQueryRequest } from '../../requests/select';
 import { CoronerResponse } from '../../responses/common';
 import { SelectQueryResponse } from '../../responses/select';
 import { cloneSelectRequest } from '../requests/cloneRequest';
@@ -36,6 +37,22 @@ export class SelectedCoronerQueryBuilder<R extends SelectQueryRequest>
 
     public dynamicSelect(): SelectedCoronerQuery<SelectQueryRequest<string[]>> {
         return this as unknown as SelectedCoronerQuery<SelectQueryRequest<string[]>>;
+    }
+
+    public order<A extends string>(attribute: A, direction: OrderDirection): SelectedCoronerQuery<R> {
+        const order: SelectOrder = {
+            name: attribute,
+            ordering: direction,
+        };
+
+        const request = cloneSelectRequest(this.#request);
+        if (request.order) {
+            request.order = [...request.order, order];
+        } else {
+            request.order = [order];
+        }
+
+        return this.createInstance(request);
     }
 
     public getRequest(): R {

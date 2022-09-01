@@ -1,4 +1,9 @@
-import { QueryRequest } from './common';
+import { OrderDirection, QueryRequest } from './common';
+
+export type SelectOrder<A extends string = string> = {
+    name: A;
+    ordering: OrderDirection;
+};
 
 export interface SelectQueryRequest<S extends readonly string[] = readonly string[]> extends QueryRequest {
     /**
@@ -7,6 +12,8 @@ export interface SelectQueryRequest<S extends readonly string[] = readonly strin
      * request.select = ['timestamp', 'fingerprint'];
      */
     select?: S;
+
+    order?: readonly SelectOrder[];
 }
 
 export type InferSelectQueryRequest<T> = T extends SelectQueryRequest<infer S> ? SelectQueryRequest<S> : never;

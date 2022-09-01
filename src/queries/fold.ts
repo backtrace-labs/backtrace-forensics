@@ -1,6 +1,6 @@
 import { QuerySource } from '../models/QuerySource';
-import { CoronerValueType } from '../requests';
-import { FoldOperator, FoldQueryRequest, Folds } from '../requests/fold';
+import { CoronerValueType, OrderDirection } from '../requests';
+import { FoldOperator, FoldQueryRequest, Folds, GetRequestFold } from '../requests/fold';
 import { CoronerResponse } from '../responses/common';
 import { FoldQueryResponse } from '../responses/fold';
 import { CommonCoronerQuery } from './common';
@@ -44,6 +44,47 @@ export interface FoldCoronerQuery<R extends FoldQueryRequest = FoldQueryRequest<
 }
 
 export interface FoldedCoronerQuery<R extends FoldQueryRequest> extends FoldCoronerQuery<R> {
+    /**
+     * Adds order on attribute fold with index and direction specified.
+     * @param attribute Attribute to order by.
+     * @param direction Order direction.
+     * @param index Index of fold to fold upon.
+     * Index must be less than number of folds made on this attribute, else the query will fail.
+     * @example
+     * // This will order descending on attribute 'a', fold 'head', then ascending on attribute 'a', fold 'tail'
+     * query.fold('a', 'head').fold('a', 'tail').order('a', 'descending', 0).order('a', 'ascending', 1)
+     */
+    order<F extends GetRequestFold<R>, A extends keyof F & string, I extends number>(
+        attribute: A,
+        direction: OrderDirection,
+        index: I
+    ): FoldedCoronerQuery<R>;
+
+    /**
+     * Adds order on attribute fold with direction specified.
+     * @param attribute Attribute to order by.
+     * @param direction Order direction.
+     * @param fold Fold to order by. Number of arguments may vary on used fold.
+     * Attribute must be folded on this fold, else the query will fail.
+     * @example
+     * // This will order descending on attribute 'a', fold 'head', then ascending on attribute 'a', fold 'tail'
+     * query.fold('a', 'head').fold('a', 'tail').order('a', 'descending', 'head').order('a', 'ascending', 'tail')
+     */
+    order<F extends GetRequestFold<R>, A extends keyof F & string, O extends F[A][number]>(
+        attribute: A,
+        direction: OrderDirection,
+        ...fold: O
+    ): FoldedCoronerQuery<R>;
+
+    /**
+     * Adds order on count direction specified.
+     * @param direction Order direction.
+     * @example
+     * // This will order descending on count
+     * query.fold('a', 'head').fold('a', 'tail').orderByCount('descending')
+     */
+    orderByCount(direction: OrderDirection): FoldedCoronerQuery<R>;
+
     /**
      * Returns the built request.
      */

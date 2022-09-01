@@ -38,4 +38,43 @@ describe('SelectedCoronerQueryBuilder', () => {
 
         expect(newRequest.select).toEqual(expectedKeys);
     });
+
+    it('should add order for a attribute when initial order is empty', () => {
+        const request: SelectQueryRequest = {};
+        const queryable = new SelectedCoronerQueryBuilder(request, executorMock, builderMock);
+
+        const newRequest = queryable.order('a', 'descending').getRequest();
+
+        expect(newRequest.order).toEqual([
+            {
+                name: 'a',
+                ordering: 'descending',
+            },
+        ]);
+    });
+
+    it('should add order for a attribute when initial order is not empty', () => {
+        const request: SelectQueryRequest = {
+            order: [
+                {
+                    name: 'b',
+                    ordering: 'ascending',
+                },
+            ],
+        };
+        const queryable = new SelectedCoronerQueryBuilder(request, executorMock, builderMock);
+
+        const newRequest = queryable.order('a', 'descending').getRequest();
+
+        expect(newRequest.order).toEqual([
+            {
+                name: 'b',
+                ordering: 'ascending',
+            },
+            {
+                name: 'a',
+                ordering: 'descending',
+            },
+        ]);
+    });
 });
