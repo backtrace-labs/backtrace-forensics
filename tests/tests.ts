@@ -64,15 +64,12 @@ import { SelectQueryResponse } from '../src/responses/select';
         simpleTest?.attributes;
     }
 
-    let runtimeStaticSelect = staticQuery.select();
-    let runtimeDynamicSelect = dynamicQuery.select();
+    let runtimeDynamicSelect = dynamicQuery.dynamicSelect();
 
     for (const attr of attrs) {
-        runtimeStaticSelect = runtimeStaticSelect.select(attr);
         runtimeDynamicSelect = runtimeDynamicSelect.select(attr);
     }
 
-    runtimeStaticSelect.getResponse().then((s) => !s.error && s.response.values[1]);
     runtimeDynamicSelect.getResponse().then((s) => !s.error && s.response.values[1][1]);
 
     const staticSelect = staticQuery.select('timestamp').select('_deleted');

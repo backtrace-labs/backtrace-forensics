@@ -45,11 +45,12 @@ async function staticSelect() {
 
     const query = BacktraceForensics.create({ defaultSource: source })
         .filter('fingerprint', 'equal', fp)
-        .select('callstack', 'randomInt', 'fingerprint');
+        .select('callstack', 'randomInt', 'fingerprint')
+        .select('awdwad');
 
     const response = await query.getResponse();
     if (!response.error) {
-        response.response.first()?.values.fingerprint;
+        response.response.first()?.values;
     }
 
     await displayDetails(query);
@@ -59,7 +60,7 @@ async function select() {
     const query = BacktraceForensics.create({ defaultSource: source });
     const fp = await question('enter fingerprint: ');
 
-    let selectQuery = query.filter('fingerprint', 'equal', fp).select();
+    let selectQuery = query.filter('fingerprint', 'equal', fp).dynamicSelect();
 
     const keysStr = await question('enter comma-delimited keys to select on: ');
     const keys = keysStr.split(',');
@@ -78,7 +79,7 @@ async function fold() {
     const keysStr = await question('enter comma-delimited keys to fold on: ');
     const opStr = [await question('enter operator: ')] as FoldOperator<CoronerValueType>;
 
-    let query = BacktraceForensics.create({ defaultSource: source }).fold().group(groupStr);
+    let query = BacktraceForensics.create({ defaultSource: source }).dynamicFold().group(groupStr);
 
     for (const key of keysStr.split(',')) {
         query = query.fold(key, ...opStr);

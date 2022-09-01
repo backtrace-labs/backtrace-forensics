@@ -4,7 +4,7 @@ import { CoronerResponse } from '../responses/common';
 import { SelectQueryResponse } from '../responses/select';
 import { CommonCoronerQuery } from './common';
 
-export interface SelectCoronerQuery<R extends SelectQueryRequest = SelectQueryRequest> extends CommonCoronerQuery {
+export interface SelectCoronerQuery<R extends SelectQueryRequest = SelectQueryRequest<[]>> extends CommonCoronerQuery {
     /**
      * Returns the query as dynamic select. Use this to assign select attributes in runtime, without knowing the types.
      * @example
