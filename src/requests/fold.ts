@@ -33,6 +33,10 @@ export type FoldOperator<T extends CoronerValueType = CoronerValueType> = T exte
     : never;
 
 export type FoldOrder<A extends string = string, I extends number = number> = {
+    /**
+     * Name and index of attribute to order by.
+     * Name defines the attribute name. Index defines the index of fold that was made on the attribute.
+     */
     name: `${A};${I}`;
     ordering: OrderDirection;
 };
@@ -66,6 +70,17 @@ export interface FoldQueryRequest<F extends Folds = Folds, G extends readonly st
      */
     fold?: F;
 
+    /**
+     * Attributes to order on.
+     * @example
+     * request.order = [{
+     *     name: 'timestamp;0',
+     *     ordering: 'descending'
+     * }, {
+     *     name: ';count',
+     *     ordering: 'ascending'
+     * }]
+     */
     order?: readonly (FoldOrder | CountFoldOrder)[];
 }
 

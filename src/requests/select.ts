@@ -13,6 +13,17 @@ export interface SelectQueryRequest<S extends readonly string[] = readonly strin
      */
     select?: S;
 
+    /**
+     * Attributes to order on.
+     * @example
+     * request.order = [{
+     *     name: 'timestamp',
+     *     ordering: 'descending'
+     * }, {
+     *     name: 'fingerprint',
+     *     ordering: 'ascending'
+     * }]
+     */
     order?: readonly SelectOrder[];
 }
 
