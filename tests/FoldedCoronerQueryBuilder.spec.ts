@@ -21,7 +21,7 @@ describe('FoldedCoronerQueryBuilder', () => {
         const request: FoldQueryRequest = {};
         const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
 
-        const newRequest = queryable.fold('a', 'head').getRequest();
+        const newRequest = queryable.fold('a', 'head').json();
 
         expect(newRequest.fold).toEqual({
             a: [['head']],
@@ -37,7 +37,7 @@ describe('FoldedCoronerQueryBuilder', () => {
 
         const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
 
-        const newRequest = queryable.fold('a', 'distribution', 3).getRequest();
+        const newRequest = queryable.fold('a', 'distribution', 3).json();
 
         expect(newRequest.fold).toEqual({
             a: [['head'], ['distribution', 3]],
@@ -53,7 +53,7 @@ describe('FoldedCoronerQueryBuilder', () => {
 
         const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
 
-        const newRequest = queryable.fold('b', 'max').getRequest();
+        const newRequest = queryable.fold('b', 'max').json();
 
         expect(newRequest.fold).toEqual({
             a: [['head']],
@@ -69,7 +69,7 @@ describe('FoldedCoronerQueryBuilder', () => {
         } as const);
 
         const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
-        const newRequest = queryable.order('a', 'ascending', 'head').getRequest();
+        const newRequest = queryable.order('a', 'ascending', 'head').json();
 
         expect(newRequest.order).toEqual([
             {
@@ -93,7 +93,7 @@ describe('FoldedCoronerQueryBuilder', () => {
         } as const);
 
         const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
-        const newRequest = queryable.order('a', 'ascending', 'head').getRequest();
+        const newRequest = queryable.order('a', 'ascending', 'head').json();
 
         expect(newRequest.order).toEqual([
             {
@@ -115,7 +115,7 @@ describe('FoldedCoronerQueryBuilder', () => {
         } as const);
 
         const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
-        const newRequest = queryable.order('a', 'ascending', 1).getRequest();
+        const newRequest = queryable.order('a', 'ascending', 1).json();
 
         expect(newRequest.order).toEqual([
             {
@@ -139,7 +139,7 @@ describe('FoldedCoronerQueryBuilder', () => {
         } as const);
 
         const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
-        const newRequest = queryable.order('a', 'ascending', 1).getRequest();
+        const newRequest = queryable.order('a', 'ascending', 1).json();
 
         expect(newRequest.order).toEqual([
             {
@@ -161,7 +161,7 @@ describe('FoldedCoronerQueryBuilder', () => {
         } as const);
 
         const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
-        const newRequest = queryable.orderByCount('ascending').getRequest();
+        const newRequest = queryable.orderByCount('ascending').json();
 
         expect(newRequest.order).toEqual([
             {
@@ -185,7 +185,7 @@ describe('FoldedCoronerQueryBuilder', () => {
         } as const);
 
         const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
-        const newRequest = queryable.orderByCount('ascending').getRequest();
+        const newRequest = queryable.orderByCount('ascending').json();
 
         expect(newRequest.order).toEqual([
             {
@@ -199,10 +199,10 @@ describe('FoldedCoronerQueryBuilder', () => {
         ]);
     });
 
-    it('should throw on getResponse when fold or group was not made', async () => {
+    it('should throw on post when fold or group was not made', async () => {
         const request: FoldQueryRequest = {};
         const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
 
-        await expect(queryable.getResponse()).rejects.toThrow('Fold or group query expected.');
+        await expect(queryable.post()).rejects.toThrow('Fold or group query expected.');
     });
 });

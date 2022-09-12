@@ -5,8 +5,8 @@ import { QueryRequest } from '../src/requests/common';
 
 describe('CoronerQueryBuilder', () => {
     const foldQueryableMock = {
-        getRequest: jest.fn(),
-        getResponse: jest.fn(),
+        json: jest.fn(),
+        post: jest.fn(),
         template: jest.fn().mockReturnThis(),
         fold: jest.fn().mockReturnThis(),
         dynamicFold: jest.fn().mockReturnThis(),
@@ -23,8 +23,8 @@ describe('CoronerQueryBuilder', () => {
     };
 
     const selectQueryableMock = {
-        getRequest: jest.fn(),
-        getResponse: jest.fn(),
+        json: jest.fn(),
+        post: jest.fn(),
         template: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
         dynamicSelect: jest.fn().mockReturnThis(),
@@ -47,7 +47,7 @@ describe('CoronerQueryBuilder', () => {
         const queryable = new CoronerQueryBuilder(request, foldFactory, selectFactory);
 
         const limit = 1337;
-        const newRequest = queryable.limit(limit).getRequest();
+        const newRequest = queryable.limit(limit).json();
 
         expect(newRequest).toHaveProperty('limit', limit);
     });
@@ -57,7 +57,7 @@ describe('CoronerQueryBuilder', () => {
         const queryable = new CoronerQueryBuilder(request, foldFactory, selectFactory);
 
         const offset = 1337;
-        const newRequest = queryable.offset(offset).getRequest();
+        const newRequest = queryable.offset(offset).json();
 
         expect(newRequest).toHaveProperty('offset', offset);
     });
@@ -66,7 +66,7 @@ describe('CoronerQueryBuilder', () => {
         const request: QueryRequest = {};
         const queryable = new CoronerQueryBuilder(request, foldFactory, selectFactory);
 
-        const newRequest = queryable.filter('a', 'at-least', 123).getRequest();
+        const newRequest = queryable.filter('a', 'at-least', 123).json();
 
         expect(newRequest).toHaveProperty('filter', [
             {
@@ -85,7 +85,7 @@ describe('CoronerQueryBuilder', () => {
         };
         const queryable = new CoronerQueryBuilder(request, foldFactory, selectFactory);
 
-        const newRequest = queryable.filter('a', 'at-least', 123).getRequest();
+        const newRequest = queryable.filter('a', 'at-least', 123).json();
 
         expect(newRequest).toHaveProperty('filter', [
             Object.assign({}, request.filter![0], {
@@ -104,7 +104,7 @@ describe('CoronerQueryBuilder', () => {
         };
         const queryable = new CoronerQueryBuilder(request, foldFactory, selectFactory);
 
-        const newRequest = queryable.filter('a', 'at-least', 123).getRequest();
+        const newRequest = queryable.filter('a', 'at-least', 123).json();
 
         expect(newRequest).toHaveProperty('filter', [
             {

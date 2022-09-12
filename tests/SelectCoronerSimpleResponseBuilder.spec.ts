@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { SelectCoronerSimpleResponseBuilder } from '../src/implementation/responses/SelectCoronerSimpleResponseBuilder';
 import { createSelectRequest, SelectQueryRequest } from '../src/requests';
-import { SelectQueryResponse } from '../src/responses/select';
+import { RawSelectQueryResponse } from '../src/responses/select';
 
 describe('SelectCoronerSimpleResponseBuilder', () => {
     const testRequest = createSelectRequest({
@@ -15,13 +15,7 @@ describe('SelectCoronerSimpleResponseBuilder', () => {
         ],
     } as const);
 
-    const testResponse: SelectQueryResponse<typeof testRequest> = {
-        rows: () => {
-            throw new Error('not implemented');
-        },
-        first: () => {
-            throw new Error('not implemented');
-        },
+    const testResponse: RawSelectQueryResponse<typeof testRequest> = {
         version: '1.2.0',
         seq: 2,
         encoding: 'rle',
@@ -137,13 +131,7 @@ describe('SelectCoronerSimpleResponseBuilder', () => {
     });
 
     it('should return undefined element from queried elements from first when no elements are present', async () => {
-        const response: SelectQueryResponse<SelectQueryRequest> = {
-            rows: () => {
-                throw new Error('not implemented');
-            },
-            first: () => {
-                throw new Error('not implemented');
-            },
+        const response: RawSelectQueryResponse<SelectQueryRequest> = {
             columns: [
                 ['fingerprint', 'sha256'],
                 ['randomInt', 'none'],

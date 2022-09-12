@@ -77,3 +77,7 @@ export type GetRequestGroup<R extends FoldQueryRequest> = R extends FoldQueryReq
 export function createFoldRequest<T extends FoldQueryRequest>(request: T): InferFoldQueryRequest<T> {
     return request as unknown as InferFoldQueryRequest<T>;
 }
+
+export function isFoldRequest(request: QueryRequest): boolean {
+    return 'fold' in request || 'group' in request;
+}

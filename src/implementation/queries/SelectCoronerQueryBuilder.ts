@@ -4,8 +4,7 @@ import { QuerySource } from '../../models/QuerySource';
 import { AddSelect, SelectedCoronerQuery } from '../../queries/select';
 import { OrderDirection } from '../../requests';
 import { SelectOrder, SelectQueryRequest } from '../../requests/select';
-import { CoronerResponse } from '../../responses/common';
-import { SelectQueryResponse } from '../../responses/select';
+import { RawSelectQueryResponse, SelectQueryResponse } from '../../responses/select';
 import { cloneSelectRequest } from '../requests/cloneRequest';
 import { CommonCoronerQueryBuilder } from './CommonCoronerQueryBuilder';
 
@@ -55,19 +54,24 @@ export class SelectedCoronerQueryBuilder<R extends SelectQueryRequest>
         return this.createInstance(request);
     }
 
-    public getRequest(): R {
+    public json(): R {
         return this.#request;
     }
 
-    public async getResponse(source?: Partial<QuerySource>): Promise<CoronerResponse<SelectQueryResponse<R>>> {
+    public async post(source?: Partial<QuerySource>): Promise<SelectQueryResponse<R>> {
         if (!this.#request.select) {
             throw new Error('Select query expected.');
         }
 
-        const response = await this.#executor.execute<SelectQueryResponse<R>>(this.#request, source);
-        if (!response.error) {
-            response.response.first = () => this.#simpleResponseBuilder.first(response.response);
-            response.response.rows = () => this.#simpleResponseBuilder.rows(response.response);
+        const response = (await this.#executor.execute<RawSelectQueryResponse<R>>(
+            this.#request,
+            source
+        )) as SelectQueryResponse<R>;
+
+        if (response.success) {
+            const json = response.json();
+            response.first = () => this.#simpleResponseBuilder.first(json.response);
+            response.all = () => this.#simpleResponseBuilder.rows(json.response);
         }
         return response;
     }

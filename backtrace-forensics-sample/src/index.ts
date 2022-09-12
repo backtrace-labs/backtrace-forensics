@@ -28,16 +28,16 @@ async function question(msg: string) {
 }
 
 async function displayDetails(query: FoldedCoronerQuery<any> | SelectedCoronerQuery<any>) {
-    const request = query.getRequest();
+    const request = query.json();
     console.log('Request: ', JSON.stringify(request, null, '\t'));
 
-    const result = await query.getResponse();
-    if (result.error) {
-        throw new Error(`${result.error.message} (${result.error.code})`);
+    const result = await query.post();
+    if (!result.success) {
+        throw new Error(`${result.json().error.message} (${result.json().error.code})`);
     }
 
-    console.log('Response: ', JSON.stringify(result.response, null, '\t'));
-    console.log('Rows: ', JSON.stringify(result.response.rows(), null, '\t'));
+    console.log('Response: ', JSON.stringify(result.json(), null, '\t'));
+    console.log('Rows: ', JSON.stringify(result.all(), null, '\t'));
 }
 
 async function staticSelect() {
@@ -48,9 +48,9 @@ async function staticSelect() {
         .select('callstack', 'randomInt', 'fingerprint')
         .select('awdwad');
 
-    const response = await query.getResponse();
-    if (!response.error) {
-        response.response.first()?.values;
+    const response = await query.post();
+    if (response.success) {
+        response.first()?.values;
     }
 
     await displayDetails(query);
@@ -67,6 +67,11 @@ async function select() {
 
     for (const key of keys) {
         selectQuery = selectQuery.select(key);
+    }
+
+    const response = await selectQuery.post();
+    if (response.success) {
+        response.first()?.values;
     }
 
     await displayDetails(selectQuery);
@@ -89,7 +94,7 @@ async function fold() {
         query = query.filter('fingerprint', 'equal', fp);
     }
 
-    // const response = await query.getResponse();
+    // const response = await query.post();
     await displayDetails(query);
 }
 
@@ -105,9 +110,9 @@ async function staticFold() {
         .fold('randomInt', 'distribution', 3)
         .group('randomInt');
 
-    const response = await query.getResponse();
-    if (!response.error) {
-        response.response.first()!.attributes.randomInt.groupKey;
+    const response = await query.post();
+    if (response.success) {
+        response.first()!.attributes.randomInt.groupKey;
     }
     await displayDetails(query);
 }

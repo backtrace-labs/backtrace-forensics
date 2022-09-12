@@ -10,14 +10,23 @@ import { ISelectCoronerQueryBuilderFactory } from './interfaces/factories/ISelec
 import { ICoronerQueryExecutor } from './interfaces/ICoronerQueryExecutor';
 import { ICoronerQueryMaker } from './interfaces/ICoronerQueryMaker';
 import { QuerySource } from './models/QuerySource';
+import { FoldCoronerQuery, FoldedCoronerQuery, SelectCoronerQuery, SelectedCoronerQuery } from './queries';
 import { CoronerQuery } from './queries/common';
+import {
+    FoldQueryRequest,
+    InferFoldQueryRequest,
+    InferSelectQueryRequest,
+    isFoldRequest,
+    isSelectRequest,
+    SelectQueryRequest,
+} from './requests';
 import { QueryRequest } from './requests/common';
 
 export interface BacktraceForensicOptions {
     /**
      * Data from this source will be used as defaults for API calls.
      *
-     * You can override this in `getResponse()` functions in queries.
+     * You can override this in `post()` functions in queries.
      * @example
      * options.defaultSource = {
      *     address: 'http://sample.sp.backtrace.io',
@@ -25,7 +34,7 @@ export interface BacktraceForensicOptions {
      * };
      *
      * // Will use `address` and `token` from defaults
-     * query.getResponse({ project: 'coroner' });
+     * query.post({ project: 'coroner' });
      */
     defaultSource?: Partial<QuerySource>;
 
@@ -71,7 +80,20 @@ export class BacktraceForensics {
      * const instance = new BacktraceForensics();
      * const query = instance.create().filter(...).fold(...);
      */
-    public create(request?: QueryRequest): CoronerQuery {
+    public create<R extends QueryRequest>(request?: R): CoronerQuery;
+    public create<R extends SelectQueryRequest>(request?: R): SelectedCoronerQuery<InferSelectQueryRequest<R>>;
+    public create<R extends FoldQueryRequest>(request?: R): FoldedCoronerQuery<InferFoldQueryRequest<R>>;
+    public create(
+        request?: QueryRequest
+    ): CoronerQuery | SelectCoronerQuery<SelectQueryRequest> | FoldCoronerQuery<FoldQueryRequest> {
+        if (request) {
+            if (isSelectRequest(request)) {
+                return this.#selectFactory.create(request as SelectQueryRequest);
+            } else if (isFoldRequest(request)) {
+                return this.#foldFactory.create(request as FoldQueryRequest);
+            }
+        }
+
         return new CoronerQueryBuilder(request ?? {}, this.#foldFactory, this.#selectFactory);
     }
 
@@ -82,7 +104,22 @@ export class BacktraceForensics {
      * @example
      * const query = BacktraceForensics.create().filter(...).fold(...);
      */
-    public static create(options?: Partial<BacktraceForensicOptions>, request?: QueryRequest): CoronerQuery {
+    public static create<R extends QueryRequest>(
+        options?: Partial<BacktraceForensicOptions>,
+        request?: R
+    ): CoronerQuery;
+    public static create<R extends SelectQueryRequest>(
+        options?: Partial<BacktraceForensicOptions>,
+        request?: R
+    ): SelectedCoronerQuery<InferSelectQueryRequest<R>>;
+    public static create<R extends FoldQueryRequest>(
+        options?: Partial<BacktraceForensicOptions>,
+        request?: R
+    ): FoldedCoronerQuery<InferFoldQueryRequest<R>>;
+    public static create(
+        options?: Partial<BacktraceForensicOptions>,
+        request?: QueryRequest
+    ): CoronerQuery | SelectCoronerQuery<SelectQueryRequest> | FoldCoronerQuery<FoldQueryRequest> {
         return new BacktraceForensics(options).create(request);
     }
 

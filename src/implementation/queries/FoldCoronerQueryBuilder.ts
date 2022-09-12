@@ -5,8 +5,7 @@ import { QuerySource } from '../../models/QuerySource';
 import { AddFold, FoldedCoronerQuery, SetFoldGroup } from '../../queries/fold';
 import { CoronerValueType, OrderDirection } from '../../requests/common';
 import { CountFoldOrder, FoldOperator, FoldOrder, FoldQueryRequest, Folds, GetRequestFold } from '../../requests/fold';
-import { CoronerResponse } from '../../responses/common';
-import { FoldQueryResponse } from '../../responses/fold';
+import { FoldQueryResponse, RawFoldQueryResponse } from '../../responses/fold';
 import { cloneFoldRequest } from '../requests/cloneRequest';
 import { CommonCoronerQueryBuilder } from './CommonCoronerQueryBuilder';
 
@@ -131,19 +130,24 @@ export class FoldedCoronerQueryBuilder<R extends FoldQueryRequest = FoldQueryReq
         return this.createInstance(request);
     }
 
-    public getRequest(): R {
+    public json(): R {
         return this.#request;
     }
 
-    public async getResponse(source?: Partial<QuerySource>): Promise<CoronerResponse<FoldQueryResponse<R>>> {
+    public async post(source?: Partial<QuerySource>): Promise<FoldQueryResponse<R>> {
         if (!this.#request.fold || !this.#request.group) {
             throw new Error('Fold or group query expected.');
         }
 
-        const response = await this.#executor.execute<FoldQueryResponse<R>>(this.#request, source);
-        if (!response.error) {
-            response.response.first = () => this.#simpleResponseBuilder.first(response.response, this.#request);
-            response.response.rows = () => this.#simpleResponseBuilder.rows(response.response, this.#request);
+        const response = (await this.#executor.execute<RawFoldQueryResponse<R>>(
+            this.#request,
+            source
+        )) as FoldQueryResponse<R>;
+
+        if (response.success) {
+            const json = response.json();
+            response.first = () => this.#simpleResponseBuilder.first(json.response, this.#request);
+            response.all = () => this.#simpleResponseBuilder.rows(json.response, this.#request);
         }
         return response;
     }

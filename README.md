@@ -48,7 +48,7 @@ You can provide options to change the behavior of the library:
 
     Data from this source will be used as defaults for API calls.
 
-    You can override this in `getResponse()` functions in queries.
+    You can override this in `post()` functions in queries.
 
     **Example**
 
@@ -59,7 +59,7 @@ You can provide options to change the behavior of the library:
     };
 
     // Will use `address` and `token` from defaults
-    query.getResponse({ project: 'coroner' });
+    query.post({ project: 'coroner' });
     ```
 
 -   `queryMaker`
@@ -211,37 +211,37 @@ These functions are only available when folding, and when the query is neither s
 
 ## Getting the request
 
-At any point of querying, you can retrieve the raw request that is being built by using `getRequest` function.
+At any point of querying, you can retrieve the raw request that is being built by using `json` function.
 
 You can use this request to perform a query to Coroner.
 
 ```typescript
-const request = query.filter('a', 'equal', 'xyz').limit(20).select('b', 'c').getRequest();
+const request = query.filter('a', 'equal', 'xyz').limit(20).select('b', 'c').json();
 ```
 
 ## Getting the response
 
-To get the response, you must select or fold at least once. After that, you can use the async `getResponse` function, to receive the raw response from Coroner.
+To get the response, you must select or fold at least once. After that, you can use the async `post` function, to receive the raw response from Coroner.
 
 Check for `error` before trying to access the actual response.
 
 ```typescript
-const coronerResponse = await query.getResponse();
-if (coronerResponse.error) {
+const coronerResponse = await query.post();
+if (!coronerResponse.success) {
     // An error happened!
-    const message = coronerResponse.error.message;
-    const code = coronerResponse.error.code;
+    const message = coronerResponse.json().error.message;
+    const code = coronerResponse.json().error.code;
     return;
 }
 
 // We got the raw response from Coroner query here!
-const response = coronerResponse.response;
+const response = coronerResponse.json();
 ```
 
 You can provide the source of data for making this query:
 
 ```typescript
-const coronerResponse = await query.getResponse({
+const coronerResponse = await query.post({
     address: 'http://sample.sp.backtrace.io',
     token: '00112233445566778899AABBCCDDEEFF',
     project: 'coroner',
@@ -257,13 +257,13 @@ The responses will be different for selecting and folding, respectively.
 ### Simple select response
 
 ```typescript
-const coronerResponse = await query.select('a', 'b', 'c').getResponse();
-if (coronerResponse.error) {
+const coronerResponse = await query.select('a', 'b', 'c').post();
+if (!coronerResponse.success) {
     return;
 }
 
-const firstRow = coronerResponse.response.first();
-const rows = coronerResponse.response.toArray(); // this will contain the firstRow above as the first element
+const firstRow = coronerResponse.first();
+const rows = coronerResponse.toArray(); // this will contain the firstRow above as the first element
 for (const row of rows) {
     console.log(row.a, row.b, row.c); // prints values of attributes a, b, c
 }
@@ -281,14 +281,14 @@ const coronerResponse = await query
     .group('c')
     .fold('c', 'bin', 3)
     .fold('c', 'unique')
-    .getResponse();
+    .post();
 
-if (coronerResponse.error) {
+if (!coronerResponse.success) {
     return;
 }
 
-const firstRow = coronerResponse.response.first();
-const rows = coronerResponse.response.toArray(); // this will contain the firstRow above as the first element
+const firstRow = coronerResponse.first();
+const rows = coronerResponse.toArray(); // this will contain the firstRow above as the first element
 for (const row of rows) {
     console.log(row.count); // displays the group count
     console.log(row.attributes.c.groupKey); // displays the group key

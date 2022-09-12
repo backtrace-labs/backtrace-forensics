@@ -43,7 +43,7 @@ export type SimpleFoldGroup<A extends string, G extends readonly string[]> = A e
       }
     : {};
 
-export type SimpleFold<O extends readonly FoldOperator[], F extends FoldOperator> = {
+export type SimpleFold<O extends readonly FoldOperator[], F extends FoldOperator = FoldOperator> = {
     [I in keyof O]: {
         fold: F[0];
         rawFold: F;

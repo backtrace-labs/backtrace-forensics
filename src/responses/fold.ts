@@ -6,7 +6,7 @@ import {
     FoldQueryRequest,
     UnaryFoldOperator,
 } from '../requests/fold';
-import { QueryResponse } from './common';
+import { FailedQueryResponse, RawQueryResponse, SuccessfulQueryResponse } from './common';
 import { SimpleFoldRow, SimpleFoldRows } from './simple/fold';
 
 export interface QueryFactorDescription {
@@ -57,11 +57,16 @@ export type FoldQueryRowValue<F extends readonly FoldOperator[]> = [
     number
 ];
 
-export interface FoldQueryResponse<R extends FoldQueryRequest> extends QueryResponse {
+export interface RawFoldQueryResponse<R extends FoldQueryRequest> extends RawQueryResponse {
     readonly cardinalities: QueryCardinalities;
     readonly factors_desc?: QueryFactorDescription[];
     readonly values: FoldQueryRowValue<NonNullable<R['fold']>[string]>[];
+}
 
-    rows(): SimpleFoldRows<R>;
+export interface SuccessfulFoldQueryResponse<R extends FoldQueryRequest>
+    extends SuccessfulQueryResponse<RawFoldQueryResponse<R>> {
+    all(): SimpleFoldRows<R>;
     first(): SimpleFoldRow<R> | undefined;
 }
+
+export type FoldQueryResponse<R extends FoldQueryRequest> = SuccessfulFoldQueryResponse<R> | FailedQueryResponse;

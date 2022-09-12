@@ -1,7 +1,6 @@
 import { QuerySource } from '../models/QuerySource';
 import { OrderDirection } from '../requests';
 import { SelectQueryRequest } from '../requests/select';
-import { CoronerResponse } from '../responses/common';
 import { SelectQueryResponse } from '../responses/select';
 import { CommonCoronerQuery } from './common';
 
@@ -41,15 +40,19 @@ export interface SelectedCoronerQuery<R extends SelectQueryRequest> extends Sele
     /**
      * Returns the built request.
      */
-    getRequest(): R;
+    json(): R;
 
     /**
      * Makes a POST call to Coroner with the built request.
      * @param source Where to make the request. If not specified, will supply data from default source.
      */
-    getResponse(source?: Partial<QuerySource>): Promise<CoronerResponse<SelectQueryResponse<R>>>;
+    post(source?: Partial<QuerySource>): Promise<SelectQueryResponse<R>>;
 }
 
-export type AddSelect<R extends SelectQueryRequest, S extends string[]> = SelectQueryRequest<
-    [...NonNullable<R['select']>, ...S]
->;
+// export type AddSelect<R extends SelectQueryRequest, S extends string[]> = SelectQueryRequest<
+//     [...NonNullable<R['select']>, ...S]
+// >;
+
+export type AddSelect<R extends SelectQueryRequest, A extends string[]> = R extends SelectQueryRequest<infer S>
+    ? SelectQueryRequest<[...S, ...A]>
+    : never;

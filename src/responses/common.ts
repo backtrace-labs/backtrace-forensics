@@ -12,7 +12,7 @@ export interface QueryPagination {
     readonly offset: number;
 }
 
-export interface QueryResponse {
+export interface RawQueryResponse {
     readonly version: string;
     readonly encoding: string;
     readonly seq: number;
@@ -21,16 +21,27 @@ export interface QueryResponse {
     readonly columns_desc: QueryColumnDescription[];
 }
 
-export interface SuccessfulCoronerResponse<R extends QueryResponse> {
-    response: R;
-    error: undefined;
-}
-
-export interface FailedCoronerResponse {
-    error: {
-        message: string;
-        code: number;
+export interface SuccessfulQueryResponse<R extends RawQueryResponse> {
+    success: true;
+    json(): {
+        response: R;
+        error: undefined;
     };
 }
 
-export type CoronerResponse<R extends QueryResponse> = SuccessfulCoronerResponse<R> | FailedCoronerResponse;
+export interface FailedQueryResponse {
+    success: false;
+    json(): {
+        response: unknown;
+        error: {
+            message: string;
+            code: number;
+        };
+    };
+}
+
+export type RawCoronerResponse<R extends RawQueryResponse = RawQueryResponse> = ReturnType<QueryResponse<R>['json']>;
+
+export type QueryResponse<R extends RawQueryResponse = RawQueryResponse> =
+    | SuccessfulQueryResponse<R>
+    | FailedQueryResponse;

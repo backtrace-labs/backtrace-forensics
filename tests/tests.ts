@@ -1,9 +1,9 @@
 import { BacktraceForensics } from '../src';
 import { createFoldRequest, FoldQueryRequest } from '../src/requests/fold';
 import { createSelectRequest, SelectQueryRequest } from '../src/requests/select';
-import { CoronerResponse } from '../src/responses/common';
-import { FoldQueryResponse } from '../src/responses/fold';
-import { SelectQueryResponse } from '../src/responses/select';
+import { RawCoronerResponse } from '../src/responses/common';
+import { FoldQueryResponse, RawFoldQueryResponse } from '../src/responses/fold';
+import { RawSelectQueryResponse, SelectQueryResponse } from '../src/responses/select';
 
 // TESTING STUFF
 (async () => {
@@ -26,14 +26,14 @@ import { SelectQueryResponse } from '../src/responses/select';
     // keep only the last fold of a type, e.g. keep only distribution 5 below
     // @up its not valid, Coroner allows for multiple folds on the same fold type
     dynamicFold = dynamicFold.fold('awkfhajhfaw', 'head').fold('a1', 'distribution', 3).fold('a1', 'distribution', 5);
-    const response = await dynamicFold.getResponse();
-    if (!response.error) {
-        const results = response.response.rows();
+    const response = await dynamicFold.post();
+    if (response.success) {
+        const results = response.all();
         for (const result of results.rows) {
             for (const attribute in result.attributes) {
                 const values = result.attributes;
-                const headValueOrNull = response.response.first()?.fold('something_user_provdes', 'distribution', 3);
-                const a = response.response.first()?.fold('asdsa', 'bin');
+                const headValueOrNull = response.first()?.fold('something_user_provdes', 'distribution', 3);
+                const a = response.first()?.fold('asdsa', 'bin');
             }
         }
     }
@@ -56,10 +56,10 @@ import { SelectQueryResponse } from '../src/responses/select';
         .fold('_deleted', 'head')
         .group('rower');
 
-    const staticFoldResult = await staticFold.getResponse();
+    const staticFoldResult = await staticFold.post();
 
-    if (!staticFoldResult.error) {
-        const test = staticFoldResult.response;
+    if (staticFoldResult.success) {
+        const test = staticFoldResult;
         const simpleTest = test.first();
         simpleTest?.attributes;
     }
@@ -70,13 +70,13 @@ import { SelectQueryResponse } from '../src/responses/select';
         runtimeDynamicSelect = runtimeDynamicSelect.select(attr);
     }
 
-    runtimeDynamicSelect.getResponse().then((s) => !s.error && s.response.values[1][1]);
+    runtimeDynamicSelect.post().then((s) => s.success && s.json().response.values[1][1]);
 
     const staticSelect = staticQuery.select('timestamp').select('_deleted');
 
-    const selectResult = await staticSelect.getResponse();
-    if (!selectResult.error) {
-        const simple = selectResult.response.first();
+    const selectResult = await staticSelect.post();
+    if (selectResult.success) {
+        const simple = selectResult.first();
     }
 
     const dynamicSelectQuery = coronerQuery
@@ -89,9 +89,10 @@ import { SelectQueryResponse } from '../src/responses/select';
         .select('b')
         .select('c');
 
-    const dynamicSelectResult = await dynamicSelectQuery.getResponse();
-    if (!dynamicSelectResult.error) {
-        const test = dynamicSelectResult.response.first();
+    const dynamicSelectResult = await dynamicSelectQuery.post();
+    if (dynamicSelectResult.success) {
+        const test = dynamicSelectResult.first();
+        test?.values.
         // dynamicSelectResult.response.values[0][1].
     }
 
@@ -113,9 +114,9 @@ import { SelectQueryResponse } from '../src/responses/select';
         .fold('c', 'distribution', 6)
         .group('a');
 
-    const dynamicFoldResult = await dynamicFoldQuery.getResponse(); // const dynamicFoldResult = await coronerQuery.getResponse(dynamicFoldQuery);
-    if (!dynamicFoldResult.error) {
-        const test = dynamicFoldResult.response.first();
+    const dynamicFoldResult = await dynamicFoldQuery.post(); // const dynamicFoldResult = await coronerQuery.post(dynamicFoldQuery);
+    if (dynamicFoldResult.success) {
+        const test = dynamicFoldResult.first();
         if (test) {
             test.tryFold('c', 'distribution', 6);
             test.attributes.a;
@@ -126,28 +127,26 @@ import { SelectQueryResponse } from '../src/responses/select';
         .create()
         .fold('a', 'head')
         .fold('a', 'distribution', 3)
-        .fold('a', 'distribution', 5)
+        .fold('a', 'distribution', 4)
         .order('a', 'descending', 1)
-        .order('a', 'descending', 'distribution', 5)
-        .getResponse();
-    // if (!staticFold1.error) {
-    //     const firstRow = staticFold1.response.first();
-    //     if (firstRow) {
-    //         firstRow.fold('a', 'head');
-    //         firstRow.fold('a', 'distribution', 3);
-    //         firstRow.fold('b', 'head'); // will throw, and fails type checking
-    //         firstRow.fold('a', 'min'); // will throw, and fails type checking
-    //         firstRow.fold('a', 'distribution', 5); // will throw, and fails type checking
+        .order('a', 'descending', 'distribution', 4)
+        .post();
+    if (staticFold1.success) {
+        const firstRow = staticFold1.first();
+        if (firstRow) {
+            firstRow.fold('a', 'head');
+            firstRow.fold('a', 'distribution', 3);
+            firstRow.fold('b', 'head'); // will throw, and fails type checking
+            firstRow.fold('a', 'min'); // will throw, and fails type checking
+            firstRow.fold('a', 'distribution', 5); // will throw, and fails type checking
 
-    //         firstRow.tryFold('a', 'head');
-    //         firstRow.tryFold('a', 'distribution', 3);
-    //         firstRow.tryFold('b', 'head'); // will return undefined
-    //         firstRow.tryFold('a', 'min'); // will return undefined
-    //         firstRow.tryFold('a', 'distribution', 5); // will return undefined
-
-    //         firstRow.attributes.a.distribution[0].value.tail
-    //     }
-    // }
+            firstRow.tryFold('a', 'head');
+            firstRow.tryFold('a', 'distribution', 3);
+            firstRow.tryFold('b', 'head'); // will return undefined
+            firstRow.tryFold('a', 'min'); // will return undefined
+            firstRow.tryFold('a', 'distribution', 5); // will return undefined
+        }
+    }
 
     // // dynamic fold
     const dynamicFold1 = await coronerQuery
@@ -155,26 +154,26 @@ import { SelectQueryResponse } from '../src/responses/select';
         .dynamicFold()
         .fold('a', 'head')
         .order('a', 'descending', 'min')
-        .getResponse();
-    // if (!dynamicFold1.error) {
-    //     const firstRow = dynamicFold1.response.first();
-    //     if (firstRow) {
-    //         firstRow.fold('a', 'head');
-    //         firstRow.fold('a', 'distribution', 3);
-    //         firstRow.fold('b', 'head'); // will throw
-    //         firstRow.fold('a', 'min'); // will throw
-    //         firstRow.fold('a', 'distribution', 5); // will throw
+        .post();
+    if (dynamicFold1.success) {
+        const firstRow = dynamicFold1.first();
+        if (firstRow) {
+            firstRow.fold('a', 'head');
+            firstRow.fold('a', 'distribution', 3);
+            firstRow.fold('b', 'head'); // will throw
+            firstRow.fold('a', 'min'); // will throw
+            firstRow.fold('a', 'distribution', 5); // will throw
 
-    //         firstRow.tryFold('a', 'head');
-    //         firstRow.tryFold('a', 'distribution', 3);
-    //         firstRow.tryFold('b', 'head'); // will return undefined
-    //         firstRow.tryFold('a', 'min'); // will return undefined
-    //         firstRow.tryFold('a', 'distribution', 5); // will return undefined
+            firstRow.tryFold('a', 'head');
+            firstRow.tryFold('a', 'distribution', 3);
+            firstRow.tryFold('b', 'head'); // will return undefined
+            firstRow.tryFold('a', 'min'); // will return undefined
+            firstRow.tryFold('a', 'distribution', 5); // will return undefined
 
-    //         firstRow.attributes.a.distribution[0].value.tail
-    //         firstRow.attributes.whatnot.distribution[0].value.tail // will fail as a null ref
-    //     }
-    // }
+            firstRow.attributes.a.distribution[0].value
+            firstRow.attributes.whatnot.distribution[0].value.tail; // will fail as a null ref
+        }
+    }
 })();
 
 type Test<A extends string, B extends boolean> = [A, B];
@@ -195,25 +194,22 @@ const foldReq = createFoldRequest({
 } as const);
 
 const foldRes = {} as FoldQueryResponse<typeof foldReq>;
-const azzz = foldRes.first()!.tryFold('a', 'distribution', 3);
+if (foldRes.success) {
+    const azzz = foldRes.first()!.tryFold('a', 'distribution', 3);
+}
 
 const selectReq = createSelectRequest({
     select: ['a', 'b', 'c', 'a'],
 } as const);
 
 const selectResponse = {} as SelectQueryResponse<typeof selectReq>;
-const v = selectResponse.first()?.values;
+if (selectResponse.success) {
+    const v = selectResponse.first()?.values;
+}
 
-const testFoldResponse: CoronerResponse<FoldQueryResponse<FoldQueryRequest>> = {
-    // const testFoldResponse = {
+const testFoldResponse: RawCoronerResponse<RawFoldQueryResponse<FoldQueryRequest>> = {
     error: undefined,
     response: {
-        rows: () => {
-            throw new Error('not implemented');
-        },
-        first: () => {
-            throw new Error('not implemented');
-        },
         version: '1.2.0',
         seq: 37,
         encoding: 'rle',
@@ -461,7 +457,7 @@ const testFoldResponse: CoronerResponse<FoldQueryResponse<FoldQueryRequest>> = {
                 '82c60b2309a8e16fda421e07483681e75242560bf0484d5c88c4fb575dde845f',
                 [
                     [
-                        '{"frame":["-[PLCrashReporter generateLiveReportWithThread:error:]","-[OomWatcher sendOomReports]","-[OomWatcher startOomIntegration]","-[OomWatcher initWithCrashReporter:andAttributes:andApi:andAttachments:]","-[Backtrace initWithBacktraceUrl:andAttributes:andOomSupport:andAttachments:andClientSideUnwinding:]","StartBacktraceIntegration","NativeClient_Start_m410B1199507CD2195F690D2B1AE90251278140C3","NativeClient_HandleNativeCrashes_mAF321A2B4A9DE1A4D53B8C5DAF943D77F9FF056C","NativeClient__ctor_m7F4390125CC24EECAD0A1874AC8022258E7FD206","NativeClientFactory_CreateNativeClient_m2C3A77DF9B1AE76DECE81E66E660D69A2D54F2A4","BacktraceClient_Refresh_mE23B1D973AE968302EA66CC6F8447151AC7B3713","RuntimeInvoker_TrueVoid_t22962CB4C05B1D89B55A6E1139F0E87A90987017(void (*)","il2cpp::vm::Runtime::Invoke","scripting_method_invoke","Invoke","InvokeChecked","CallMethod","CallAwake","AddToManager","AwakeFromLoad","InvokePersistentManagerAwake","PersistentManagerAwakeFromLoad","CompleteAwakeSequence","CompletePreloadManagerLoadScene","PlayerLoadSceneFromThread","CompleteLoadFirstScene","IntegrateMainThread","UpdatePreloadingSingleStep","UpdatePreloading","UnityPlayerLoopImpl","UnityRepaint","-[UnityAppController","CA::Display::DisplayLink::dispatch_items","display_timer_callback","GSEventRunModal","-[UIApplication _run]","UIApplicationMain","-[UnityFramework runUIApplicationMainWithArgc:argv:]","main"]}',
+                        '{"frame":["-[PLCrashReporter generateLiveReportWithThread:error:]","-[OomWatcher postOomReports]","-[OomWatcher startOomIntegration]","-[OomWatcher initWithCrashReporter:andAttributes:andApi:andAttachments:]","-[Backtrace initWithBacktraceUrl:andAttributes:andOomSupport:andAttachments:andClientSideUnwinding:]","StartBacktraceIntegration","NativeClient_Start_m410B1199507CD2195F690D2B1AE90251278140C3","NativeClient_HandleNativeCrashes_mAF321A2B4A9DE1A4D53B8C5DAF943D77F9FF056C","NativeClient__ctor_m7F4390125CC24EECAD0A1874AC8022258E7FD206","NativeClientFactory_CreateNativeClient_m2C3A77DF9B1AE76DECE81E66E660D69A2D54F2A4","BacktraceClient_Refresh_mE23B1D973AE968302EA66CC6F8447151AC7B3713","RuntimeInvoker_TrueVoid_t22962CB4C05B1D89B55A6E1139F0E87A90987017(void (*)","il2cpp::vm::Runtime::Invoke","scripting_method_invoke","Invoke","InvokeChecked","CallMethod","CallAwake","AddToManager","AwakeFromLoad","InvokePersistentManagerAwake","PersistentManagerAwakeFromLoad","CompleteAwakeSequence","CompletePreloadManagerLoadScene","PlayerLoadSceneFromThread","CompleteLoadFirstScene","IntegrateMainThread","UpdatePreloadingSingleStep","UpdatePreloading","UnityPlayerLoopImpl","UnityRepaint","-[UnityAppController","CA::Display::DisplayLink::dispatch_items","display_timer_callback","GSEventRunModal","-[UIApplication _run]","UIApplicationMain","-[UnityFramework runUIApplicationMainWithArgc:argv:]","main"]}',
                     ],
                     ['0'],
                     [{ keys: 1, vals: [['1652112748', 1]] }],
@@ -590,15 +586,9 @@ const testFoldResponse: CoronerResponse<FoldQueryResponse<FoldQueryRequest>> = {
     },
 };
 
-const testSelectResponse: CoronerResponse<SelectQueryResponse<SelectQueryRequest>> = {
+const testSelectResponse: RawCoronerResponse<RawSelectQueryResponse<SelectQueryRequest>> = {
     error: undefined,
     response: {
-        rows: () => {
-            throw new Error('not implemented');
-        },
-        first: () => {
-            throw new Error('not implemented');
-        },
         version: '1.2.0',
         seq: 37,
         encoding: 'rle',
@@ -709,7 +699,7 @@ const testSelectResponse: CoronerResponse<SelectQueryResponse<SelectQueryRequest
                     1,
                 ],
                 [
-                    '{"frame":["-[PLCrashReporter generateLiveReportWithThread:error:]","-[OomWatcher sendOomReports]","-[OomWatcher startOomIntegration]","-[OomWatcher initWithCrashReporter:andAttributes:andApi:andAttachments:]","-[Backtrace initWithBacktraceUrl:andAttributes:andOomSupport:andAttachments:andClientSideUnwinding:]","StartBacktraceIntegration","NativeClient_Start_m410B1199507CD2195F690D2B1AE90251278140C3","NativeClient_HandleNativeCrashes_mAF321A2B4A9DE1A4D53B8C5DAF943D77F9FF056C","NativeClient__ctor_m7F4390125CC24EECAD0A1874AC8022258E7FD206","NativeClientFactory_CreateNativeClient_m2C3A77DF9B1AE76DECE81E66E660D69A2D54F2A4","BacktraceClient_Refresh_mE23B1D973AE968302EA66CC6F8447151AC7B3713","RuntimeInvoker_TrueVoid_t22962CB4C05B1D89B55A6E1139F0E87A90987017(void (*)","il2cpp::vm::Runtime::Invoke","scripting_method_invoke","Invoke","InvokeChecked","CallMethod","CallAwake","AddToManager","AwakeFromLoad","InvokePersistentManagerAwake","PersistentManagerAwakeFromLoad","CompleteAwakeSequence","CompletePreloadManagerLoadScene","PlayerLoadSceneFromThread","CompleteLoadFirstScene","IntegrateMainThread","UpdatePreloadingSingleStep","UpdatePreloading","UnityPlayerLoopImpl","UnityRepaint","-[UnityAppController","CA::Display::DisplayLink::dispatch_items","display_timer_callback","GSEventRunModal","-[UIApplication _run]","UIApplicationMain","-[UnityFramework runUIApplicationMainWithArgc:argv:]","main"]}',
+                    '{"frame":["-[PLCrashReporter generateLiveReportWithThread:error:]","-[OomWatcher postOomReports]","-[OomWatcher startOomIntegration]","-[OomWatcher initWithCrashReporter:andAttributes:andApi:andAttachments:]","-[Backtrace initWithBacktraceUrl:andAttributes:andOomSupport:andAttachments:andClientSideUnwinding:]","StartBacktraceIntegration","NativeClient_Start_m410B1199507CD2195F690D2B1AE90251278140C3","NativeClient_HandleNativeCrashes_mAF321A2B4A9DE1A4D53B8C5DAF943D77F9FF056C","NativeClient__ctor_m7F4390125CC24EECAD0A1874AC8022258E7FD206","NativeClientFactory_CreateNativeClient_m2C3A77DF9B1AE76DECE81E66E660D69A2D54F2A4","BacktraceClient_Refresh_mE23B1D973AE968302EA66CC6F8447151AC7B3713","RuntimeInvoker_TrueVoid_t22962CB4C05B1D89B55A6E1139F0E87A90987017(void (*)","il2cpp::vm::Runtime::Invoke","scripting_method_invoke","Invoke","InvokeChecked","CallMethod","CallAwake","AddToManager","AwakeFromLoad","InvokePersistentManagerAwake","PersistentManagerAwakeFromLoad","CompleteAwakeSequence","CompletePreloadManagerLoadScene","PlayerLoadSceneFromThread","CompleteLoadFirstScene","IntegrateMainThread","UpdatePreloadingSingleStep","UpdatePreloading","UnityPlayerLoopImpl","UnityRepaint","-[UnityAppController","CA::Display::DisplayLink::dispatch_items","display_timer_callback","GSEventRunModal","-[UIApplication _run]","UIApplicationMain","-[UnityFramework runUIApplicationMainWithArgc:argv:]","main"]}',
                     1,
                 ],
                 [

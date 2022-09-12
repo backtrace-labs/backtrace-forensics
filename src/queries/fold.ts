@@ -1,7 +1,6 @@
 import { QuerySource } from '../models/QuerySource';
 import { CoronerValueType, OrderDirection } from '../requests';
 import { FoldOperator, FoldQueryRequest, Folds, GetRequestFold } from '../requests/fold';
-import { CoronerResponse } from '../responses/common';
 import { FoldQueryResponse } from '../responses/fold';
 import { CommonCoronerQuery } from './common';
 
@@ -88,20 +87,20 @@ export interface FoldedCoronerQuery<R extends FoldQueryRequest> extends FoldCoro
     /**
      * Returns the built request.
      */
-    getRequest(): R;
+    json(): R;
 
     /**
      * Makes a POST call to Coroner with the built request. You need to make at least a single fold or group.
      * @param source Where to make the request. If not specified, will supply data from default source.
      * @example
-     * const response = await query.filter('fingerprint', '...').fold('a', 'head').group('b').getResponse();
+     * const response = await query.filter('fingerprint', '...').fold('a', 'head').group('b').post();
      * if (!response.error) {
      *     const row = response.response.first();
      *     const a = row.attributes.a.head;
      *     const b = row.attributes.b.groupKey;
      * }
      */
-    getResponse(source?: Partial<QuerySource>): Promise<CoronerResponse<FoldQueryResponse<R>>>;
+    post(source?: Partial<QuerySource>): Promise<FoldQueryResponse<R>>;
 }
 
 export type AddFold<R extends FoldQueryRequest, A extends string, O extends FoldOperator> = R extends FoldQueryRequest<

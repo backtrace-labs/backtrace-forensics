@@ -21,3 +21,7 @@ export type InferSelectQueryRequest<T> = T extends SelectQueryRequest<infer S> ?
 export function createSelectRequest<T extends SelectQueryRequest>(request: T): InferSelectQueryRequest<T> {
     return request as unknown as InferSelectQueryRequest<T>;
 }
+
+export function isSelectRequest(request: QueryRequest): boolean {
+    return 'select' in request;
+}

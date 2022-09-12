@@ -3,19 +3,19 @@ import https from 'https';
 import { ICoronerQueryMaker } from '../interfaces/ICoronerQueryMaker';
 import { QuerySource } from '../models/QuerySource';
 import { QueryRequest } from '../requests/common';
-import { CoronerResponse, QueryResponse } from '../responses/common';
+import { RawCoronerResponse, RawQueryResponse } from '../responses/common';
 
 export class NodeCoronerQueryMaker implements ICoronerQueryMaker {
-    public async query<R extends QueryResponse>(
+    public async query<R extends RawQueryResponse>(
         source: QuerySource,
         request: QueryRequest
-    ): Promise<CoronerResponse<R>> {
+    ): Promise<RawCoronerResponse<R>> {
         const data = JSON.stringify(request);
 
         const url = new URL(source.address);
         const protocol = url.protocol.startsWith('https') ? https : http;
 
-        return new Promise<CoronerResponse<R>>((resolve, reject) => {
+        return new Promise<RawCoronerResponse<R>>((resolve, reject) => {
             const req = protocol.request(
                 {
                     hostname: url.hostname,

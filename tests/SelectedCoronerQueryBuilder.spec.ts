@@ -22,7 +22,7 @@ describe('SelectedCoronerQueryBuilder', () => {
         const queryable = new SelectedCoronerQueryBuilder(request, executorMock, builderMock);
         const expectedKeys = ['a', 'b', 'c'];
 
-        const newRequest = queryable.select('a').select('b').select('c').getRequest();
+        const newRequest = queryable.select('a').select('b').select('c').json();
 
         expect(newRequest.select).toEqual(expectedKeys);
     });
@@ -34,7 +34,7 @@ describe('SelectedCoronerQueryBuilder', () => {
         const queryable = new SelectedCoronerQueryBuilder(request, executorMock, builderMock);
         const expectedKeys = ['a', 'b', 'c'];
 
-        const newRequest = queryable.select('b').select('c').getRequest();
+        const newRequest = queryable.select('b').select('c').json();
 
         expect(newRequest.select).toEqual(expectedKeys);
     });
@@ -43,7 +43,7 @@ describe('SelectedCoronerQueryBuilder', () => {
         const request: SelectQueryRequest = {};
         const queryable = new SelectedCoronerQueryBuilder(request, executorMock, builderMock);
 
-        const newRequest = queryable.order('a', 'descending').getRequest();
+        const newRequest = queryable.order('a', 'descending').json();
 
         expect(newRequest.order).toEqual([
             {
@@ -64,7 +64,7 @@ describe('SelectedCoronerQueryBuilder', () => {
         };
         const queryable = new SelectedCoronerQueryBuilder(request, executorMock, builderMock);
 
-        const newRequest = queryable.order('a', 'descending').getRequest();
+        const newRequest = queryable.order('a', 'descending').json();
 
         expect(newRequest.order).toEqual([
             {

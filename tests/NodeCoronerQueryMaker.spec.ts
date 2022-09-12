@@ -1,7 +1,7 @@
 import nock from 'nock';
 import { NodeCoronerQueryMaker } from '../src/implementation/NodeCoronerQueryMaker';
 import { QuerySource } from '../src/models/QuerySource';
-import { CoronerResponse } from '../src/responses/common';
+import { RawCoronerResponse } from '../src/responses/common';
 
 describe('NodeCoronerQueryMaker', () => {
     it('should return a response from https server', async () => {
@@ -11,7 +11,7 @@ describe('NodeCoronerQueryMaker', () => {
             token: 'token',
         };
 
-        const expectedResponse: Partial<CoronerResponse<never>> = {
+        const expectedResponse: Partial<RawCoronerResponse<never>> = {
             error: undefined,
             response: undefined,
         };
@@ -32,7 +32,7 @@ describe('NodeCoronerQueryMaker', () => {
             token: 'token',
         };
 
-        const expectedResponse: Partial<CoronerResponse<never>> = {
+        const expectedResponse: Partial<RawCoronerResponse<never>> = {
             error: undefined,
             response: undefined,
         };
@@ -58,7 +58,7 @@ describe('NodeCoronerQueryMaker', () => {
             address: 'http://sample.sp.backtrace.io',
         };
 
-        const expectedResponse: Partial<CoronerResponse<never>> = {
+        const expectedResponse: Partial<RawCoronerResponse<never>> = {
             error: undefined,
             response: undefined,
         };
@@ -88,7 +88,7 @@ describe('NodeCoronerQueryMaker', () => {
             token: 'token',
         };
 
-        const expectedResponse: Partial<CoronerResponse<never>> = {
+        const expectedResponse: Partial<RawCoronerResponse<never>> = {
             error: undefined,
             response: undefined,
         };
@@ -115,7 +115,7 @@ describe('NodeCoronerQueryMaker', () => {
             token: 'token',
         };
 
-        const expectedResponse: Partial<CoronerResponse<never>> = {
+        const expectedResponse: Partial<RawCoronerResponse<never>> = {
             error: undefined,
             response: undefined,
         };
@@ -143,7 +143,7 @@ describe('NodeCoronerQueryMaker', () => {
             location: 'https://yolo.sp.backtrace.io',
         };
 
-        const expectedResponse: Partial<CoronerResponse<never>> = {
+        const expectedResponse: Partial<RawCoronerResponse<never>> = {
             error: undefined,
             response: undefined,
         };

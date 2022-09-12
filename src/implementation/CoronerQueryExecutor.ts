@@ -2,7 +2,7 @@ import { ICoronerQueryExecutor } from '../interfaces/ICoronerQueryExecutor';
 import { ICoronerQueryMaker } from '../interfaces/ICoronerQueryMaker';
 import { QuerySource } from '../models/QuerySource';
 import { QueryRequest } from '../requests/common';
-import { CoronerResponse, QueryResponse } from '../responses/common';
+import { QueryResponse, RawQueryResponse } from '../responses/common';
 
 export class CoronerQueryExecutor implements ICoronerQueryExecutor {
     readonly #queryMaker: ICoronerQueryMaker;
@@ -13,10 +13,10 @@ export class CoronerQueryExecutor implements ICoronerQueryExecutor {
         this.#defaultSource = defaultSource ?? {};
     }
 
-    public execute<R extends QueryResponse>(
+    public async execute<R extends RawQueryResponse>(
         request: QueryRequest,
         source?: Partial<QuerySource>
-    ): Promise<CoronerResponse<R>> {
+    ): Promise<QueryResponse<R>> {
         let { address, token, project, location } = Object.assign({}, this.#defaultSource, source);
         if (!address) {
             throw new Error('Coroner address is not available.');
@@ -30,6 +30,14 @@ export class CoronerQueryExecutor implements ICoronerQueryExecutor {
             throw new Error('Coroner project is not available.');
         }
 
-        return this.#queryMaker.query<R>({ address, token, project, location }, request);
+        const raw = await this.#queryMaker.query<R>({ address, token, project, location }, request);
+
+        const response = {
+            raw,
+            success: !!raw.error,
+            json: () => raw,
+        } as QueryResponse<R>;
+
+        return response;
     }
 }

@@ -54,7 +54,7 @@ export interface CommonCoronerQuery {
     /**
      * Returns the built request.
      */
-    getRequest(): QueryRequest;
+    json(): QueryRequest;
 }
 
 export interface CoronerQuery extends CommonCoronerQuery, SelectCoronerQuery, FoldCoronerQuery {}

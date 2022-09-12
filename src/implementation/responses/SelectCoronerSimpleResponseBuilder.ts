@@ -1,20 +1,20 @@
 import { ISelectCoronerSimpleResponseBuilder } from '../../interfaces/responses/ISelectCoronerSimpleResponseBuilder';
 import { CoronerValueType } from '../../requests';
 import { SelectQueryRequest } from '../../requests/select';
-import { SelectQueryResponse } from '../../responses/select';
+import { RawSelectQueryResponse } from '../../responses/select';
 import { SimpleSelectRow, SimpleSelectRows } from '../../responses/simple/select';
 
 export class SelectCoronerSimpleResponseBuilder implements ISelectCoronerSimpleResponseBuilder {
-    public first<R extends SelectQueryRequest>(response: SelectQueryResponse<R>): SimpleSelectRow<R> | undefined {
+    public first<R extends SelectQueryRequest>(response: RawSelectQueryResponse<R>): SimpleSelectRow<R> | undefined {
         return this.buildRows<R>(response, 1).rows[0];
     }
 
-    public rows<R extends SelectQueryRequest>(response: SelectQueryResponse<R>): SimpleSelectRows<R> {
+    public rows<R extends SelectQueryRequest>(response: RawSelectQueryResponse<R>): SimpleSelectRows<R> {
         return this.buildRows<R>(response);
     }
 
     private buildRows<R extends SelectQueryRequest>(
-        response: SelectQueryResponse<R>,
+        response: RawSelectQueryResponse<R>,
         limit?: number
     ): SimpleSelectRows<R> {
         const rows: SimpleSelectRow<R>[] = [];

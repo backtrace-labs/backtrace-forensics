@@ -4,8 +4,8 @@ import { FoldOperator, FoldQueryRequest, Folds } from '../../requests/fold';
 import {
     BinQueryColumnValue,
     DistributionQueryColumnValue,
-    FoldQueryResponse,
     RangeQueryColumnValue,
+    RawFoldQueryResponse,
 } from '../../responses/fold';
 import {
     SimpleFold,
@@ -22,18 +22,18 @@ import {
 
 export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleResponseBuilder {
     public first<R extends FoldQueryRequest>(
-        response: FoldQueryResponse<R>,
+        response: RawFoldQueryResponse<R>,
         request?: R
     ): SimpleFoldRow<R> | undefined {
         return this.buildRows<R>(response, request, 1).rows[0];
     }
 
-    public rows<R extends FoldQueryRequest>(response: FoldQueryResponse<R>, request?: R): SimpleFoldRows<R> {
+    public rows<R extends FoldQueryRequest>(response: RawFoldQueryResponse<R>, request?: R): SimpleFoldRows<R> {
         return this.buildRows<R>(response, request);
     }
 
     private buildRows<R extends FoldQueryRequest>(
-        response: FoldQueryResponse<R>,
+        response: RawFoldQueryResponse<R>,
         request?: R,
         limit?: number
     ): SimpleFoldRows<R> {
@@ -80,7 +80,7 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
 
                 const rawFold = request ? this.getRawFold(request, response, key, op, cIndex) : undefined;
 
-                const fold: SimpleFold<FoldOperator[], FoldOperator>[number] = {
+                const fold: SimpleFold<FoldOperator[]>[number] = {
                     fold: op,
                     rawFold: rawFold ?? ([op] as any),
                     value: columnValue,
@@ -99,7 +99,7 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
                 count: groupCount,
                 fold(attribute, ...search) {
                     const result = row.tryFold(attribute, ...search);
-                    if (!result) {
+                    if (result === undefined) {
                         throw new Error(`Attribute "${attribute}" or fold ${inspect(search)} does not exist.`);
                     }
                     return result;
@@ -117,7 +117,7 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
                 },
                 group(attribute) {
                     const result = row.tryGroup(attribute);
-                    if (!result) {
+                    if (result === undefined) {
                         throw new Error(`Attribute "${attribute}" does not exist or wasn't grouped on.`);
                     }
                     return result;
@@ -218,7 +218,7 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
 
     private getRawFold<R extends FoldQueryRequest>(
         request: R,
-        response: FoldQueryResponse<R>,
+        response: RawFoldQueryResponse<R>,
         attribute: string,
         operator: FoldOperator[0],
         columnIndex: number

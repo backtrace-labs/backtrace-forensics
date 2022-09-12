@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { FoldCoronerSimpleResponseBuilder } from '../src/implementation/responses/FoldCoronerSimpleResponseBuilder';
 import { createFoldRequest, FoldQueryRequest } from '../src/requests/fold';
-import { FoldQueryResponse } from '../src/responses/fold';
+import { RawFoldQueryResponse } from '../src/responses/fold';
 
 describe('FoldCoronerSimpleResponseBuilder', () => {
     const testRequest = createFoldRequest({
@@ -45,13 +45,7 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
         ],
     } as const);
 
-    const testResponse: FoldQueryResponse<typeof testRequest> = {
-        rows: () => {
-            throw new Error('not implemented');
-        },
-        first: () => {
-            throw new Error('not implemented');
-        },
+    const testResponse: RawFoldQueryResponse<typeof testRequest> = {
         version: '1.2.0',
         seq: 31,
         encoding: 'rle',
@@ -181,13 +175,7 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
         },
     };
 
-    const testGroupResponse: FoldQueryResponse<typeof testGroupRequest> = {
-        rows: () => {
-            throw new Error('not implemented');
-        },
-        first: () => {
-            throw new Error('not implemented');
-        },
+    const testGroupResponse: RawFoldQueryResponse<typeof testGroupRequest> = {
         version: '1.2.0',
         seq: 1,
         encoding: 'rle',
@@ -874,13 +862,7 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
     });
 
     it('should return undefined element from queried elements from first when no elements are present', () => {
-        const response: FoldQueryResponse<FoldQueryRequest> = {
-            rows: () => {
-                throw new Error('not implemented');
-            },
-            first: () => {
-                throw new Error('not implemented');
-            },
+        const response: RawFoldQueryResponse<FoldQueryRequest> = {
             columns: [['head(a)', 'string']],
             columns_desc: [{ name: 'a', format: 'string', type: 'string', op: 'head' }],
             values: [],
@@ -896,7 +878,7 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
         };
 
         const queryable = new FoldCoronerSimpleResponseBuilder();
-        const element = queryable.first(response as FoldQueryResponse<FoldQueryRequest>);
+        const element = queryable.first(response as RawFoldQueryResponse<FoldQueryRequest>);
         expect(element).toEqual(undefined);
     });
 });

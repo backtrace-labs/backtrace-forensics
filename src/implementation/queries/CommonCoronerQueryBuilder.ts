@@ -46,7 +46,7 @@ export abstract class CommonCoronerQueryBuilder implements CommonCoronerQuery {
         return this.createInstance(request);
     }
 
-    public getRequest(): QueryRequest {
+    public json(): QueryRequest {
         return this.#request;
     }
 
