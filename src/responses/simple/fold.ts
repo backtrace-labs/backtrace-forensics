@@ -24,6 +24,11 @@ export interface SimpleFoldBinValue<V extends CoronerValueType = CoronerValueTyp
     count: number;
 }
 
+export interface SimpleFoldHistogramValue<V extends CoronerValueType = CoronerValueType> {
+    value: V;
+    count: number;
+}
+
 export type SimpleFoldValue<
     F extends FoldOperator[0] = FoldOperator[0],
     V extends CoronerValueType = CoronerValueType
@@ -33,6 +38,8 @@ export type SimpleFoldValue<
     ? SimpleFoldBinValue<V>[]
     : F extends 'range'
     ? SimpleFoldRangeValue<V>
+    : F extends 'histogram'
+    ? SimpleFoldHistogramValue<V>[]
     : F extends 'unique'
     ? number
     : V;

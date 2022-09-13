@@ -29,6 +29,7 @@ export interface QueryCardinalities {
 export type SingleQueryColumnValue<V extends CoronerValueType = CoronerValueType> = [V?];
 export type BinQueryColumnValue = [number, number, number][];
 export type RangeQueryColumnValue<V extends CoronerValueType = CoronerValueType> = [V, V];
+export type HistogramQueryColumnValue<V extends CoronerValueType = CoronerValueType> = [V, number][];
 
 export type DistributionQueryColumnValue<V extends CoronerValueType = CoronerValueType> = [
     {
@@ -47,9 +48,16 @@ export type FoldQueryColumnValue<
     ? BinQueryColumnValue
     : F extends ['range']
     ? RangeQueryColumnValue<V>
+    : F extends ['histogram']
+    ? HistogramQueryColumnValue<V>
     : F extends UnaryFoldOperator
     ? SingleQueryColumnValue<V>
-    : DistributionQueryColumnValue<V> | BinQueryColumnValue | RangeQueryColumnValue<V> | SingleQueryColumnValue<V>;
+    :
+          | DistributionQueryColumnValue<V>
+          | BinQueryColumnValue
+          | RangeQueryColumnValue<V>
+          | SingleQueryColumnValue<V>
+          | HistogramQueryColumnValue<V>;
 
 export type FoldQueryRowValue<F extends readonly FoldOperator[]> = [
     CoronerValueType,

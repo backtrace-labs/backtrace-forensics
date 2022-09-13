@@ -4,6 +4,7 @@ import { FoldOperator, FoldQueryRequest, Folds } from '../../requests/fold';
 import {
     BinQueryColumnValue,
     DistributionQueryColumnValue,
+    HistogramQueryColumnValue,
     RangeQueryColumnValue,
     RawFoldQueryResponse,
 } from '../../responses/fold';
@@ -14,6 +15,7 @@ import {
     SimpleFoldDistributionValue,
     SimpleFoldDistributionValues,
     SimpleFoldGroup,
+    SimpleFoldHistogramValue,
     SimpleFoldRangeValue,
     SimpleFoldRow,
     SimpleFoldRows,
@@ -286,6 +288,14 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
                     from: range[0],
                     to: range[1],
                 };
+                return result;
+            }
+            case 'histogram': {
+                const histogram = columnValue as HistogramQueryColumnValue;
+                const result: SimpleFoldHistogramValue[] = histogram.map((h) => ({
+                    value: h[0],
+                    count: h[1],
+                }));
                 return result;
             }
             case 'unique':

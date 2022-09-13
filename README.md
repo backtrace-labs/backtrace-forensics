@@ -366,6 +366,7 @@ These are all available fold operators that you can use in `fold` function.
 -   `max` - returns the max value,
 -   `min` - returns the min value,
 -   `distribution` - returns the distribution of values, in number of specified buckets.
+-   `histogram` - returns count of each discrete value
 
 ### String folds
 

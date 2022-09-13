@@ -9,7 +9,8 @@ export type CommonFoldOperator =
     | readonly ['unique']
     | readonly ['range']
     | readonly ['max']
-    | readonly ['min'];
+    | readonly ['min']
+    | readonly ['histogram'];
 
 export type UnaryFoldOperator =
     | readonly ['head']
@@ -18,7 +19,8 @@ export type UnaryFoldOperator =
     | readonly ['max']
     | readonly ['min']
     | readonly ['mean']
-    | readonly ['sum'];
+    | readonly ['sum']
+    | readonly ['histogram'];
 
 export type NumberFoldOperator = CommonFoldOperator | BinFoldOperator | readonly ['mean'] | readonly ['sum'];
 export type StringFoldOperator = CommonFoldOperator;

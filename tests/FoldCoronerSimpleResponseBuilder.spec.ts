@@ -7,7 +7,7 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
     const testRequest = createFoldRequest({
         fold: {
             randomInt: [['head'], ['tail'], ['head'], ['distribution', 3], ['distribution', 5]],
-            randomString: [['range'], ['tail'], ['max'], ['bin', 3]],
+            randomString: [['range'], ['tail'], ['max'], ['bin', 3], ['histogram']],
         },
         order: [
             {
@@ -27,7 +27,7 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
     const testGroupRequest = createFoldRequest({
         fold: {
             randomInt: [['head'], ['tail'], ['head'], ['distribution', 3], ['distribution', 5]],
-            randomString: [['range'], ['tail'], ['max'], ['bin', 3]],
+            randomString: [['range'], ['tail'], ['max'], ['bin', 3], ['histogram']],
         },
         order: [
             {
@@ -59,6 +59,7 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
             ['tail(randomString)', 'none'],
             ['max(randomString)', 'none'],
             ['bin(randomString)', 'none'],
+            ['histogram(randomString)', 'none'],
         ],
         columns_desc: [
             {
@@ -115,6 +116,12 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
                 type: 'dictionary',
                 op: 'bin',
             },
+            {
+                name: 'randomString',
+                format: 'none',
+                type: 'dictionary',
+                op: 'histogram',
+            },
         ],
         pagination: {
             limit: 20,
@@ -155,6 +162,10 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
                     [],
                     ['fefc0685a6b052624bb448878b4b4cd2e0cd0b86'],
                     [],
+                    [
+                        ['0aa7f056deb302321271d4db00f07f567aef7a16', 1],
+                        ['fefc0685a6b052624bb448878b4b4cd2e0cd0b86', 3],
+                    ],
                 ],
                 371,
             ],
@@ -190,6 +201,7 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
             ['tail(randomString)', 'none'],
             ['max(randomString)', 'none'],
             ['bin(randomString)', 'none'],
+            ['histogram(randomString)', 'none'],
         ],
         factors_desc: [
             {
@@ -259,6 +271,12 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
                 type: 'dictionary',
                 op: 'bin',
             },
+            {
+                name: 'randomString',
+                format: 'none',
+                type: 'dictionary',
+                op: 'histogram',
+            },
         ],
         pagination: {
             limit: 20,
@@ -300,6 +318,11 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
                     ['b32a8560f5be60e4a9569e4851b339a432254df0'],
                     ['fefc0685a6b052624bb448878b4b4cd2e0cd0b86'],
                     [],
+                    [
+                        ['0c0621a40ae6170d93791742df171b75c1dd3017', 1],
+                        ['fefc0685a6b052624bb448878b4b4cd2e0cd0b86', 3],
+                        ['b32a8560f5be60e4a9569e4851b339a432254df0', 2],
+                    ],
                 ],
                 204,
             ],
@@ -418,6 +441,22 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
                             value: [],
                         },
                     ],
+                    histogram: [
+                        {
+                            fold: 'histogram',
+                            rawFold: ['histogram'],
+                            value: [
+                                {
+                                    value: '0aa7f056deb302321271d4db00f07f567aef7a16',
+                                    count: 1,
+                                },
+                                {
+                                    value: 'fefc0685a6b052624bb448878b4b4cd2e0cd0b86',
+                                    count: 3,
+                                },
+                            ],
+                        },
+                    ],
                 },
             },
         });
@@ -531,6 +570,26 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
                             value: [],
                         },
                     ],
+                    histogram: [
+                        {
+                            fold: 'histogram',
+                            rawFold: ['histogram'],
+                            value: [
+                                {
+                                    value: '0c0621a40ae6170d93791742df171b75c1dd3017',
+                                    count: 1,
+                                },
+                                {
+                                    value: 'fefc0685a6b052624bb448878b4b4cd2e0cd0b86',
+                                    count: 3,
+                                },
+                                {
+                                    value: 'b32a8560f5be60e4a9569e4851b339a432254df0',
+                                    count: 2,
+                                },
+                            ],
+                        },
+                    ],
                 },
             },
         });
@@ -574,6 +633,7 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
                     tail: [{ rawFold: ['tail'] }],
                     max: [{ rawFold: ['max'] }],
                     bin: [{ rawFold: ['bin', 3] }],
+                    histogram: [{ rawFold: ['histogram'] }],
                 },
             },
         });
