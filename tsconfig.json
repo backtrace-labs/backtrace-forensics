@@ -10,7 +10,8 @@
         "strict": true,
         "skipLibCheck": true,
         "noErrorTruncation": true,
-        "sourceMap": true
+        "sourceMap": true,
+        "composite": true
     },
     "include": ["./src"]
 }
