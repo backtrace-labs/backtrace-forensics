@@ -1,6 +1,13 @@
 import { stdin as input, stdout as output } from 'process';
 import readline from 'readline';
-import { BacktraceForensics, CommonAttributes, Filters, QuerySource } from '../../lib';
+import {
+    BacktraceForensics,
+    CommonAttributes,
+    createAttributeList,
+    extendAttributeList,
+    Filters,
+    QuerySource,
+} from '../../lib';
 import { FoldedCoronerQuery, SelectedCoronerQuery } from '../../lib/queries';
 import { FoldOperator } from '../../lib/requests/fold';
 
@@ -41,6 +48,9 @@ async function displayDetails(query: FoldedCoronerQuery<any, any> | SelectedCoro
 
 async function staticSelect() {
     const fp = await question('enter fingerprint: ');
+
+    const customAttributeList = createAttributeList([['fingerprint', 'bytes', 'uint32']] as const);
+    const attributeList = extendAttributeList(CommonAttributes, customAttributeList);
 
     const query = BacktraceForensics.create({ defaultSource: source }, { attributeList: CommonAttributes })
         .filter('fingerprint', 'equal', fp)

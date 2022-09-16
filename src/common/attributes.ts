@@ -55,33 +55,50 @@ export type Attribute<
     T extends AttributeType<F> = AttributeType<F>
 > = readonly [A, F, T];
 
-function getAttribute<
-    A extends string = string,
-    F extends AttributeFormat = AttributeFormat,
-    T extends AttributeType<F> = AttributeType<F>
->(attribute: [A, F, T]): Attribute<A, F, T> {
-    return attribute;
-}
-
 export type AttributeList = Record<string, Attribute>;
 
-export const CommonAttributes = {
-    _tx: getAttribute(['_tx', 'none', 'uint64']),
-    _rxid: getAttribute(['_rxid', 'uuid', 'uuid']),
-    application: getAttribute(['application', 'none', 'string']),
-    callstack: getAttribute(['callstack', 'callstack', 'dictionary']),
-    'callstack.files': getAttribute(['callstack.files', 'callstack', 'dictionary']),
-    'callstack.functions': getAttribute(['callstack.functions', 'callstack', 'dictionary']),
-    'callstack.modules': getAttribute(['callstack.modules', 'callstack', 'dictionary']),
-    classifiers: getAttribute(['classifiers', 'labels', 'dictionary']),
-    'error.message': getAttribute(['error.message', 'none', 'string']),
-    fingerprint: getAttribute(['fingerprint', 'sha256', 'dictionary']),
-    guid: getAttribute(['guid', 'uuid', 'uuid']),
-    hostname: getAttribute(['hostname', 'hostname', 'dictionary']),
-    'object.size': getAttribute(['object.size', 'bytes', 'uint64']),
-    'process.age': getAttribute(['process.age', 'seconds', 'uint64']),
-    timestamp: getAttribute(['timestamp', 'unix_timestamp', 'uint64']),
-    'timestamp.received': getAttribute(['timestamp.received', 'unix_timestamp', 'uint64']),
-} as const;
+export const CommonAttributes = createAttributeList([
+    ['_tx', 'none', 'uint64'],
+    ['_rxid', 'uuid', 'uuid'],
+    ['application', 'none', 'string'],
+    ['callstack', 'callstack', 'dictionary'],
+    ['callstack.files', 'callstack', 'dictionary'],
+    ['callstack.functions', 'callstack', 'dictionary'],
+    ['callstack.modules', 'callstack', 'bitmap'],
+    ['classifiers', 'labels', 'dictionary'],
+    ['error.message', 'none', 'string'],
+    ['fingerprint', 'sha256', 'dictionary'],
+    ['guid', 'uuid', 'uuid'],
+    ['hostname', 'hostname', 'dictionary'],
+    ['object.size', 'bytes', 'uint64'],
+    ['process.age', 'seconds', 'uint64'],
+    ['timestamp', 'unix_timestamp', 'uint64'],
+    ['timestamp.received', 'unix_timestamp', 'uint64'],
+] as const);
+
+export function createAttributeList<A extends readonly Attribute[]>(
+    attributes: A
+): { readonly [I in A[number] as I[0]]: I } {
+    return attributes.reduce((list, attr) => {
+        list[attr[0]] = attr;
+        return list;
+    }, {} as Record<string, A[number]>) as { readonly [I in A[number] as I[0]]: I };
+}
+
+export function extendAttributeList<AL1 extends AttributeList, AL2 extends AttributeList>(
+    attributeList1: AL1,
+    attributeList2: AL2
+): ExtendAttributeList<AL1, AL2> {
+    return {
+        ...attributeList1,
+        ...attributeList2,
+    } as ExtendAttributeList<AL1, AL2>;
+}
+
+export type AttributeListFromArray<A extends readonly Attribute[]> = { readonly [I in A[number] as I[0]]: I };
+
+export type ExtendAttributeList<AL1 extends AttributeList, AL2 extends AttributeList> = {
+    [K in keyof AL1 | keyof AL2]: K extends keyof AL2 ? AL2[K] : K extends keyof AL1 ? AL1[K] : never;
+};
 
 export type CommonAttributes = typeof CommonAttributes;

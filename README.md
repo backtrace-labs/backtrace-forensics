@@ -418,6 +418,62 @@ In addition to common folds, there are additional folds available:
 -   `sum` - returns the sum of all values in group
 -   `bin` - ? not sure how to describe this, help
 
+## Attribute lists
+
+You can use common or custom attribute lists to improve IDE autocompletion. These will be used in supported places.
+
+Some common attributes have been written already. You can import them by importing `CommonAttributes`.
+
+To use the attribute list, pass the attribute list into `.create()` method:
+
+```typescript
+import { BacktraceForensics, CommonAttributes } from 'backtrace-forensics';
+
+const instance = new BacktraceForensics();
+const query = instance.create({
+    attributeList: CommonAttributes,
+});
+
+const query = BacktraceForensics.create(
+    {},
+    {
+        attributeList: CommonAttributes,
+    }
+);
+```
+
+### Creating own attribute lists
+
+If you need to use your own attribute list, create one using `createAttributeList` function:
+
+```typescript
+import { createAttributeList } from 'backtrace-forensics';
+
+const attributeList = createAttributeList([
+    ['attribute1', 'none', 'string'],
+    ['attribute2', 'sha256', 'dictionary'],
+] as const);
+```
+
+**Remember to use `as const`, or Typescript won't know the types in runtime.**
+
+### Extending attribute lists
+
+You may extend the current `CommonAttributes` with your attribute list by using `extendAttributeList`:
+
+```typescript
+import { createAttributeList, extendAttributeList, CommonAttributes } from 'backtrace-forensics';
+
+const attributeList = createAttributeList([
+    ['attribute1', 'none', 'string'],
+    ['attribute2', 'sha256', 'dictionary'],
+] as const);
+
+const extended = extendAttributeList(CommonAttributes, attributeList);
+```
+
+The attributes passed as second parameter will overwrite those passed as first parameter.
+
 ## Overriding the query maker
 
 By default, the query maker is using `http`/`https` modules in Node, and `XMLHttpRequest` in browser.
