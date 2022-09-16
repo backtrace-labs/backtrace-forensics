@@ -9,7 +9,18 @@ import {
 } from '../common/attributes';
 
 export type CoronerValueType = string | number | boolean | null;
-export type InputValueType = CoronerValueType | Date;
+
+export type InputValueType<T extends AttributeType = AttributeType> =
+    | (T extends UIntType
+          ? number | `${number}.` | Date
+          : T extends UUIDType
+          ? string
+          : T extends DictionaryType
+          ? string
+          : T extends BooleanType
+          ? boolean
+          : never)
+    | null;
 
 export type FilterOperator<T extends AttributeType = AttributeType> = T extends StringType
     ? StringFilterOperator

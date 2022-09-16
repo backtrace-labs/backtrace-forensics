@@ -208,7 +208,7 @@ function createRange<RT>(
 }
 
 export function createTimeFluentFiltering(): TimeFluentFiltering {
-    let context: TimeFluentFilteringContext = {
+    const context: TimeFluentFilteringContext = {
         now: () => new Date(),
     };
 

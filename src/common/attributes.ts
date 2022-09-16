@@ -1,3 +1,5 @@
+import { InputValueType } from '../requests';
+
 export type SizeAttributeFormat = 'bytes' | 'kilobytes' | 'gigabytes';
 export type TimeAttributeFormat =
     | 'gps_timestamp'
@@ -48,6 +50,14 @@ export type AttributeValueType<T extends AttributeType = AttributeType> =
           ? boolean
           : never)
     | null;
+
+export type ValueAttributeType<V extends InputValueType> = V extends number | `${number}.` | Date
+    ? UIntType
+    : V extends string
+    ? UUIDType | DictionaryType
+    : V extends boolean
+    ? BooleanType
+    : never;
 
 export type Attribute<
     A extends string = string,

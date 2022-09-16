@@ -391,6 +391,15 @@ query.filter('timestamp', Filters.time.from.last.hours(2).to.now());
 query.filter('timestamp', Filters.time.from.date(fromDateObject).to.date(toDateObject));
 ```
 
+### Range filters
+
+Use `Filters.range` to create filters with range.
+
+```typescript
+// Will return values with _tx from range 100-500
+query.filter('_tx', Filters.range(100, 500));
+```
+
 ## Available folds
 
 These are all available fold operators that you can use in `fold` function.
