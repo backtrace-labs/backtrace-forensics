@@ -1,11 +1,12 @@
+import { AttributeList } from '../common/attributes';
 import { QuerySource } from '../models/QuerySource';
 import { CoronerValueType, OrderDirection } from '../requests';
 import { FoldOperator, FoldQueryRequest, Folds, GetRequestFold } from '../requests/fold';
 import { FoldQueryResponse } from '../responses/fold';
 import { CommonCoronerQuery } from './common';
 
-export interface FoldCoronerQuery<R extends FoldQueryRequest = FoldQueryRequest<never, ['*']>>
-    extends CommonCoronerQuery {
+export interface FoldCoronerQuery<AL extends AttributeList, R extends FoldQueryRequest = FoldQueryRequest<never, ['*']>>
+    extends CommonCoronerQuery<AL> {
     /**
      * Returns the query as dynamic fold. Use this to assign folds in runtime, without knowing the types.
      * @example
@@ -13,7 +14,7 @@ export interface FoldCoronerQuery<R extends FoldQueryRequest = FoldQueryRequest<
      * query = query.fold('fingerprint', 'head');
      * query = query.fold('timestamp', 'tail');
      */
-    dynamicFold(): FoldedCoronerQuery<FoldQueryRequest<Folds>>;
+    dynamicFold(): FoldedCoronerQuery<AL, FoldQueryRequest<Folds>>;
 
     /**
      * Adds provided fold to the request.
@@ -29,7 +30,7 @@ export interface FoldCoronerQuery<R extends FoldQueryRequest = FoldQueryRequest<
     fold<A extends string, V extends CoronerValueType, O extends FoldOperator<V>>(
         attribute: A,
         ...fold: O
-    ): FoldedCoronerQuery<AddFold<R, A, O>>;
+    ): FoldedCoronerQuery<AL, AddFold<R, A, O>>;
 
     /**
      * Sets the request group-by attribute. The attribute grouped by will be visible as `groupKey` in simple response.
@@ -39,10 +40,11 @@ export interface FoldCoronerQuery<R extends FoldQueryRequest = FoldQueryRequest<
      * @example
      * query.group('fingerprint')
      */
-    group<A extends string>(attribute: A): FoldedCoronerQuery<SetFoldGroup<R, A>>;
+    group<A extends string>(attribute: A): FoldedCoronerQuery<AL, SetFoldGroup<R, A>>;
 }
 
-export interface FoldedCoronerQuery<R extends FoldQueryRequest> extends FoldCoronerQuery<R> {
+export interface FoldedCoronerQuery<AL extends AttributeList, R extends FoldQueryRequest>
+    extends FoldCoronerQuery<AL, R> {
     /**
      * Adds order on attribute fold with index and direction specified.
      * @param attribute Attribute to order by.
@@ -57,7 +59,7 @@ export interface FoldedCoronerQuery<R extends FoldQueryRequest> extends FoldCoro
         attribute: A,
         direction: OrderDirection,
         index: I
-    ): FoldedCoronerQuery<R>;
+    ): FoldedCoronerQuery<AL, R>;
 
     /**
      * Adds order on attribute fold with direction specified.
@@ -73,7 +75,7 @@ export interface FoldedCoronerQuery<R extends FoldQueryRequest> extends FoldCoro
         attribute: A,
         direction: OrderDirection,
         ...fold: O
-    ): FoldedCoronerQuery<R>;
+    ): FoldedCoronerQuery<AL, R>;
 
     /**
      * Adds order on count direction specified.
@@ -82,7 +84,7 @@ export interface FoldedCoronerQuery<R extends FoldQueryRequest> extends FoldCoro
      * // This will order descending on count
      * query.fold('a', 'head').fold('a', 'tail').orderByCount('descending')
      */
-    orderByCount(direction: OrderDirection): FoldedCoronerQuery<R>;
+    orderByCount(direction: OrderDirection): FoldedCoronerQuery<AL, R>;
 
     /**
      * Returns the built request.

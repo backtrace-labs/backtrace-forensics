@@ -1,9 +1,10 @@
+import { AttributeList, AttributeType, AttributeValueType, CommonAttributes } from '../../common/attributes';
 import { CommonCoronerQuery } from '../../queries/common';
-import { FilterOperator, InputValueType, QueryAttributeFilter, QueryFilter, QueryRequest } from '../../requests/common';
+import { FilterOperator, QueryAttributeFilter, QueryFilter, QueryRequest } from '../../requests/common';
 import { convertInputValue } from '../helpers/convertInputValue';
 import { cloneRequest } from '../requests/cloneRequest';
 
-export abstract class CommonCoronerQueryBuilder implements CommonCoronerQuery {
+export abstract class CommonCoronerQueryBuilder<AL extends AttributeList> implements CommonCoronerQuery<AL> {
     readonly #request: QueryRequest;
 
     constructor(request: QueryRequest) {
@@ -28,16 +29,18 @@ export abstract class CommonCoronerQueryBuilder implements CommonCoronerQuery {
         return this.createInstance(request);
     }
 
-    public filter<A extends string, V extends InputValueType>(
-        attribute: A,
-        operator: FilterOperator<V>,
-        value: V
-    ): this;
+    public filter<
+        A extends string,
+        V extends A extends keyof CommonAttributes ? CommonAttributes[A][2] : AttributeType
+    >(attribute: A, operator: FilterOperator<V>, value: AttributeValueType<V>): this;
     public filter<A extends string>(attribute: A, filters: readonly QueryAttributeFilter[]): this;
-    public filter<A extends string, V extends InputValueType>(
+    public filter<
+        A extends string,
+        V extends A extends keyof CommonAttributes ? CommonAttributes[A][2] : AttributeType
+    >(
         attribute: A,
         operatorOrFilters: FilterOperator<V> | readonly QueryAttributeFilter[],
-        value?: V
+        value?: AttributeValueType<V>
     ): this {
         const request = cloneRequest(this.#request);
         if (typeof operatorOrFilters === 'string') {

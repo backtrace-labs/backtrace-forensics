@@ -1,8 +1,9 @@
-import { FilterOperator, InputValueType, QueryAttributeFilter, QueryRequest } from '../requests/common';
+import { AttributeList, AttributeType, AttributeValueType } from '../common/attributes';
+import { FilterOperator, QueryAttributeFilter, QueryRequest } from '../requests/common';
 import { FoldCoronerQuery } from './fold';
 import { SelectCoronerQuery } from './select';
 
-export interface CommonCoronerQuery {
+export interface CommonCoronerQuery<AL extends AttributeList> {
     /**
      * Sets limit of rows in response.
      *
@@ -49,7 +50,16 @@ export interface CommonCoronerQuery {
      *      .filter('timestamp', 'at-least', 1660000000)
      *      .filter('timestamp', 'at-most', 1660747935)
      */
-    filter<A extends string, V extends InputValueType>(attribute: A, operator: FilterOperator<V>, value: V): this;
+    filter<A extends keyof AL, V extends AL[A][2]>(
+        attribute: A,
+        operator: FilterOperator<V>,
+        value: AttributeValueType<V>
+    ): this;
+    filter<A extends string, V extends A extends keyof AL ? AL[A][2] : AttributeType>(
+        attribute: A,
+        operator: FilterOperator<V>,
+        value: AttributeValueType<V>
+    ): this;
 
     /**
      * Adds filters to request.
@@ -65,7 +75,11 @@ export interface CommonCoronerQuery {
      * // filter with Filters
      * query.filter('timestamp', Filters.time.from.last.hours(2).to.now())
      */
-    filter<A extends string>(attribute: A, filters: readonly QueryAttributeFilter[]): this;
+    filter<A extends keyof AL, V extends AL[A][2]>(attribute: A, filters: readonly QueryAttributeFilter<V>[]): this;
+    filter<A extends string, V extends A extends keyof AL ? AL[A][2] : AttributeType>(
+        attribute: A,
+        filters: readonly QueryAttributeFilter<V>[]
+    ): this;
 
     /**
      * Returns the built request.
@@ -73,4 +87,7 @@ export interface CommonCoronerQuery {
     json(): QueryRequest;
 }
 
-export interface CoronerQuery extends CommonCoronerQuery, SelectCoronerQuery, FoldCoronerQuery {}
+export interface CoronerQuery<AL extends AttributeList>
+    extends CommonCoronerQuery<AL>,
+        SelectCoronerQuery<AL>,
+        FoldCoronerQuery<AL> {}

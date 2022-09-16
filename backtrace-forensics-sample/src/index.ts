@@ -1,6 +1,6 @@
 import { stdin as input, stdout as output } from 'process';
 import readline from 'readline';
-import { BacktraceForensics, QuerySource } from '../../lib';
+import { BacktraceForensics, CommonAttributes, Filters, QuerySource } from '../../lib';
 import { FoldedCoronerQuery, SelectedCoronerQuery } from '../../lib/queries';
 import { CoronerValueType } from '../../lib/requests/common';
 import { FoldOperator } from '../../lib/requests/fold';
@@ -27,7 +27,7 @@ async function question(msg: string) {
     });
 }
 
-async function displayDetails(query: FoldedCoronerQuery<any> | SelectedCoronerQuery<any>) {
+async function displayDetails(query: FoldedCoronerQuery<any, any> | SelectedCoronerQuery<any, any>) {
     const request = query.json();
     console.log('Request: ', JSON.stringify(request, null, '\t'));
 
@@ -43,8 +43,9 @@ async function displayDetails(query: FoldedCoronerQuery<any> | SelectedCoronerQu
 async function staticSelect() {
     const fp = await question('enter fingerprint: ');
 
-    const query = BacktraceForensics.create({ defaultSource: source })
+    const query = BacktraceForensics.create({ defaultSource: source }, { attributeList: CommonAttributes })
         .filter('fingerprint', 'equal', fp)
+        .filter('timestamp', Filters.time.last.day())
         .select('callstack', 'randomInt', 'fingerprint')
         .select('awdwad');
 

@@ -1,8 +1,9 @@
+import { AttributeList } from './common/attributes';
 import { CoronerQueryExecutor } from './implementation/CoronerQueryExecutor';
+import { CoronerQueryBuilderFactory } from './implementation/factories/CoronerQueryBuilderFactory';
 import { FoldCoronerQueryBuilderFactory } from './implementation/factories/FoldCoronerQueryBuilderFactory';
 import { SelectCoronerQueryBuilderFactory } from './implementation/factories/SelectCoronerQueryBuilderFactory';
 import { NodeCoronerQueryMaker } from './implementation/NodeCoronerQueryMaker';
-import { CoronerQueryBuilder } from './implementation/queries/CoronerQueryBuilder';
 import { FoldCoronerSimpleResponseBuilder } from './implementation/responses/FoldCoronerSimpleResponseBuilder';
 import { SelectCoronerSimpleResponseBuilder } from './implementation/responses/SelectCoronerSimpleResponseBuilder';
 import { IFoldCoronerQueryBuilderFactory } from './interfaces/factories/IFoldCoronerQueryBuilderFactory';
@@ -52,10 +53,16 @@ export interface BacktraceForensicOptions {
     queryMaker?: ICoronerQueryMaker;
 }
 
+export interface CreateQueryOptions<AL extends AttributeList, R extends QueryRequest> {
+    request?: R;
+    attributeList?: AL;
+}
+
 export class BacktraceForensics {
     public readonly options: BacktraceForensicOptions;
 
     readonly #executor: ICoronerQueryExecutor;
+    readonly #queryFactory: CoronerQueryBuilderFactory;
     readonly #foldFactory: IFoldCoronerQueryBuilderFactory;
     readonly #selectFactory: ISelectCoronerQueryBuilderFactory;
 
@@ -71,6 +78,7 @@ export class BacktraceForensics {
             this.#executor,
             new SelectCoronerSimpleResponseBuilder()
         );
+        this.#queryFactory = new CoronerQueryBuilderFactory(this.#foldFactory, this.#selectFactory);
     }
 
     /**
@@ -80,21 +88,32 @@ export class BacktraceForensics {
      * const instance = new BacktraceForensics();
      * const query = instance.create().filter(...).fold(...);
      */
-    public create<R extends QueryRequest>(request?: R): CoronerQuery;
-    public create<R extends SelectQueryRequest>(request?: R): SelectedCoronerQuery<InferSelectQueryRequest<R>>;
-    public create<R extends FoldQueryRequest>(request?: R): FoldedCoronerQuery<InferFoldQueryRequest<R>>;
-    public create(
-        request?: QueryRequest
-    ): CoronerQuery | SelectCoronerQuery<SelectQueryRequest> | FoldCoronerQuery<FoldQueryRequest> {
-        if (request) {
-            if (isSelectRequest(request)) {
-                return this.#selectFactory.create(request as SelectQueryRequest);
-            } else if (isFoldRequest(request)) {
-                return this.#foldFactory.create(request as FoldQueryRequest);
+    public create<AL extends AttributeList, R extends QueryRequest>(
+        options?: CreateQueryOptions<AL, R>
+    ): CoronerQuery<AL>;
+    public create<AL extends AttributeList, R extends SelectQueryRequest>(
+        options?: CreateQueryOptions<AL, R>
+    ): SelectedCoronerQuery<AL, InferSelectQueryRequest<R>>;
+    public create<AL extends AttributeList, R extends FoldQueryRequest>(
+        options?: CreateQueryOptions<AL, R>
+    ): FoldedCoronerQuery<AL, InferFoldQueryRequest<R>>;
+    public create<AL extends AttributeList>(
+        options?: CreateQueryOptions<AL, QueryRequest>
+    ): CoronerQuery<AL> | SelectCoronerQuery<AL, SelectQueryRequest> | FoldCoronerQuery<AL, FoldQueryRequest> {
+        if (options) {
+            const { request, attributeList } = options;
+            if (request) {
+                if (isSelectRequest(request)) {
+                    return this.#selectFactory.create(request as SelectQueryRequest, attributeList ?? {});
+                } else if (isFoldRequest(request)) {
+                    return this.#foldFactory.create(request as FoldQueryRequest, attributeList ?? {});
+                } else {
+                    return this.#queryFactory.create({}, attributeList ?? {});
+                }
             }
         }
 
-        return new CoronerQueryBuilder(request ?? {}, this.#foldFactory, this.#selectFactory);
+        return this.#queryFactory.create({}, {});
     }
 
     /**
@@ -104,23 +123,23 @@ export class BacktraceForensics {
      * @example
      * const query = BacktraceForensics.create().filter(...).fold(...);
      */
-    public static create<R extends QueryRequest>(
+    public static create<AL extends AttributeList, R extends QueryRequest>(
         options?: Partial<BacktraceForensicOptions>,
-        request?: R
-    ): CoronerQuery;
-    public static create<R extends SelectQueryRequest>(
+        createOptions?: CreateQueryOptions<AL, R>
+    ): CoronerQuery<AL>;
+    public static create<AL extends AttributeList, R extends SelectQueryRequest>(
         options?: Partial<BacktraceForensicOptions>,
-        request?: R
-    ): SelectedCoronerQuery<InferSelectQueryRequest<R>>;
-    public static create<R extends FoldQueryRequest>(
+        createOptions?: CreateQueryOptions<AL, R>
+    ): SelectedCoronerQuery<AL, InferSelectQueryRequest<R>>;
+    public static create<AL extends AttributeList, R extends FoldQueryRequest>(
         options?: Partial<BacktraceForensicOptions>,
-        request?: R
-    ): FoldedCoronerQuery<InferFoldQueryRequest<R>>;
-    public static create(
+        createOptions?: CreateQueryOptions<AL, R>
+    ): FoldedCoronerQuery<AL, InferFoldQueryRequest<R>>;
+    public static create<AL extends AttributeList>(
         options?: Partial<BacktraceForensicOptions>,
-        request?: QueryRequest
-    ): CoronerQuery | SelectCoronerQuery<SelectQueryRequest> | FoldCoronerQuery<FoldQueryRequest> {
-        return new BacktraceForensics(options).create(request);
+        createOptions?: CreateQueryOptions<AL, QueryRequest>
+    ): CoronerQuery<AL> | SelectCoronerQuery<AL, SelectQueryRequest> | FoldCoronerQuery<AL, FoldQueryRequest> {
+        return new BacktraceForensics(options).create(createOptions);
     }
 
     private getDefaultOptions(options?: BacktraceForensicOptions) {

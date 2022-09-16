@@ -1,3 +1,4 @@
+import { AttributeList } from '../../common/attributes';
 import { IFoldCoronerQueryBuilderFactory } from '../../interfaces/factories/IFoldCoronerQueryBuilderFactory';
 import { ICoronerQueryExecutor } from '../../interfaces/ICoronerQueryExecutor';
 import { IFoldCoronerSimpleResponseBuilder } from '../../interfaces/responses/IFoldCoronerSimpleResponseBuilder';
@@ -14,7 +15,10 @@ export class FoldCoronerQueryBuilderFactory implements IFoldCoronerQueryBuilderF
         this.#simpleResponseBuilder = builder;
     }
 
-    public create<R extends FoldQueryRequest>(request: R): FoldedCoronerQuery<R> {
-        return new FoldedCoronerQueryBuilder(request, this.#executor, this.#simpleResponseBuilder);
+    public create<AL extends AttributeList, R extends FoldQueryRequest>(
+        request: R,
+        attributeList: AL
+    ): FoldedCoronerQuery<AL, R> {
+        return new FoldedCoronerQueryBuilder(request, attributeList, this.#executor, this.#simpleResponseBuilder);
     }
 }

@@ -1,17 +1,18 @@
 import { QueryAttributeFilter } from '..';
+import { AttributeValueType, UIntType } from '../../common/attributes';
 import { convertInputValue } from '../../implementation/helpers/convertInputValue';
 
 export interface TimeFluentFiltering extends LastTimeFluentFiltering {
     readonly from: FromTimeFluentFiltering;
 }
 
-export interface LastTimeFluentFiltering<RT = QueryAttributeFilter[]>
+export interface LastTimeFluentFiltering<RT = QueryAttributeFilter<UIntType>[]>
     extends Omit<RangeTimeFluentFiltering<RT>, 'now' | 'date'> {}
 
-export interface FromTimeFluentFiltering<RT = QueryAttributeFilter[]>
+export interface FromTimeFluentFiltering<RT = QueryAttributeFilter<UIntType>[]>
     extends RangeTimeFluentFiltering<{ readonly to: ToTimeFluentFiltering<RT> }> {}
 
-export interface ToTimeFluentFiltering<RT = QueryAttributeFilter[]> extends RangeTimeFluentFiltering<RT> {}
+export interface ToTimeFluentFiltering<RT = QueryAttributeFilter<UIntType>[]> extends RangeTimeFluentFiltering<RT> {}
 
 export interface RangeTimeFluentFiltering<RT> {
     /**
@@ -102,13 +103,13 @@ export interface TimeFluentFilteringContext {
     now: () => Date;
 }
 
-function getFilters(context: TimeFluentFilteringContext): QueryAttributeFilter[] {
-    const filters: QueryAttributeFilter[] = [];
+function getFilters(context: TimeFluentFilteringContext): QueryAttributeFilter<UIntType>[] {
+    const filters: QueryAttributeFilter<UIntType>[] = [];
     if (context.from) {
-        filters.push(['at-least', convertInputValue(context.from)]);
+        filters.push(['at-least', convertInputValue(context.from) as AttributeValueType<UIntType>]);
     }
     if (context.to) {
-        filters.push(['at-most', convertInputValue(context.to)]);
+        filters.push(['at-most', convertInputValue(context.to) as AttributeValueType<UIntType>]);
     }
     return filters;
 }

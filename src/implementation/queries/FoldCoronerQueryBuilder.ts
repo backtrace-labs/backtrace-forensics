@@ -1,4 +1,5 @@
 import { format } from 'util';
+import { AttributeList } from '../../common/attributes';
 import { ICoronerQueryExecutor } from '../../interfaces/ICoronerQueryExecutor';
 import { IFoldCoronerSimpleResponseBuilder } from '../../interfaces/responses/IFoldCoronerSimpleResponseBuilder';
 import { QuerySource } from '../../models/QuerySource';
@@ -9,17 +10,27 @@ import { FoldQueryResponse, RawFoldQueryResponse } from '../../responses/fold';
 import { cloneFoldRequest } from '../requests/cloneRequest';
 import { CommonCoronerQueryBuilder } from './CommonCoronerQueryBuilder';
 
-export class FoldedCoronerQueryBuilder<R extends FoldQueryRequest = FoldQueryRequest<never, ['*']>>
-    extends CommonCoronerQueryBuilder
-    implements FoldedCoronerQuery<R>
+export class FoldedCoronerQueryBuilder<
+        AL extends AttributeList,
+        R extends FoldQueryRequest = FoldQueryRequest<never, ['*']>
+    >
+    extends CommonCoronerQueryBuilder<AL>
+    implements FoldedCoronerQuery<AL, R>
 {
     readonly #request: R;
+    readonly #attributeList: AL;
     readonly #executor: ICoronerQueryExecutor;
     readonly #simpleResponseBuilder: IFoldCoronerSimpleResponseBuilder;
 
-    constructor(request: R, executor: ICoronerQueryExecutor, builder: IFoldCoronerSimpleResponseBuilder) {
+    constructor(
+        request: R,
+        attributeList: AL,
+        executor: ICoronerQueryExecutor,
+        builder: IFoldCoronerSimpleResponseBuilder
+    ) {
         super(request);
         this.#request = request;
+        this.#attributeList = attributeList;
         this.#executor = executor;
         this.#simpleResponseBuilder = builder;
     }
@@ -27,7 +38,7 @@ export class FoldedCoronerQueryBuilder<R extends FoldQueryRequest = FoldQueryReq
     public fold<A extends string, V extends CoronerValueType, O extends FoldOperator<V>>(
         attribute: A,
         ...fold: O
-    ): FoldedCoronerQuery<AddFold<R, A, O>> {
+    ): FoldedCoronerQuery<AL, AddFold<R, A, O>> {
         const request = cloneFoldRequest(this.#request);
 
         if (!request.fold) {
@@ -40,14 +51,14 @@ export class FoldedCoronerQueryBuilder<R extends FoldQueryRequest = FoldQueryReq
             request.fold[attribute] = [fold];
         }
 
-        return this.createInstance(request) as unknown as FoldedCoronerQuery<AddFold<R, A, O>>;
+        return this.createInstance(request) as unknown as FoldedCoronerQuery<AL, AddFold<R, A, O>>;
     }
 
-    public dynamicFold(): FoldedCoronerQuery<FoldQueryRequest<Folds>> {
-        return this as FoldedCoronerQuery<FoldQueryRequest<Folds>>;
+    public dynamicFold(): FoldedCoronerQuery<AL, FoldQueryRequest<Folds>> {
+        return this as FoldedCoronerQuery<AL, FoldQueryRequest<Folds>>;
     }
 
-    public group<A extends string>(attribute: A): FoldedCoronerQuery<SetFoldGroup<R, A>> {
+    public group<A extends string>(attribute: A): FoldedCoronerQuery<AL, SetFoldGroup<R, A>> {
         const request = cloneFoldRequest(this.#request);
         if (attribute === '*') {
             request.group = undefined;
@@ -55,24 +66,24 @@ export class FoldedCoronerQueryBuilder<R extends FoldQueryRequest = FoldQueryReq
             request.group = [attribute];
         }
 
-        return this.createInstance(request) as unknown as FoldedCoronerQuery<SetFoldGroup<R, A>>;
+        return this.createInstance(request) as unknown as FoldedCoronerQuery<AL, SetFoldGroup<R, A>>;
     }
 
     public order<F extends GetRequestFold<R>, A extends keyof F & string, I extends number>(
         attribute: A,
         direction: OrderDirection,
         index: I
-    ): FoldedCoronerQuery<R>;
+    ): FoldedCoronerQuery<AL, R>;
     public order<F extends GetRequestFold<R>, A extends keyof F & string, O extends F[A][number]>(
         attribute: A,
         direction: OrderDirection,
         ...fold: O
-    ): FoldedCoronerQuery<R>;
+    ): FoldedCoronerQuery<AL, R>;
     public order(
         attribute: string,
         direction: OrderDirection,
         ...foldOrIndex: [number] | FoldOperator
-    ): FoldedCoronerQuery<R> {
+    ): FoldedCoronerQuery<AL, R> {
         let index: number;
         if (typeof foldOrIndex[0] === 'number') {
             index = foldOrIndex[0];
@@ -113,7 +124,7 @@ export class FoldedCoronerQueryBuilder<R extends FoldQueryRequest = FoldQueryReq
         return this.createInstance(request);
     }
 
-    public orderByCount(direction: OrderDirection): FoldedCoronerQuery<R> {
+    public orderByCount(direction: OrderDirection): FoldedCoronerQuery<AL, R> {
         const request = cloneFoldRequest(this.#request);
 
         const order: CountFoldOrder = {
@@ -153,6 +164,11 @@ export class FoldedCoronerQueryBuilder<R extends FoldQueryRequest = FoldQueryReq
     }
 
     protected createInstance(request: R): this {
-        return new FoldedCoronerQueryBuilder<R>(request, this.#executor, this.#simpleResponseBuilder) as this;
+        return new FoldedCoronerQueryBuilder<AL, R>(
+            request,
+            this.#attributeList,
+            this.#executor,
+            this.#simpleResponseBuilder
+        ) as this;
     }
 }

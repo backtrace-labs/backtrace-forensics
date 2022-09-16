@@ -1,6 +1,32 @@
+import {
+    AttributeType,
+    AttributeValueType,
+    BooleanType,
+    DictionaryType,
+    StringType,
+    UIntType,
+    UUIDType,
+} from '../common/attributes';
+
 export type CoronerValueType = string | number | boolean | null;
 export type InputValueType = CoronerValueType | Date;
 
+export type FilterOperator<T extends AttributeType = AttributeType> = T extends StringType
+    ? StringFilterOperator
+    : T extends UIntType
+    ? UIntFilterOperator
+    : T extends BooleanType
+    ? BooleanFilterOperator
+    : T extends DictionaryType
+    ? DictionaryFilterOperator
+    : T extends UUIDType
+    ? UUIDFilterOperator
+    : never;
+
+export type UIntFilterOperator = 'at-least' | 'at-most' | 'equal' | 'not-equal' | 'greater-than' | 'less-than';
+export type BooleanFilterOperator = 'equal' | 'not-equal';
+export type UUIDFilterOperator = UIntFilterOperator;
+export type DictionaryFilterOperator = StringFilterOperator;
 export type StringFilterOperator =
     | 'at-least'
     | 'at-most'
@@ -13,21 +39,10 @@ export type StringFilterOperator =
     | 'regular-expression'
     | 'inverse-regular-expression';
 
-export type NumberFilterOperator = 'at-least' | 'at-most' | 'equal' | 'not-equal' | 'greater-than' | 'less-than';
-
-export type BooleanFilterOperator = 'equal' | 'not-equal';
-
-export type FilterOperator<T extends InputValueType = CoronerValueType> = T extends string
-    ? StringFilterOperator
-    : T extends number
-    ? NumberFilterOperator
-    : T extends boolean
-    ? BooleanFilterOperator
-    : T extends Date
-    ? NumberFilterOperator
-    : never;
-
-export type QueryAttributeFilter = readonly [FilterOperator, CoronerValueType];
+export type QueryAttributeFilter<T extends AttributeType = AttributeType> = readonly [
+    FilterOperator<T>,
+    AttributeValueType<T>
+];
 
 export type QueryFilter = {
     [attribute: string]: readonly QueryAttributeFilter[];

@@ -1,10 +1,12 @@
+import { AttributeList } from '../common/attributes';
 import { QuerySource } from '../models/QuerySource';
 import { OrderDirection } from '../requests';
 import { SelectQueryRequest } from '../requests/select';
 import { SelectQueryResponse } from '../responses/select';
 import { CommonCoronerQuery } from './common';
 
-export interface SelectCoronerQuery<R extends SelectQueryRequest = SelectQueryRequest<[]>> extends CommonCoronerQuery {
+export interface SelectCoronerQuery<AL extends AttributeList, R extends SelectQueryRequest = SelectQueryRequest<[]>>
+    extends CommonCoronerQuery<AL> {
     /**
      * Returns the query as dynamic select. Use this to assign select attributes in runtime, without knowing the types.
      * @example
@@ -12,7 +14,7 @@ export interface SelectCoronerQuery<R extends SelectQueryRequest = SelectQueryRe
      * query = query.select('a');
      * query = query.select('b');
      */
-    dynamicSelect(): SelectedCoronerQuery<SelectQueryRequest<string[]>>;
+    dynamicSelect(): SelectedCoronerQuery<AL, SelectQueryRequest<string[]>>;
 
     /**
      * Adds provided attributes to the select request. You can add multiple attributes at once, or chain `select` calls.
@@ -23,10 +25,11 @@ export interface SelectCoronerQuery<R extends SelectQueryRequest = SelectQueryRe
      * query.select('a').select('b').select('c');
      * query.select('a', 'b', 'c');
      */
-    select<A extends string[]>(...attributes: A): SelectedCoronerQuery<AddSelect<R, A>>;
+    select<A extends string[]>(...attributes: A): SelectedCoronerQuery<AL, AddSelect<R, A>>;
 }
 
-export interface SelectedCoronerQuery<R extends SelectQueryRequest> extends SelectCoronerQuery<R> {
+export interface SelectedCoronerQuery<AL extends AttributeList, R extends SelectQueryRequest>
+    extends SelectCoronerQuery<AL, R> {
     /**
      * Adds order on attribute with direction specified.
      * @param attribute Attribute to order by.
@@ -35,7 +38,7 @@ export interface SelectedCoronerQuery<R extends SelectQueryRequest> extends Sele
      * // This will order descending on attribute 'a', then ascending on attribute 'b'
      * query.select('a').select('b').order('a', 'descending').order('b', 'ascending')
      */
-    order<A extends string>(attribute: A, direction: OrderDirection): SelectedCoronerQuery<R>;
+    order<A extends string>(attribute: A, direction: OrderDirection): SelectedCoronerQuery<AL, R>;
 
     /**
      * Returns the built request.
