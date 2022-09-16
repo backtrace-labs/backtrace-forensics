@@ -114,6 +114,8 @@ export type AddFold<R extends FoldQueryRequest, A extends string, O extends Fold
         : FoldQueryRequest<F & Folds<A, readonly [O]>, G>
     : never;
 
-export type SetFoldGroup<R extends FoldQueryRequest, A extends string> = FoldQueryRequest<NonNullable<R['fold']>, [A]>;
+export type SetFoldGroup<R extends FoldQueryRequest, A extends string> = FoldQueryRequest<FoldOfRequest<R>, [A]>;
+
+export type FoldOfRequest<R extends FoldQueryRequest> = NonNullable<R['fold']>;
 
 export type DefaultGroup = '*';

@@ -49,9 +49,7 @@ export interface SelectedCoronerQuery<R extends SelectQueryRequest> extends Sele
     post(source?: Partial<QuerySource>): Promise<SelectQueryResponse<R>>;
 }
 
-// export type AddSelect<R extends SelectQueryRequest, S extends string[]> = SelectQueryRequest<
-//     [...NonNullable<R['select']>, ...S]
-// >;
+export type SelectOfRequest<R extends SelectQueryRequest> = NonNullable<R['select']>;
 
 export type AddSelect<R extends SelectQueryRequest, A extends string[]> = R extends SelectQueryRequest<infer S>
     ? SelectQueryRequest<[...S, ...A]>

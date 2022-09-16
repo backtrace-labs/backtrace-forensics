@@ -1,3 +1,4 @@
+import { SelectOfRequest } from '../queries/select';
 import { CoronerValueType, SelectQueryRequest } from '../requests';
 import { FailedQueryResponse, RawQueryResponse, SuccessfulQueryResponse } from './common';
 import { SimpleSelectRow, SimpleSelectRows } from './simple/select';
@@ -15,7 +16,7 @@ type SelectQueryRowValues<S extends readonly string[]> = {
 
 export interface RawSelectQueryResponse<R extends SelectQueryRequest> extends RawQueryResponse {
     readonly objects: SelectQueryObject[];
-    readonly values: SelectQueryRowValues<NonNullable<R['select']>>;
+    readonly values: SelectQueryRowValues<SelectOfRequest<R>>;
     readonly order?: QueryOrder[];
 }
 

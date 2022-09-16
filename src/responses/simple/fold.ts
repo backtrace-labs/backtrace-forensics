@@ -1,4 +1,4 @@
-import { DefaultGroup } from '../../queries';
+import { DefaultGroup, FoldOfRequest } from '../../queries';
 import { CoronerValueType } from '../../requests/common';
 import { BinFoldOperator, DistributionFoldOperator, FoldOperator, FoldQueryRequest, Folds } from '../../requests/fold';
 
@@ -70,14 +70,14 @@ export type SimpleFoldAttributes<F extends Folds, G extends readonly string[]> =
 };
 
 export interface SimpleFoldRow<R extends FoldQueryRequest> {
-    attributes: SimpleFoldAttributes<NonNullable<R['fold']>, NonNullable<R['group']>>;
+    attributes: SimpleFoldAttributes<FoldOfRequest<R>, NonNullable<R['group']>>;
     count: number;
 
-    fold<A extends keyof NonNullable<R['fold']>, O extends NonNullable<R['fold']>[A][number]>(
+    fold<A extends keyof FoldOfRequest<R>, O extends FoldOfRequest<R>[A][number]>(
         attribute: A,
         ...fold: O
     ): SimpleFoldValue<O[0]>;
-    tryFold<A extends keyof NonNullable<R['fold']>, O extends NonNullable<R['fold']>[A][number]>(
+    tryFold<A extends keyof FoldOfRequest<R>, O extends FoldOfRequest<R>[A][number]>(
         attribute: A,
         ...fold: O
     ): SimpleFoldValue<O[0]> | undefined;
@@ -91,11 +91,11 @@ export interface SimpleFoldRow<R extends FoldQueryRequest> {
 export interface SimpleFoldRows<R extends FoldQueryRequest> {
     rows: SimpleFoldRow<R>[];
 
-    fold<A extends keyof NonNullable<R['fold']>, O extends NonNullable<R['fold']>[A][number]>(
+    fold<A extends keyof FoldOfRequest<R>, O extends FoldOfRequest<R>[A][number]>(
         attribute: A,
         ...fold: O
     ): SimpleFoldValue<O[0]>[];
-    tryFold<A extends keyof NonNullable<R['fold']>, O extends NonNullable<R['fold']>[A][number]>(
+    tryFold<A extends keyof FoldOfRequest<R>, O extends FoldOfRequest<R>[A][number]>(
         attribute: A,
         ...fold: O
     ): SimpleFoldValue<O[0]>[] | undefined;

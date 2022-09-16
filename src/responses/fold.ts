@@ -1,3 +1,4 @@
+import { FoldOfRequest } from '../queries';
 import { CoronerValueType } from '../requests/common';
 import {
     BinFoldOperator,
@@ -68,7 +69,7 @@ export type FoldQueryRowValue<F extends readonly FoldOperator[]> = [
 export interface RawFoldQueryResponse<R extends FoldQueryRequest> extends RawQueryResponse {
     readonly cardinalities: QueryCardinalities;
     readonly factors_desc?: QueryFactorDescription[];
-    readonly values: FoldQueryRowValue<NonNullable<R['fold']>[string]>[];
+    readonly values: FoldQueryRowValue<FoldOfRequest<R>[string]>[];
 }
 
 export interface SuccessfulFoldQueryResponse<R extends FoldQueryRequest>
