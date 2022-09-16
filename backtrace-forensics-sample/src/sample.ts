@@ -49,7 +49,7 @@ import BacktraceForensics, { CommonAttributes, Filters } from '../../lib';
     )
         .limit(2)
         .offset(20)
-        .filter('asdsad', 'equal', 'asda')
+        .filter('timestamp', Filters.time.from.last.hours(2).to.now())
         .filter('_tx', Filters.range(100, 200))
         .select('timestamp', 'hostname', 'fingerprint');
 
