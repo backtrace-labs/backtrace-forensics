@@ -34,7 +34,7 @@ export class CoronerQueryExecutor implements ICoronerQueryExecutor {
 
         const response = {
             raw,
-            success: !!raw.error,
+            success: !raw.error,
             json: () => raw,
         } as QueryResponse<R>;
 

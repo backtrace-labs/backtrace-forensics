@@ -135,7 +135,7 @@ export class FoldedCoronerQueryBuilder<R extends FoldQueryRequest = FoldQueryReq
     }
 
     public async post(source?: Partial<QuerySource>): Promise<FoldQueryResponse<R>> {
-        if (!this.#request.fold || !this.#request.group) {
+        if (!this.#request.fold && !this.#request.group) {
             throw new Error('Fold or group query expected.');
         }
 
