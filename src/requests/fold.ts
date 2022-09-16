@@ -1,37 +1,45 @@
-import { CoronerValueType, OrderDirection, QueryRequest } from './common';
+import { AttributeType, BooleanType, DictionaryType, StringType, UIntType, UUIDType } from '../common/attributes';
+import { OrderDirection, QueryRequest } from './common';
 
 export type DistributionFoldOperator = readonly ['distribution', number];
 export type BinFoldOperator = readonly ['bin', ...number[]];
-export type CommonFoldOperator =
+
+export type UIntFoldOperator =
+    | DistributionFoldOperator
+    | BinFoldOperator
+    | readonly ['histogram']
+    | readonly ['head']
+    | readonly ['max']
+    | readonly ['mean']
+    | readonly ['min']
+    | readonly ['range']
+    | readonly ['sum']
+    | readonly ['tail']
+    | readonly ['unique'];
+
+export type BooleanFoldOperator = UIntFoldOperator;
+export type UUIDFoldOperator = UIntFoldOperator;
+export type StringFoldOperator =
     | DistributionFoldOperator
     | readonly ['head']
-    | readonly ['tail']
-    | readonly ['unique']
+    | readonly ['histogram']
+    | readonly ['max']
+    | readonly ['min']
     | readonly ['range']
-    | readonly ['max']
-    | readonly ['min']
-    | readonly ['histogram'];
-
-export type UnaryFoldOperator =
-    | readonly ['head']
     | readonly ['tail']
-    | readonly ['unique']
-    | readonly ['max']
-    | readonly ['min']
-    | readonly ['mean']
-    | readonly ['sum']
-    | readonly ['histogram'];
+    | readonly ['unique'];
+export type DictionaryFoldOperator = StringFoldOperator;
 
-export type NumberFoldOperator = CommonFoldOperator | BinFoldOperator | readonly ['mean'] | readonly ['sum'];
-export type StringFoldOperator = CommonFoldOperator;
-export type BooleanFoldOperator = CommonFoldOperator | BinFoldOperator | readonly ['mean'] | readonly ['sum'];
-
-export type FoldOperator<T extends CoronerValueType = CoronerValueType> = T extends string
+export type FoldOperator<T extends AttributeType = AttributeType> = T extends StringType
     ? StringFoldOperator
-    : T extends number
-    ? NumberFoldOperator
-    : T extends boolean
+    : T extends UIntType
+    ? UIntFoldOperator
+    : T extends BooleanType
     ? BooleanFoldOperator
+    : T extends DictionaryType
+    ? DictionaryFoldOperator
+    : T extends UUIDType
+    ? UUIDFoldOperator
     : never;
 
 export type FoldOrder<A extends string = string, I extends number = number> = {
@@ -48,10 +56,10 @@ export type CountFoldOrder = {
     ordering: OrderDirection;
 };
 
-export type Folds<
-    A extends string = string,
-    O extends readonly FoldOperator<CoronerValueType>[] = readonly FoldOperator<CoronerValueType>[]
-> = Record<A, O>;
+export type Folds<A extends string = string, O extends readonly FoldOperator[] = readonly FoldOperator[]> = Record<
+    A,
+    O
+>;
 
 export interface FoldQueryRequest<F extends Folds = Folds, G extends readonly string[] = readonly string[]>
     extends QueryRequest {

@@ -2,7 +2,6 @@ import { stdin as input, stdout as output } from 'process';
 import readline from 'readline';
 import { BacktraceForensics, CommonAttributes, Filters, QuerySource } from '../../lib';
 import { FoldedCoronerQuery, SelectedCoronerQuery } from '../../lib/queries';
-import { CoronerValueType } from '../../lib/requests/common';
 import { FoldOperator } from '../../lib/requests/fold';
 
 const rl = readline.createInterface({ input, output });
@@ -46,6 +45,7 @@ async function staticSelect() {
     const query = BacktraceForensics.create({ defaultSource: source }, { attributeList: CommonAttributes })
         .filter('fingerprint', 'equal', fp)
         .filter('timestamp', Filters.time.last.day())
+        // .fold('callstack', 'bin')
         .select('callstack', 'randomInt', 'fingerprint')
         .select('awdwad');
 
@@ -83,7 +83,7 @@ async function fold() {
 
     const groupStr = await question('enter key to group on: ');
     const keysStr = await question('enter comma-delimited keys to fold on: ');
-    const opStr = [await question('enter operator: ')] as FoldOperator<CoronerValueType>;
+    const opStr = [await question('enter operator: ')] as FoldOperator;
 
     let query = BacktraceForensics.create({ defaultSource: source }).dynamicFold().group(groupStr);
 

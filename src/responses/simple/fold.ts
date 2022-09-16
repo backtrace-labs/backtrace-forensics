@@ -1,48 +1,49 @@
+import { AttributeType, AttributeValueType } from '../../common/attributes';
 import { DefaultGroup, FoldOfRequest } from '../../queries';
 import { CoronerValueType } from '../../requests/common';
 import { BinFoldOperator, DistributionFoldOperator, FoldOperator, FoldQueryRequest, Folds } from '../../requests/fold';
 
-export interface SimpleFoldDistributionValue<V extends CoronerValueType = CoronerValueType> {
-    value: V;
+export interface SimpleFoldDistributionValue<T extends AttributeType = AttributeType> {
+    value: AttributeValueType<T>;
     count: number;
 }
 
-export interface SimpleFoldDistributionValues<V extends CoronerValueType = CoronerValueType> {
+export interface SimpleFoldDistributionValues<T extends AttributeType = AttributeType> {
     keys: number;
     tail: number;
-    values: SimpleFoldDistributionValue<V>[];
+    values: SimpleFoldDistributionValue<T>[];
 }
 
-export interface SimpleFoldRangeValue<V extends CoronerValueType = CoronerValueType> {
-    from: V;
-    to: V;
+export interface SimpleFoldRangeValue<T extends AttributeType = AttributeType> {
+    from: AttributeValueType<T>;
+    to: AttributeValueType<T>;
 }
 
-export interface SimpleFoldBinValue<V extends CoronerValueType = CoronerValueType> {
-    from: V;
-    to: V;
+export interface SimpleFoldBinValue<T extends AttributeType = AttributeType> {
+    from: AttributeValueType<T>;
+    to: AttributeValueType<T>;
     count: number;
 }
 
-export interface SimpleFoldHistogramValue<V extends CoronerValueType = CoronerValueType> {
-    value: V;
+export interface SimpleFoldHistogramValue<T extends AttributeType = AttributeType> {
+    value: AttributeValueType<T>;
     count: number;
 }
 
 export type SimpleFoldValue<
     F extends FoldOperator[0] = FoldOperator[0],
-    V extends CoronerValueType = CoronerValueType
+    T extends AttributeType = AttributeType
 > = F extends DistributionFoldOperator[0]
-    ? SimpleFoldDistributionValues<V>
+    ? SimpleFoldDistributionValues<T>
     : F extends BinFoldOperator[0]
-    ? SimpleFoldBinValue<V>[]
+    ? SimpleFoldBinValue<T>[]
     : F extends 'range'
-    ? SimpleFoldRangeValue<V>
+    ? SimpleFoldRangeValue<T>
     : F extends 'histogram'
-    ? SimpleFoldHistogramValue<V>[]
+    ? SimpleFoldHistogramValue<T>[]
     : F extends 'unique'
     ? number
-    : V;
+    : T;
 
 export type SimpleFoldGroup<A extends string, G extends readonly string[]> = A extends G[0]
     ? {

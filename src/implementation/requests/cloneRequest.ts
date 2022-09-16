@@ -1,4 +1,4 @@
-import { CoronerValueType, QueryRequest } from '../../requests/common';
+import { QueryRequest } from '../../requests/common';
 import { FoldOperator, FoldQueryRequest, Folds } from '../../requests/fold';
 import { SelectQueryRequest } from '../../requests/select';
 
@@ -14,7 +14,7 @@ function cloneFold(fold?: Folds) {
             continue;
         }
 
-        const resultOperators: FoldOperator<CoronerValueType>[] = [];
+        const resultOperators: FoldOperator[] = [];
         for (const operator of operators) {
             resultOperators.push([...operator]);
         }

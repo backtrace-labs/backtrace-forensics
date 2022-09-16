@@ -1,10 +1,10 @@
 import { format } from 'util';
-import { AttributeList } from '../../common/attributes';
+import { AttributeList, AttributeType } from '../../common/attributes';
 import { ICoronerQueryExecutor } from '../../interfaces/ICoronerQueryExecutor';
 import { IFoldCoronerSimpleResponseBuilder } from '../../interfaces/responses/IFoldCoronerSimpleResponseBuilder';
 import { QuerySource } from '../../models/QuerySource';
 import { AddFold, FoldedCoronerQuery, SetFoldGroup } from '../../queries/fold';
-import { CoronerValueType, OrderDirection } from '../../requests/common';
+import { OrderDirection } from '../../requests/common';
 import { CountFoldOrder, FoldOperator, FoldOrder, FoldQueryRequest, Folds, GetRequestFold } from '../../requests/fold';
 import { FoldQueryResponse, RawFoldQueryResponse } from '../../responses/fold';
 import { cloneFoldRequest } from '../requests/cloneRequest';
@@ -35,7 +35,7 @@ export class FoldedCoronerQueryBuilder<
         this.#simpleResponseBuilder = builder;
     }
 
-    public fold<A extends string, V extends CoronerValueType, O extends FoldOperator<V>>(
+    public fold<A extends string, V extends A extends keyof AL ? AL[A][2] : AttributeType, O extends FoldOperator<V>>(
         attribute: A,
         ...fold: O
     ): FoldedCoronerQuery<AL, AddFold<R, A, O>> {

@@ -25,6 +25,7 @@ export interface SelectCoronerQuery<AL extends AttributeList, R extends SelectQu
      * query.select('a').select('b').select('c');
      * query.select('a', 'b', 'c');
      */
+    select<A extends (keyof AL & string)[]>(...attributes: A): SelectedCoronerQuery<AL, AddSelect<R, A>>;
     select<A extends string[]>(...attributes: A): SelectedCoronerQuery<AL, AddSelect<R, A>>;
 }
 

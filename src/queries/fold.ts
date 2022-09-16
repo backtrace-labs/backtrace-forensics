@@ -1,6 +1,6 @@
-import { AttributeList } from '../common/attributes';
+import { AttributeList, AttributeType } from '../common/attributes';
 import { QuerySource } from '../models/QuerySource';
-import { CoronerValueType, OrderDirection } from '../requests';
+import { OrderDirection } from '../requests';
 import { FoldOperator, FoldQueryRequest, Folds, GetRequestFold } from '../requests/fold';
 import { FoldQueryResponse } from '../responses/fold';
 import { CommonCoronerQuery } from './common';
@@ -14,7 +14,7 @@ export interface FoldCoronerQuery<AL extends AttributeList, R extends FoldQueryR
      * query = query.fold('fingerprint', 'head');
      * query = query.fold('timestamp', 'tail');
      */
-    dynamicFold(): FoldedCoronerQuery<AL, FoldQueryRequest<Folds>>;
+    dynamicFold(): FoldedCoronerQuery<AttributeList, FoldQueryRequest<Folds>>;
 
     /**
      * Adds provided fold to the request.
@@ -27,7 +27,11 @@ export interface FoldCoronerQuery<AL extends AttributeList, R extends FoldQueryR
      *      .fold('fingerprint', 'tail')
      *      .fold('timestamp', 'distribution', 3)
      */
-    fold<A extends string, V extends CoronerValueType, O extends FoldOperator<V>>(
+    fold<A extends keyof AL & string, V extends AL[A][2], O extends FoldOperator<V>>(
+        attribute: A,
+        ...fold: O
+    ): FoldedCoronerQuery<AL, AddFold<R, A, O>>;
+    fold<A extends string, V extends A extends keyof AL ? AL[A][2] : AttributeType, O extends FoldOperator<V>>(
         attribute: A,
         ...fold: O
     ): FoldedCoronerQuery<AL, AddFold<R, A, O>>;

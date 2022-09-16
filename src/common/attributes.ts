@@ -49,8 +49,6 @@ export type AttributeValueType<T extends AttributeType = AttributeType> =
           : never)
     | null;
 
-type test = AttributeValueType<AttributeType>;
-
 export type Attribute<
     A extends string = string,
     F extends AttributeFormat = AttributeFormat,

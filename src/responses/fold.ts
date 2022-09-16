@@ -2,10 +2,13 @@ import { FoldOfRequest } from '../queries';
 import { CoronerValueType } from '../requests/common';
 import {
     BinFoldOperator,
+    BooleanFoldOperator,
+    DictionaryFoldOperator,
     DistributionFoldOperator,
     FoldOperator,
     FoldQueryRequest,
-    UnaryFoldOperator,
+    StringFoldOperator,
+    UIntFoldOperator,
 } from '../requests/fold';
 import { FailedQueryResponse, RawQueryResponse, SuccessfulQueryResponse } from './common';
 import { SimpleFoldRow, SimpleFoldRows } from './simple/fold';
@@ -51,7 +54,7 @@ export type FoldQueryColumnValue<
     ? RangeQueryColumnValue<V>
     : F extends ['histogram']
     ? HistogramQueryColumnValue<V>
-    : F extends UnaryFoldOperator
+    : F extends UIntFoldOperator | BooleanFoldOperator | StringFoldOperator | DictionaryFoldOperator
     ? SingleQueryColumnValue<V>
     :
           | DistributionQueryColumnValue<V>

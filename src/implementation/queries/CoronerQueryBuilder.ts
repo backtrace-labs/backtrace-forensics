@@ -1,11 +1,11 @@
-import { AttributeList } from '../../common/attributes';
+import { AttributeList, AttributeType } from '../../common/attributes';
 import { IFoldCoronerQueryBuilderFactory } from '../../interfaces/factories/IFoldCoronerQueryBuilderFactory';
 import { ISelectCoronerQueryBuilderFactory } from '../../interfaces/factories/ISelectCoronerQueryBuilderFactory';
 import { CoronerQuery } from '../../queries/common';
 import { FoldedCoronerQuery, SetFoldGroup } from '../../queries/fold';
 import { AddSelect, SelectedCoronerQuery } from '../../queries/select';
 import { SelectQueryRequest } from '../../requests';
-import { CoronerValueType, QueryRequest } from '../../requests/common';
+import { QueryRequest } from '../../requests/common';
 import { FoldOperator, FoldQueryRequest, Folds } from '../../requests/fold';
 import { CommonCoronerQueryBuilder } from './CommonCoronerQueryBuilder';
 
@@ -43,7 +43,7 @@ export class CoronerQueryBuilder<AL extends AttributeList>
         return query.dynamicSelect();
     }
 
-    public fold<A extends string, V extends CoronerValueType, O extends FoldOperator<V>>(
+    public fold<A extends string, V extends A extends keyof AL ? AL[A][2] : AttributeType, O extends FoldOperator<V>>(
         attribute: A,
         ...fold: O
     ): FoldedCoronerQuery<AL, FoldQueryRequest<Folds<A, [O]>, ['*']>> {
