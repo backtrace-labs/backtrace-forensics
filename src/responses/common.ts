@@ -1,3 +1,6 @@
+import { AttributeList } from '../common/attributes';
+import { CommonCoronerQuery, CoronerQuery } from '../queries';
+
 export type QueryColumn = [string, string];
 
 export interface QueryColumnDescription {
@@ -21,12 +24,16 @@ export interface RawQueryResponse {
     readonly columns_desc: QueryColumnDescription[];
 }
 
-export interface SuccessfulQueryResponse<R extends RawQueryResponse> {
+export interface SuccessfulQueryResponse<R extends RawQueryResponse, Q extends CommonCoronerQuery<AttributeList>> {
     success: true;
     json(): {
         response: R;
         error: undefined;
+        _: {
+            tx: number;
+        };
     };
+    nextPage(): Q;
 }
 
 export interface FailedQueryResponse {
@@ -42,6 +49,7 @@ export interface FailedQueryResponse {
 
 export type RawCoronerResponse<R extends RawQueryResponse = RawQueryResponse> = ReturnType<QueryResponse<R>['json']>;
 
-export type QueryResponse<R extends RawQueryResponse = RawQueryResponse> =
-    | SuccessfulQueryResponse<R>
-    | FailedQueryResponse;
+export type QueryResponse<
+    R extends RawQueryResponse = RawQueryResponse,
+    Q extends CoronerQuery<AttributeList> = CoronerQuery<AttributeList>
+> = SuccessfulQueryResponse<R, Q> | FailedQueryResponse;

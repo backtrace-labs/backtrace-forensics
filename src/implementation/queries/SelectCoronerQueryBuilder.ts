@@ -3,7 +3,7 @@ import { ICoronerQueryExecutor } from '../../interfaces/ICoronerQueryExecutor';
 import { ISelectCoronerSimpleResponseBuilder } from '../../interfaces/responses/ISelectCoronerSimpleResponseBuilder';
 import { QuerySource } from '../../models/QuerySource';
 import { AddSelect, SelectedCoronerQuery } from '../../queries/select';
-import { OrderDirection } from '../../requests';
+import { nextPage, OrderDirection } from '../../requests';
 import { SelectOrder, SelectQueryRequest } from '../../requests/select';
 import { RawSelectQueryResponse, SelectQueryResponse } from '../../responses/select';
 import { cloneSelectRequest } from '../requests/cloneRequest';
@@ -66,22 +66,29 @@ export class SelectedCoronerQueryBuilder<AL extends AttributeList, R extends Sel
         return this.#request;
     }
 
-    public async post(source?: Partial<QuerySource>): Promise<SelectQueryResponse<R>> {
+    public async post(source?: Partial<QuerySource>): Promise<SelectQueryResponse<R, this>> {
         if (!this.#request.select) {
             throw new Error('Select query expected.');
         }
 
-        const response = (await this.#executor.execute<RawSelectQueryResponse<R>>(
-            this.#request,
-            source
-        )) as SelectQueryResponse<R>;
-
-        if (response.success) {
-            const json = response.json();
-            response.first = () => this.#simpleResponseBuilder.first(json.response);
-            response.all = () => this.#simpleResponseBuilder.rows(json.response);
+        const response = await this.#executor.execute<RawSelectQueryResponse<R>>(this.#request, source);
+        if (response.error) {
+            return {
+                success: false,
+                json: () => response,
+            };
         }
-        return response;
+
+        return {
+            success: true,
+            json: () => response,
+            first: () => this.#simpleResponseBuilder.first(response.response),
+            all: () => this.#simpleResponseBuilder.rows(response.response),
+            nextPage: () => {
+                const request = nextPage(this.#request, response);
+                return this.createInstance(request);
+            },
+        };
     }
 
     protected createInstance(request: R): this {

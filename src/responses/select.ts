@@ -1,4 +1,5 @@
-import { SelectOfRequest } from '../queries/select';
+import { AttributeList } from '../common/attributes';
+import { SelectedCoronerQuery, SelectOfRequest } from '../queries/select';
 import { CoronerValueType, SelectQueryRequest } from '../requests';
 import { FailedQueryResponse, RawQueryResponse, SuccessfulQueryResponse } from './common';
 import { SimpleSelectRow, SimpleSelectRows } from './simple/select';
@@ -20,10 +21,14 @@ export interface RawSelectQueryResponse<R extends SelectQueryRequest> extends Ra
     readonly order?: QueryOrder[];
 }
 
-export interface SuccessfulSelectQueryResponse<R extends SelectQueryRequest>
-    extends SuccessfulQueryResponse<RawSelectQueryResponse<R>> {
+export interface SuccessfulSelectQueryResponse<
+    R extends SelectQueryRequest,
+    Q extends SelectedCoronerQuery<AttributeList, R>
+> extends SuccessfulQueryResponse<RawSelectQueryResponse<R>, Q> {
     all(): SimpleSelectRows<R>;
     first(): SimpleSelectRow<R> | undefined;
 }
 
-export type SelectQueryResponse<R extends SelectQueryRequest> = SuccessfulSelectQueryResponse<R> | FailedQueryResponse;
+export type SelectQueryResponse<R extends SelectQueryRequest, Q extends SelectedCoronerQuery<AttributeList, R>> =
+    | SuccessfulSelectQueryResponse<R, Q>
+    | FailedQueryResponse;

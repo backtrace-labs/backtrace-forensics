@@ -4,7 +4,7 @@ import { ICoronerQueryExecutor } from '../../interfaces/ICoronerQueryExecutor';
 import { IFoldCoronerSimpleResponseBuilder } from '../../interfaces/responses/IFoldCoronerSimpleResponseBuilder';
 import { QuerySource } from '../../models/QuerySource';
 import { AddFold, FoldedCoronerQuery, SetFoldGroup } from '../../queries/fold';
-import { OrderDirection } from '../../requests/common';
+import { nextPage, OrderDirection } from '../../requests/common';
 import { CountFoldOrder, FoldOperator, FoldOrder, FoldQueryRequest, Folds, GetRequestFold } from '../../requests/fold';
 import { FoldQueryResponse, RawFoldQueryResponse } from '../../responses/fold';
 import { cloneFoldRequest } from '../requests/cloneRequest';
@@ -145,22 +145,29 @@ export class FoldedCoronerQueryBuilder<
         return this.#request;
     }
 
-    public async post(source?: Partial<QuerySource>): Promise<FoldQueryResponse<R>> {
+    public async post(source?: Partial<QuerySource>): Promise<FoldQueryResponse<R, this>> {
         if (!this.#request.fold && !this.#request.group) {
             throw new Error('Fold or group query expected.');
         }
 
-        const response = (await this.#executor.execute<RawFoldQueryResponse<R>>(
-            this.#request,
-            source
-        )) as FoldQueryResponse<R>;
-
-        if (response.success) {
-            const json = response.json();
-            response.first = () => this.#simpleResponseBuilder.first(json.response, this.#request);
-            response.all = () => this.#simpleResponseBuilder.rows(json.response, this.#request);
+        const response = await this.#executor.execute<RawFoldQueryResponse<R>>(this.#request, source);
+        if (response.error) {
+            return {
+                success: false,
+                json: () => response,
+            };
         }
-        return response;
+
+        return {
+            success: true,
+            json: () => response,
+            first: () => this.#simpleResponseBuilder.first(response.response, this.#request),
+            all: () => this.#simpleResponseBuilder.rows(response.response, this.#request),
+            nextPage: () => {
+                const request = nextPage(this.#request, response);
+                return this.createInstance(request);
+            },
+        };
     }
 
     protected createInstance(request: R): this {

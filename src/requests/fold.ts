@@ -104,5 +104,5 @@ export function createFoldRequest<T extends FoldQueryRequest>(request: T): Infer
 }
 
 export function isFoldRequest(request: QueryRequest): boolean {
-    return 'fold' in request || 'group' in request;
+    return request && ('fold' in request || 'group' in request);
 }

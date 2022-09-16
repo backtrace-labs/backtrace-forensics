@@ -21,7 +21,7 @@ import {
     isSelectRequest,
     SelectQueryRequest,
 } from './requests';
-import { QueryRequest } from './requests/common';
+import { defaultRequest, QueryRequest } from './requests/common';
 
 export interface BacktraceForensicOptions {
     /**
@@ -108,12 +108,12 @@ export class BacktraceForensics {
                 } else if (isFoldRequest(request)) {
                     return this.#foldFactory.create(request as FoldQueryRequest, attributeList ?? {});
                 } else {
-                    return this.#queryFactory.create({}, attributeList ?? {});
+                    return this.#queryFactory.create(defaultRequest, attributeList ?? {});
                 }
             }
         }
 
-        return this.#queryFactory.create({}, {});
+        return this.#queryFactory.create(defaultRequest, {});
     }
 
     /**

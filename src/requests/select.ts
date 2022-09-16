@@ -34,5 +34,5 @@ export function createSelectRequest<T extends SelectQueryRequest>(request: T): I
 }
 
 export function isSelectRequest(request: QueryRequest): boolean {
-    return 'select' in request;
+    return request && 'select' in request;
 }

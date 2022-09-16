@@ -1,4 +1,5 @@
-import { FoldOfRequest } from '../queries';
+import { AttributeList } from '../common/attributes';
+import { FoldedCoronerQuery, FoldOfRequest } from '../queries';
 import { CoronerValueType } from '../requests/common';
 import {
     BinFoldOperator,
@@ -75,10 +76,12 @@ export interface RawFoldQueryResponse<R extends FoldQueryRequest> extends RawQue
     readonly values: FoldQueryRowValue<FoldOfRequest<R>[string]>[];
 }
 
-export interface SuccessfulFoldQueryResponse<R extends FoldQueryRequest>
-    extends SuccessfulQueryResponse<RawFoldQueryResponse<R>> {
+export interface SuccessfulFoldQueryResponse<R extends FoldQueryRequest, Q extends FoldedCoronerQuery<AttributeList, R>>
+    extends SuccessfulQueryResponse<RawFoldQueryResponse<R>, Q> {
     all(): SimpleFoldRows<R>;
     first(): SimpleFoldRow<R> | undefined;
 }
 
-export type FoldQueryResponse<R extends FoldQueryRequest> = SuccessfulFoldQueryResponse<R> | FailedQueryResponse;
+export type FoldQueryResponse<R extends FoldQueryRequest, Q extends FoldedCoronerQuery<AttributeList, R>> =
+    | SuccessfulFoldQueryResponse<R, Q>
+    | FailedQueryResponse;

@@ -7,6 +7,8 @@ import {
     UIntType,
     UUIDType,
 } from '../common/attributes';
+import { cloneRequest } from '../implementation/requests/cloneRequest';
+import { RawCoronerResponse } from '../responses';
 
 export type CoronerValueType = string | number | boolean | null;
 
@@ -92,4 +94,42 @@ export interface QueryRequest {
      * request.template = 'workflow';
      */
     template?: string;
+}
+
+export const defaultRequest: QueryRequest = {
+    offset: 0,
+    limit: 20,
+};
+
+export function nextPage<R extends QueryRequest>(request: R, response: RawCoronerResponse<any>): R {
+    if (response.error) {
+        throw new Error('Response has errors.');
+    }
+
+    const newRequest = cloneRequest(request);
+    if (newRequest.limit == null) {
+        throw new Error('Limit is not defined.');
+    }
+
+    if (newRequest.offset == null) {
+        throw new Error('Offset is not defined.');
+    }
+
+    newRequest.offset += newRequest.limit;
+    if (!newRequest.filter) {
+        newRequest.filter = [{}];
+    }
+
+    for (const filter of newRequest.filter) {
+        if ('_tx' in filter) {
+            const atMost = filter['_tx'].find((t) => t[0] === 'at-most');
+            if (!atMost) {
+                filter['_tx'] = [...filter['_tx'], ['at-most', response._.tx]];
+            }
+        } else {
+            filter['_tx'] = [['at-most', response._.tx]];
+        }
+    }
+
+    return newRequest as R;
 }

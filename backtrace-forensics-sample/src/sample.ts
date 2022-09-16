@@ -47,22 +47,23 @@ import BacktraceForensics, { CommonAttributes, Filters } from '../../lib';
             attributeList: CommonAttributes,
         }
     )
-        .limit(2)
-        .offset(20)
-        .filter('timestamp', Filters.time.from.last.hours(2).to.now())
-        .filter('_tx', Filters.range(100, 200))
+        // .limit(2)
+        // .offset(20)
+        .filter('timestamp', Filters.time.from.last.days(90).to.now())
+        // .filter('_tx', Filters.range(100, 200))
         .select('timestamp', 'hostname', 'fingerprint');
 
     console.log(JSON.stringify(request.json(), null, '\t'));
     const response = await request.post();
-    // console.log(JSON.stringify(response.json(), null, '\t'));
-    // response. //
 
     if (!response.success) {
         throw new Error(response.json().error.message);
     }
 
+    let nextPageRequest = response.nextPage();
+    console.log('next page', JSON.stringify(nextPageRequest.json(), null, '\t'));
+    nextPageRequest = nextPageRequest.filter('callstack', 'contains', 'asasd');
+    const nextPageResponse = await nextPageRequest.post();
+
     console.log(response.first());
-    // const all = response.response.all();
-    // console.log(all.select('fingerprint'));
 })();

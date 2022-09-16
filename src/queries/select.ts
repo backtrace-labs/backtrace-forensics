@@ -50,7 +50,7 @@ export interface SelectedCoronerQuery<AL extends AttributeList, R extends Select
      * Makes a POST call to Coroner with the built request.
      * @param source Where to make the request. If not specified, will supply data from default source.
      */
-    post(source?: Partial<QuerySource>): Promise<SelectQueryResponse<R>>;
+    post(source?: Partial<QuerySource>): Promise<SelectQueryResponse<R, this>>;
 }
 
 export type SelectOfRequest<R extends SelectQueryRequest> = NonNullable<R['select']>;

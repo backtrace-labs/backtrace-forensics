@@ -106,7 +106,7 @@ export interface FoldedCoronerQuery<AL extends AttributeList, R extends FoldQuer
      *     const b = row.attributes.b.groupKey;
      * }
      */
-    post(source?: Partial<QuerySource>): Promise<FoldQueryResponse<R>>;
+    post(source?: Partial<QuerySource>): Promise<FoldQueryResponse<R, this>>;
 }
 
 export type AddFold<R extends FoldQueryRequest, A extends string, O extends FoldOperator> = R extends FoldQueryRequest<
