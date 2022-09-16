@@ -112,10 +112,11 @@ export function nextPage<R extends QueryRequest>(request: R, response: RawCorone
     }
 
     if (newRequest.offset == null) {
-        throw new Error('Offset is not defined.');
+        newRequest.offset = newRequest.limit;
+    } else {
+        newRequest.offset += newRequest.limit;
     }
 
-    newRequest.offset += newRequest.limit;
     if (!newRequest.filter) {
         newRequest.filter = [{}];
     }
