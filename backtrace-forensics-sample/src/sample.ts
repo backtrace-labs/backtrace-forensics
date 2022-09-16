@@ -1,4 +1,4 @@
-import BacktraceForensics from '../../lib';
+import BacktraceForensics, { Filters } from '../../lib';
 
 // (async () => {
 //     const response = await BacktraceForensics.create({
@@ -33,7 +33,7 @@ import BacktraceForensics from '../../lib';
 // })();
 
 (async () => {
-    const date = new Date(1660054293000);
+    // const date = new Date(1660054293000);
 
     const request = BacktraceForensics.create({
         defaultSource: {
@@ -44,12 +44,12 @@ import BacktraceForensics from '../../lib';
     })
         .limit(2)
         .offset(20)
-        .filter('timestamp', 'at-least', date)
+        .filter('timestamp', Filters.time.from.last.days(90).to.now())
         .select('timestamp', 'hostname', 'fingerprint');
 
     console.log(JSON.stringify(request.json(), null, '\t'));
     const response = await request.post();
-    console.log(JSON.stringify(response.json(), null, '\t'));
+    // console.log(JSON.stringify(response.json(), null, '\t'));
     // response. //
 
     if (!response.success) {

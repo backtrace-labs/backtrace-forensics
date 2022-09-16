@@ -1,4 +1,4 @@
-import { FilterOperator, InputValueType, QueryRequest } from '../requests/common';
+import { FilterOperator, InputValueType, QueryAttributeFilter, QueryRequest } from '../requests/common';
 import { FoldCoronerQuery } from './fold';
 import { SelectCoronerQuery } from './select';
 
@@ -37,7 +37,7 @@ export interface CommonCoronerQuery {
     template(template: string): this;
 
     /**
-     * Adds or sets a filter in request.
+     * Adds a filter to request.
      *
      * Request mutation: `request.filter[attribute] += [operator, value]`
      * @param attribute Attribute to filter on.
@@ -50,6 +50,22 @@ export interface CommonCoronerQuery {
      *      .filter('timestamp', 'at-most', 1660747935)
      */
     filter<A extends string, V extends InputValueType>(attribute: A, operator: FilterOperator<V>, value: V): this;
+
+    /**
+     * Adds filters to request.
+     * You can use this requests with `Filters` helper.
+     *
+     * Request mutation: `request.filter[attribute] += filters`
+     * @param attribute Attribute to filter on.
+     * @param filters Filters to add.
+     * @example
+     * // filter by timestamp
+     * query.filter('timestamp', [['at-least', 1660000000], ['at-most', 1660747935]])
+     *
+     * // filter with Filters
+     * query.filter('timestamp', Filters.time.from.last.hours(2).to.now())
+     */
+    filter<A extends string>(attribute: A, filters: readonly QueryAttributeFilter[]): this;
 
     /**
      * Returns the built request.

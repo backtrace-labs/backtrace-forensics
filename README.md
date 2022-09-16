@@ -136,7 +136,7 @@ These functions are available always, regardless of folding or selecting.
 
 -   `filter(string, FilterOperator, CoronerValueType)`
 
-    Adds or sets a filter in request.
+    Adds a filter to request.
 
     Request mutation: `request.filter[attribute] += [operator, value]`
 
@@ -147,6 +147,26 @@ These functions are available always, regardless of folding or selecting.
         .filter('a', 'equal', 'xyz')
         .filter('timestamp', 'at-least', 1660000000)
         .filter('timestamp', 'at-most', 1660747935);
+    ```
+
+-   `filter(string, QueryAttributeFilter[])`
+
+    Adds filters to request.
+    You can use this requests with `Filters` helper. See [Fluent filters](#fluent-filters) for more info.
+
+    Request mutation: `request.filter[attribute] += filters`
+
+    **Example**
+
+    ```typescript
+    // filter by timestamp
+    const filteredQuery = query.filter('timestamp', [
+        ['at-least', 1660000000],
+        ['at-most', 1660747935],
+    ]);
+
+    // filter with Filters
+    const filteredQuery = query.filter('timestamp', Filters.time.from.last.hours(2).to.now());
     ```
 
 ### Select query functions
@@ -352,6 +372,24 @@ These are all available filter operators that you can use in `filter` function.
 
 -   `equal`
 -   `not-equal`
+
+## Fluent filters
+
+To simplify some attributes filtering, you can use `Filters` helper to create more complex filters with ease.
+
+### Time filters
+
+Use `Filters.time` to create time filters with ranges.
+
+```typescript
+import { Filters } from 'backtrace-forensics';
+
+// Will return data from the last 2 hours
+query.filter('timestamp', Filters.time.from.last.hours(2).to.now());
+
+// Will return data from `fromDateObject` to `toDateObject`
+query.filter('timestamp', Filters.time.from.date(fromDateObject).to.date(toDateObject));
+```
 
 ## Available folds
 
