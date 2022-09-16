@@ -1,4 +1,4 @@
-import { CoronerValueType, FilterOperator, QueryRequest } from '../requests/common';
+import { FilterOperator, InputValueType, QueryRequest } from '../requests/common';
 import { FoldCoronerQuery } from './fold';
 import { SelectCoronerQuery } from './select';
 
@@ -49,7 +49,7 @@ export interface CommonCoronerQuery {
      *      .filter('timestamp', 'at-least', 1660000000)
      *      .filter('timestamp', 'at-most', 1660747935)
      */
-    filter<A extends string, V extends CoronerValueType>(attribute: A, operator: FilterOperator<V>, value: V): this;
+    filter<A extends string, V extends InputValueType>(attribute: A, operator: FilterOperator<V>, value: V): this;
 
     /**
      * Returns the built request.

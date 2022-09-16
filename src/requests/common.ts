@@ -1,4 +1,5 @@
 export type CoronerValueType = string | number | boolean | null;
+export type InputValueType = CoronerValueType | Date;
 
 export type StringFilterOperator =
     | 'at-least'
@@ -16,12 +17,14 @@ export type NumberFilterOperator = 'at-least' | 'at-most' | 'equal' | 'not-equal
 
 export type BooleanFilterOperator = 'equal' | 'not-equal';
 
-export type FilterOperator<T extends CoronerValueType = CoronerValueType> = T extends string
+export type FilterOperator<T extends InputValueType = CoronerValueType> = T extends string
     ? StringFilterOperator
     : T extends number
     ? NumberFilterOperator
     : T extends boolean
     ? BooleanFilterOperator
+    : T extends Date
+    ? NumberFilterOperator
     : never;
 
 export type QueryAttributeFilter = readonly [FilterOperator, CoronerValueType];

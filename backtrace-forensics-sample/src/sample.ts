@@ -33,6 +33,8 @@ import BacktraceForensics from '../../lib';
 // })();
 
 (async () => {
+    const date = new Date(1660054293000);
+
     const request = BacktraceForensics.create({
         defaultSource: {
             address: 'https://yolo.sp.backtrace.io',
@@ -42,7 +44,7 @@ import BacktraceForensics from '../../lib';
     })
         .limit(2)
         .offset(20)
-        .filter('timestamp', 'at-least', '1660054293.')
+        .filter('timestamp', 'at-least', date)
         .select('timestamp', 'hostname', 'fingerprint');
 
     console.log(JSON.stringify(request.json(), null, '\t'));

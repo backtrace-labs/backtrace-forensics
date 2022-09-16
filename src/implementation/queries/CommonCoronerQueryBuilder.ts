@@ -1,5 +1,6 @@
 import { CommonCoronerQuery } from '../../queries/common';
-import { CoronerValueType, FilterOperator, QueryFilter, QueryRequest } from '../../requests/common';
+import { FilterOperator, InputValueType, QueryFilter, QueryRequest } from '../../requests/common';
+import { convertInputValue } from '../helpers/convertInputValue';
 import { cloneRequest } from '../requests/cloneRequest';
 
 export abstract class CommonCoronerQueryBuilder implements CommonCoronerQuery {
@@ -27,20 +28,21 @@ export abstract class CommonCoronerQueryBuilder implements CommonCoronerQuery {
         return this.createInstance(request);
     }
 
-    public filter<A extends string, V extends CoronerValueType>(
+    public filter<A extends string, V extends InputValueType>(
         attribute: A,
         operator: FilterOperator<V>,
         value: V
     ): this {
+        const filterValue = convertInputValue(value);
         const request = cloneRequest(this.#request);
         if (!request.filter || !request.filter.length) {
             const filter: QueryFilter = {};
-            filter[attribute] = [[operator, value]];
+            filter[attribute] = [[operator, filterValue]];
             request.filter = [filter];
         } else if (!request.filter[0][attribute]) {
-            request.filter[0][attribute] = [[operator, value]];
+            request.filter[0][attribute] = [[operator, filterValue]];
         } else {
-            request.filter[0][attribute] = [...request.filter[0][attribute], [operator, value]];
+            request.filter[0][attribute] = [...request.filter[0][attribute], [operator, filterValue]];
         }
 
         return this.createInstance(request);
