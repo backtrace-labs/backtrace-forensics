@@ -74,7 +74,7 @@ export const CommonAttributes = createAttributeList([
     ['callstack', 'callstack', 'dictionary'],
     ['callstack.files', 'callstack', 'dictionary'],
     ['callstack.functions', 'callstack', 'dictionary'],
-    ['callstack.modules', 'callstack', 'bitmap'],
+    ['callstack.modules', 'callstack', 'dictionary'],
     ['classifiers', 'labels', 'dictionary'],
     ['error.message', 'none', 'string'],
     ['fingerprint', 'sha256', 'dictionary'],
