@@ -11,15 +11,15 @@ export abstract class CommonCoronerQueryBuilder<AL extends AttributeList> implem
         this.#request = request;
     }
 
-    public limit(count: number): this {
+    public limit(count: number | null | undefined): this {
         const request = cloneRequest(this.#request);
-        request.limit = count;
+        request.limit = count ?? undefined;
         return this.createInstance(request);
     }
 
-    public offset(count: number): this {
+    public offset(count: number | null | undefined): this {
         const request = cloneRequest(this.#request);
-        request.offset = count;
+        request.offset = count ?? undefined;
         return this.createInstance(request);
     }
 

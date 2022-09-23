@@ -13,7 +13,7 @@ export interface CommonCoronerQuery<AL extends AttributeList> {
      * // set request.limit to 20
      * query.limit(20)
      */
-    limit(count: number): this;
+    limit(count: number | null | undefined): this;
 
     /**
      * Sets how much rows to skip for response.
@@ -24,7 +24,7 @@ export interface CommonCoronerQuery<AL extends AttributeList> {
      * // set query offset to 20
      * query.offset(20)
      */
-    offset(count: number): this;
+    offset(count: number | null | undefined): this;
 
     /**
      * Sets template in request. May determine which attributes are returned.
