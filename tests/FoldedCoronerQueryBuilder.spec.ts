@@ -1,3 +1,4 @@
+import { CommonAttributes } from '../src/common/attributes';
 import { FoldedCoronerQueryBuilder } from '../src/implementation/queries/FoldCoronerQueryBuilder';
 import { ICoronerQueryExecutor } from '../src/interfaces/ICoronerQueryExecutor';
 import { IFoldCoronerSimpleResponseBuilder } from '../src/interfaces/responses/IFoldCoronerSimpleResponseBuilder';
@@ -19,7 +20,7 @@ describe('FoldedCoronerQueryBuilder', () => {
 
     it('should set fold params to provided fold when initial fold is empty', () => {
         const request: FoldQueryRequest = {};
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = new FoldedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
 
         const newRequest = queryable.fold('a', 'head').json();
 
@@ -35,7 +36,7 @@ describe('FoldedCoronerQueryBuilder', () => {
             },
         };
 
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = new FoldedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
 
         const newRequest = queryable.fold('a', 'distribution', 3).json();
 
@@ -51,7 +52,7 @@ describe('FoldedCoronerQueryBuilder', () => {
             },
         };
 
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = new FoldedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
 
         const newRequest = queryable.fold('b', 'max').json();
 
@@ -68,7 +69,7 @@ describe('FoldedCoronerQueryBuilder', () => {
             },
         } as const);
 
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = new FoldedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
         const newRequest = queryable.order('a', 'ascending', 'head').json();
 
         expect(newRequest.order).toEqual([
@@ -92,7 +93,7 @@ describe('FoldedCoronerQueryBuilder', () => {
             ],
         } as const);
 
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = new FoldedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
         const newRequest = queryable.order('a', 'ascending', 'head').json();
 
         expect(newRequest.order).toEqual([
@@ -114,7 +115,7 @@ describe('FoldedCoronerQueryBuilder', () => {
             },
         } as const);
 
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = new FoldedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
         const newRequest = queryable.order('a', 'ascending', 1).json();
 
         expect(newRequest.order).toEqual([
@@ -138,7 +139,7 @@ describe('FoldedCoronerQueryBuilder', () => {
             ],
         } as const);
 
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = new FoldedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
         const newRequest = queryable.order('a', 'ascending', 1).json();
 
         expect(newRequest.order).toEqual([
@@ -160,7 +161,7 @@ describe('FoldedCoronerQueryBuilder', () => {
             },
         } as const);
 
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = new FoldedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
         const newRequest = queryable.orderByCount('ascending').json();
 
         expect(newRequest.order).toEqual([
@@ -184,7 +185,7 @@ describe('FoldedCoronerQueryBuilder', () => {
             ],
         } as const);
 
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = new FoldedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
         const newRequest = queryable.orderByCount('ascending').json();
 
         expect(newRequest.order).toEqual([
@@ -201,7 +202,7 @@ describe('FoldedCoronerQueryBuilder', () => {
 
     it('should throw on post when fold or group was not made', async () => {
         const request: FoldQueryRequest = {};
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = new FoldedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
 
         await expect(queryable.post()).rejects.toThrow('Fold or group query expected.');
     });
