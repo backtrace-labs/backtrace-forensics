@@ -54,11 +54,11 @@ export type StringFilterOperator =
 
 export type QueryAttributeFilter<T extends AttributeType = AttributeType> = readonly [
     FilterOperator<T>,
-    AttributeValueType<T>
+    AttributeValueType<T>,
 ];
 
-export type QueryFilter = {
-    [attribute: string]: readonly QueryAttributeFilter[];
+export type QueryFilter<A extends string = string> = {
+    [K in A]: readonly QueryAttributeFilter[];
 };
 
 export type OrderDirection = 'descending' | 'ascending';

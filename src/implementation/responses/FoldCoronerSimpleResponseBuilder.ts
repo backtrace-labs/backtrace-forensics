@@ -25,7 +25,7 @@ import {
 export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleResponseBuilder {
     public first<R extends FoldQueryRequest>(
         response: RawFoldQueryResponse<R>,
-        request?: R
+        request?: R,
     ): SimpleFoldRow<R> | undefined {
         return this.buildRows<R>(response, request, 1).rows[0];
     }
@@ -37,7 +37,7 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
     private buildRows<R extends FoldQueryRequest>(
         response: RawFoldQueryResponse<R>,
         request?: R,
-        limit?: number
+        limit?: number,
     ): SimpleFoldRows<R> {
         const keyDescription = response.factors_desc ? response.factors_desc[0] : null;
         const rows: SimpleFoldRow<FoldQueryRequest>[] = [];
@@ -111,7 +111,7 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
                     if (result.length > 1) {
                         throw new Error(
                             'Ambiguous results found. This can happen when there are two columns with the same fold operator. ' +
-                                'Try providing the built request to the simple response builder.'
+                                'Try providing the built request to the simple response builder.',
                         );
                     }
 
@@ -172,12 +172,12 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
                 return group;
             },
             tryGroup(attribute?: string) {
-                const groups = rows.map((r) => r.tryGroup(attribute));
-                const group = groups.find((g) => !!g);
-                if (!group) {
-                    return undefined;
+                const result = rows.map((r) => r.tryGroup(attribute));
+                if (result.some((r) => r === undefined)) {
+                    // all overloads accept undefined as return param, but TS fails for some reason
+                    return undefined as any;
                 }
-                return group;
+                return result;
             },
         };
 
@@ -190,32 +190,50 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
             return result;
         }
 
+        const searchKey = search.join(';');
         const folds = row.attributes[attribute][search[0]];
         for (const fold of folds) {
-            for (let i = 0; i < fold.rawFold.length; i++) {
-                // As Coroner doesn't return provided arguments for specific folds,
-                // we have to pull these from the request. If the request is not provided though,
-                // we have no method of resolving this. So, if the first argument is equal,
-                // and the second is undefined, we still return this value.
-                const currentFold = fold.rawFold[i];
-                if (i > 0 && !currentFold) {
-                    result.push(fold.value);
-                    break;
-                }
+            const foldKey = fold.rawFold.join(';');
 
-                const searchedFold = search[i];
-                if (currentFold !== searchedFold) {
-                    break;
-                }
+            // Exact match, return the value
+            if (searchKey === foldKey) {
+                return [fold.value];
+            }
 
-                // If we're at the last element, and we got here, this means we found the value
-                if (i === fold.rawFold.length - 1) {
-                    result.push(fold.value);
-                }
+            // Partial match, add and continue
+            if (searchKey.startsWith(foldKey)) {
+                result.push(fold.value);
             }
         }
 
         return result;
+
+        // const foldValues: Record<string, SimpleFoldValue> = {};
+        // for (const fold of folds) {
+        //     for (let i = 0; i < fold.rawFold.length; i++) {
+        //         // As Coroner doesn't return provided arguments for specific folds,
+        //         // we have to pull these from the request. If the request is not provided though,
+        //         // we have no method of resolving this. So, if the first argument is equal,
+        //         // and the second is undefined, we still return this value.
+        //         const currentFold = fold.rawFold[i];
+        //         if (i > 0 && !currentFold) {
+        //             result.push(fold.value);
+        //             break;
+        //         }
+
+        //         const searchedFold = search[i];
+        //         if (currentFold !== searchedFold) {
+        //             break;
+        //         }
+
+        //         // If we're at the last element, and we got here, this means we found the value
+        //         if (i === fold.rawFold.length - 1) {
+        //             result.push(fold.value);
+        //         }
+        //     }
+        // }
+
+        // return result;
     }
 
     private getRawFold<R extends FoldQueryRequest>(
@@ -223,7 +241,7 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
         response: RawFoldQueryResponse<R>,
         attribute: string,
         operator: FoldOperator[0],
-        columnIndex: number
+        columnIndex: number,
     ) {
         const folds = request.fold && request.fold[attribute];
         if (!folds) {

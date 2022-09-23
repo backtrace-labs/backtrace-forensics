@@ -23,7 +23,7 @@ export interface RawSelectQueryResponse<R extends SelectQueryRequest> extends Ra
 
 export interface SuccessfulSelectQueryResponse<
     R extends SelectQueryRequest,
-    Q extends SelectedCoronerQuery<AttributeList, R>
+    Q extends SelectedCoronerQuery<AttributeList, R>,
 > extends SuccessfulQueryResponse<RawSelectQueryResponse<R>, Q> {
     all(): SimpleSelectRows<R>;
     first(): SimpleSelectRow<R> | undefined;

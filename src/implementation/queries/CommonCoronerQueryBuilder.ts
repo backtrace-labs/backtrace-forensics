@@ -31,38 +31,48 @@ export abstract class CommonCoronerQueryBuilder<AL extends AttributeList> implem
 
     public filter<
         A extends string,
-        V extends A extends keyof CommonAttributes ? CommonAttributes[A][2] : AttributeType
+        V extends A extends keyof CommonAttributes ? CommonAttributes[A][2] : AttributeType,
     >(attribute: A, operator: FilterOperator<V>, value: AttributeValueType<V>): this;
     public filter<A extends string>(attribute: A, filters: readonly QueryAttributeFilter[]): this;
+    public filter<A extends string>(filters: QueryFilter<A>): this;
     public filter<
         A extends string,
-        V extends A extends keyof CommonAttributes ? CommonAttributes[A][2] : AttributeType
+        V extends A extends keyof CommonAttributes ? CommonAttributes[A][2] : AttributeType,
     >(
-        attribute: A,
-        operatorOrFilters: FilterOperator<V> | readonly QueryAttributeFilter[],
-        value?: AttributeValueType<V>
+        attributeOrFilters: A | QueryFilter<A>,
+        operatorOrFilters?: FilterOperator<V> | readonly QueryAttributeFilter[],
+        value?: AttributeValueType<V>,
     ): this {
         const request = cloneRequest(this.#request);
-        if (typeof operatorOrFilters === 'string') {
-            const operator = operatorOrFilters;
-            const filterValue = convertInputValue(value ?? null);
-            if (!request.filter || !request.filter.length) {
-                const filter: QueryFilter = {};
-                filter[attribute] = [[operator, filterValue]];
-                request.filter = [filter];
-            } else if (!request.filter[0][attribute]) {
-                request.filter[0][attribute] = [[operator, filterValue]];
-            } else {
-                request.filter[0][attribute] = [...request.filter[0][attribute], [operator, filterValue]];
+        if (typeof attributeOrFilters === 'string') {
+            const attribute = attributeOrFilters;
+            if (typeof operatorOrFilters === 'string') {
+                const operator = operatorOrFilters;
+                const filterValue = convertInputValue(value ?? null);
+                if (!request.filter || !request.filter.length) {
+                    const filter: QueryFilter = {};
+                    filter[attribute] = [[operator, filterValue]];
+                    request.filter = [filter];
+                } else if (!request.filter[0][attribute]) {
+                    request.filter[0][attribute] = [[operator, filterValue]];
+                } else {
+                    request.filter[0][attribute] = [...request.filter[0][attribute], [operator, filterValue]];
+                }
+            } else if (operatorOrFilters) {
+                if (!request.filter || !request.filter.length) {
+                    request.filter = [{ [attribute]: operatorOrFilters }];
+                } else if (!request.filter[0][attribute]) {
+                    request.filter[0][attribute] = operatorOrFilters;
+                } else {
+                    request.filter[0][attribute] = [...request.filter[0][attribute], ...operatorOrFilters];
+                }
             }
         } else {
-            if (!request.filter || !request.filter.length) {
-                request.filter = [{ [attribute]: operatorOrFilters }];
-            } else if (!request.filter[0][attribute]) {
-                request.filter[0][attribute] = operatorOrFilters;
-            } else {
-                request.filter[0][attribute] = [...request.filter[0][attribute], ...operatorOrFilters];
+            let instance = this;
+            for (const key in attributeOrFilters) {
+                instance = this.filter(key, attributeOrFilters[key]);
             }
+            return instance;
         }
 
         return this.createInstance(request);

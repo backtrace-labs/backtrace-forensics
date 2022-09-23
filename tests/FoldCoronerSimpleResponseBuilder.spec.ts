@@ -688,11 +688,14 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
         expect(() => element.fold('randomInt', 'distribution', 5)).toThrowError(/ambiguous/i);
     });
 
-    it('[non-grouped] should throw on ambiguous value when searching via fold and the value cannot be determined', () => {
+    it('[non-grouped] should return value when searching via fold and multiple values with same folds are present', () => {
         const queryable = new FoldCoronerSimpleResponseBuilder();
         const element = queryable.first(testResponse, testRequest);
         assert(element);
-        expect(() => element.fold('randomInt', 'head')).toThrowError(/ambiguous/i);
+
+        const expected = '1765517764';
+        const actual = element.fold('randomInt', 'head');
+        expect(actual).toEqual(expected);
     });
 
     it('[non-grouped] should throw on ambiguous value when searching via fold and the value cannot be determined on rows', () => {
@@ -702,11 +705,14 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
         expect(() => element.fold('randomInt', 'distribution', 5)).toThrowError(/ambiguous/i);
     });
 
-    it('[non-grouped] should throw on ambiguous value when searching via fold and the value cannot be determined on rows', () => {
+    it('[non-grouped] should return value when searching via fold and multiple values with same folds are present on rows', () => {
         const queryable = new FoldCoronerSimpleResponseBuilder();
-        const element = queryable.rows(testResponse, testRequest);
-        assert(element);
-        expect(() => element.fold('randomInt', 'head')).toThrowError(/ambiguous/i);
+        const rows = queryable.rows(testResponse, testRequest);
+        assert(rows);
+
+        const expected = ['1765517764'];
+        const actual = rows.fold('randomInt', 'head');
+        expect(actual).toEqual(expected);
     });
 
     it('[non-grouped] should throw on non-existing attribute when searching via fold', () => {
@@ -782,7 +788,7 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
         const element = queryable.rows(testResponse, testRequest);
         assert(element);
         const actual = element.group();
-        expect(actual).toEqual('*');
+        expect(actual).toEqual(['*']);
     });
 
     it('[non-grouped] should return * from group when searching via group with *', () => {
@@ -798,7 +804,7 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
         const element = queryable.rows(testResponse, testRequest);
         assert(element);
         const actual = element.group('*');
-        expect(actual).toEqual('*');
+        expect(actual).toEqual(['*']);
     });
 
     it('[grouped] should return group value via group', () => {
@@ -816,7 +822,7 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
         const element = queryable.rows(testGroupResponse, testGroupRequest);
         assert(element);
 
-        const expected = 'f9be5fab68692b9792f33335798a01e89a7e0b9a42ee75548b4517de9e5da3a0';
+        const expected = ['f9be5fab68692b9792f33335798a01e89a7e0b9a42ee75548b4517de9e5da3a0'];
         const actual = element.group('fingerprint');
         expect(actual).toEqual(expected);
     });
@@ -836,7 +842,7 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
         const element = queryable.rows(testGroupResponse, testGroupRequest);
         assert(element);
 
-        const expected = 'f9be5fab68692b9792f33335798a01e89a7e0b9a42ee75548b4517de9e5da3a0';
+        const expected = ['f9be5fab68692b9792f33335798a01e89a7e0b9a42ee75548b4517de9e5da3a0'];
         const actual = element.group();
         expect(actual).toEqual(expected);
     });
@@ -856,7 +862,7 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
         const element = queryable.rows(testGroupResponse, testGroupRequest);
         assert(element);
 
-        const expected = 'f9be5fab68692b9792f33335798a01e89a7e0b9a42ee75548b4517de9e5da3a0';
+        const expected = ['f9be5fab68692b9792f33335798a01e89a7e0b9a42ee75548b4517de9e5da3a0'];
         const actual = element.group('*' as 'fingerprint');
         expect(actual).toEqual(expected);
     });

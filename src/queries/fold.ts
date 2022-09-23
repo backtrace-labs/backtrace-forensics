@@ -62,7 +62,7 @@ export interface FoldedCoronerQuery<AL extends AttributeList, R extends FoldQuer
     order<F extends GetRequestFold<R>, A extends keyof F & string, I extends number>(
         attribute: A,
         direction: OrderDirection,
-        index: I
+        index: I,
     ): FoldedCoronerQuery<AL, R>;
 
     /**

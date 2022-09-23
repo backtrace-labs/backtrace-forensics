@@ -1,5 +1,5 @@
 import { AttributeList, AttributeType, AttributeValueType } from '../common/attributes';
-import { FilterOperator, QueryAttributeFilter, QueryRequest } from '../requests/common';
+import { FilterOperator, QueryAttributeFilter, QueryFilter, QueryRequest } from '../requests/common';
 import { FoldCoronerQuery } from './fold';
 import { SelectCoronerQuery } from './select';
 
@@ -53,12 +53,12 @@ export interface CommonCoronerQuery<AL extends AttributeList> {
     filter<A extends keyof AL, V extends AL[A][2]>(
         attribute: A,
         operator: FilterOperator<V>,
-        value: AttributeValueType<V>
+        value: AttributeValueType<V>,
     ): this;
     filter<A extends string, V extends A extends keyof AL ? AL[A][2] : AttributeType>(
         attribute: A,
         operator: FilterOperator<V>,
-        value: AttributeValueType<V>
+        value: AttributeValueType<V>,
     ): this;
 
     /**
@@ -78,8 +78,25 @@ export interface CommonCoronerQuery<AL extends AttributeList> {
     filter<A extends keyof AL, V extends AL[A][2]>(attribute: A, filters: readonly QueryAttributeFilter<V>[]): this;
     filter<A extends string, V extends A extends keyof AL ? AL[A][2] : AttributeType>(
         attribute: A,
-        filters: readonly QueryAttributeFilter<V>[]
+        filters: readonly QueryAttributeFilter<V>[],
     ): this;
+
+    /**
+     * Adds filters to request.
+     * You can use this requests with `Filters` helper.
+     *
+     * Request mutation: `request.filter[attribute] += filters`
+     * @param attribute Attribute to filter on.
+     * @param filters Filters to add.
+     * @example
+     * // filter by timestamp
+     * query.filter({ timestamp: [['at-least', 1660000000], ['at-most', 1660747935]] })
+     *
+     * // filter with Filters
+     * query.filter({ timestamp: Filters.time.from.last.hours(2).to.now() })
+     */
+    filter<A extends keyof AL & string>(filters: QueryFilter<A>): this;
+    filter<A extends string>(filters: QueryFilter<A>): this;
 
     /**
      * Returns the built request.

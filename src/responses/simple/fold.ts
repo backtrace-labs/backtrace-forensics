@@ -43,7 +43,7 @@ export type SimpleFoldValue<
     ? SimpleFoldHistogramValue<T>[]
     : F extends 'unique'
     ? number
-    : T;
+    : AttributeValueType<T>;
 
 export type SimpleFoldGroup<A extends string, G extends readonly string[]> = A extends G[0]
     ? {
@@ -102,9 +102,9 @@ export interface SimpleFoldRows<R extends FoldQueryRequest> {
     ): SimpleFoldValue<O[0]>[] | undefined;
     tryFold<O extends FoldOperator>(attribute: string, ...fold: O): SimpleFoldValue<O[0]>[] | undefined;
 
-    group<A extends NonNullable<R['group']>[number]>(attribute?: A): CoronerValueType | DefaultGroup;
-    tryGroup<A extends NonNullable<R['group']>[number]>(attribute?: A): CoronerValueType | DefaultGroup | undefined;
-    tryGroup(attribute?: string): CoronerValueType | DefaultGroup | undefined;
+    group<A extends NonNullable<R['group']>[number]>(attribute?: A): CoronerValueType[] | DefaultGroup[];
+    tryGroup<A extends NonNullable<R['group']>[number]>(attribute?: A): CoronerValueType[] | DefaultGroup[] | undefined;
+    tryGroup(attribute?: string): CoronerValueType[] | DefaultGroup[] | undefined;
 }
 
 type FilterArray<T extends readonly any[], V> = T extends readonly [infer L, ...infer R]
