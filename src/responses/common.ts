@@ -31,6 +31,10 @@ export interface SuccessfulQueryResponse<R extends RawQueryResponse, Q extends C
         error: undefined;
         _: {
             tx: number;
+            universe: string;
+            project: string;
+            user: string;
+            latency: string;
         };
     };
     nextPage(): Q;
@@ -51,5 +55,5 @@ export type RawCoronerResponse<R extends RawQueryResponse = RawQueryResponse> = 
 
 export type QueryResponse<
     R extends RawQueryResponse = RawQueryResponse,
-    Q extends CoronerQuery<AttributeList> = CoronerQuery<AttributeList>
+    Q extends CoronerQuery<AttributeList> = CoronerQuery<AttributeList>,
 > = SuccessfulQueryResponse<R, Q> | FailedQueryResponse;
