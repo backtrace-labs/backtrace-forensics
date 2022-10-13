@@ -53,12 +53,12 @@ export interface CommonCoronerQuery<AL extends AttributeList> {
     filter<A extends keyof AL, V extends AL[A][2]>(
         attribute: A,
         operator: FilterOperator<V>,
-        value: AttributeValueType<V>,
+        value: AttributeValueType<V>
     ): this;
     filter<A extends string, V extends A extends keyof AL ? AL[A][2] : AttributeType>(
         attribute: A,
         operator: FilterOperator<V>,
-        value: AttributeValueType<V>,
+        value: AttributeValueType<V>
     ): this;
 
     /**
@@ -78,7 +78,7 @@ export interface CommonCoronerQuery<AL extends AttributeList> {
     filter<A extends keyof AL, V extends AL[A][2]>(attribute: A, filters: readonly QueryAttributeFilter<V>[]): this;
     filter<A extends string, V extends A extends keyof AL ? AL[A][2] : AttributeType>(
         attribute: A,
-        filters: readonly QueryAttributeFilter<V>[],
+        filters: readonly QueryAttributeFilter<V>[]
     ): this;
 
     /**
@@ -97,6 +97,18 @@ export interface CommonCoronerQuery<AL extends AttributeList> {
      */
     filter<A extends keyof AL & string>(filters: QueryFilter<A>): this;
     filter<A extends string>(filters: QueryFilter<A>): this;
+
+    /**
+     * Sets the table name.
+     *
+     * Request mutation: `request.table = table`
+     * @param name Table to use.
+     * @example
+     * // use 'metrics' table
+     *
+     * query.table('metrics')
+     */
+    table(name: string): this;
 
     /**
      * Returns the built request.

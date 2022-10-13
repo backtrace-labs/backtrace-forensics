@@ -54,7 +54,7 @@ export type StringFilterOperator =
 
 export type QueryAttributeFilter<T extends AttributeType = AttributeType> = readonly [
     FilterOperator<T>,
-    AttributeValueType<T>,
+    AttributeValueType<T>
 ];
 
 export type QueryFilter<A extends string = string> = {
@@ -94,6 +94,13 @@ export interface QueryRequest {
      * request.template = 'workflow';
      */
     template?: string;
+
+    /**
+     * Table to use for response.
+     * @example
+     * request.table = 'metrics';
+     */
+    table?: string;
 }
 
 export const defaultRequest: QueryRequest = {
