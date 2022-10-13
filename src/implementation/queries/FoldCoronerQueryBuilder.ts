@@ -5,7 +5,15 @@ import { IFoldCoronerSimpleResponseBuilder } from '../../interfaces/responses/IF
 import { QuerySource } from '../../models/QuerySource';
 import { AddFold, FoldedCoronerQuery, SetFoldGroup } from '../../queries/fold';
 import { nextPage, OrderDirection } from '../../requests/common';
-import { CountFoldOrder, FoldOperator, FoldOrder, FoldQueryRequest, Folds, GetRequestFold } from '../../requests/fold';
+import {
+    CountFoldOrder,
+    FoldOperator,
+    FoldOrder,
+    FoldQueryRequest,
+    Folds,
+    GetRequestFold,
+    GroupFoldOrder,
+} from '../../requests/fold';
 import { FoldQueryResponse, RawFoldQueryResponse } from '../../responses/fold';
 import { cloneFoldRequest } from '../requests/cloneRequest';
 import { CommonCoronerQueryBuilder } from './CommonCoronerQueryBuilder';
@@ -129,6 +137,23 @@ export class FoldedCoronerQueryBuilder<
 
         const order: CountFoldOrder = {
             name: ';count',
+            ordering: direction,
+        };
+
+        if (request.order) {
+            request.order = [...request.order, order];
+        } else {
+            request.order = [order];
+        }
+
+        return this.createInstance(request);
+    }
+
+    public orderByGroup(direction: OrderDirection): FoldedCoronerQuery<AL, R> {
+        const request = cloneFoldRequest(this.#request);
+
+        const order: GroupFoldOrder = {
+            name: ';group',
             ordering: direction,
         };
 

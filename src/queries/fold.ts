@@ -62,7 +62,7 @@ export interface FoldedCoronerQuery<AL extends AttributeList, R extends FoldQuer
     order<F extends GetRequestFold<R>, A extends keyof F & string, I extends number>(
         attribute: A,
         direction: OrderDirection,
-        index: I,
+        index: I
     ): FoldedCoronerQuery<AL, R>;
 
     /**
@@ -82,13 +82,22 @@ export interface FoldedCoronerQuery<AL extends AttributeList, R extends FoldQuer
     ): FoldedCoronerQuery<AL, R>;
 
     /**
-     * Adds order on count direction specified.
+     * Adds order on count with direction specified.
      * @param direction Order direction.
      * @example
      * // This will order descending on count
      * query.fold('a', 'head').fold('a', 'tail').orderByCount('descending')
      */
     orderByCount(direction: OrderDirection): FoldedCoronerQuery<AL, R>;
+
+    /**
+     * Adds order on group with direction specified.
+     * @param direction Order direction.
+     * @example
+     * // This will order descending on group
+     * query.fold('a', 'head').fold('a', 'tail').groupBy('fingerprint').orderByGroup('descending')
+     */
+    orderByGroup(direction: OrderDirection): FoldedCoronerQuery<AL, R>;
 
     /**
      * Returns the built request.

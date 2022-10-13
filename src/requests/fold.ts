@@ -56,6 +56,11 @@ export type CountFoldOrder = {
     ordering: OrderDirection;
 };
 
+export type GroupFoldOrder = {
+    name: `;group`;
+    ordering: OrderDirection;
+};
+
 export type Folds<A extends string = string, O extends readonly FoldOperator[] = readonly FoldOperator[]> = Record<
     A,
     O
@@ -89,9 +94,12 @@ export interface FoldQueryRequest<F extends Folds = Folds, G extends readonly st
      * }, {
      *     name: ';count',
      *     ordering: 'ascending'
+     * }, {
+     *     name: ';group',
+     *     ordering: 'ascending'
      * }]
      */
-    order?: readonly (FoldOrder | CountFoldOrder)[];
+    order?: readonly (FoldOrder | CountFoldOrder | GroupFoldOrder)[];
 }
 
 export type InferFoldQueryRequest<T> = T extends FoldQueryRequest<infer F, infer G> ? FoldQueryRequest<F, G> : never;
