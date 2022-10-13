@@ -76,12 +76,15 @@ export interface RawFoldQueryResponse<R extends FoldQueryRequest> extends RawQue
     readonly values: FoldQueryRowValue<FoldOfRequest<R>[string]>[];
 }
 
-export interface SuccessfulFoldQueryResponse<R extends FoldQueryRequest, Q extends FoldedCoronerQuery<AttributeList, R>>
-    extends SuccessfulQueryResponse<RawFoldQueryResponse<R>, Q> {
+export interface SuccessfulFoldQueryResponse<
+    R extends FoldQueryRequest,
+    Q extends FoldedCoronerQuery<AttributeList, R> = FoldedCoronerQuery<AttributeList, R>
+> extends SuccessfulQueryResponse<RawFoldQueryResponse<R>, Q> {
     all(): SimpleFoldRows<R>;
     first(): SimpleFoldRow<R> | undefined;
 }
 
-export type FoldQueryResponse<R extends FoldQueryRequest, Q extends FoldedCoronerQuery<AttributeList, R>> =
-    | SuccessfulFoldQueryResponse<R, Q>
-    | FailedQueryResponse;
+export type FoldQueryResponse<
+    R extends FoldQueryRequest,
+    Q extends FoldedCoronerQuery<AttributeList, R> = FoldedCoronerQuery<AttributeList, R>
+> = SuccessfulFoldQueryResponse<R, Q> | FailedQueryResponse;

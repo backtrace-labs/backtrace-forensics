@@ -8,7 +8,7 @@ import { CommonCoronerQuery } from './common';
 export interface FoldCoronerQuery<
     AL extends AttributeList = AttributeList,
     R extends FoldQueryRequest = FoldQueryRequest<never, ['*']>
-> extends CommonCoronerQuery<AL> {
+> extends CommonCoronerQuery<AL, R> {
     /**
      * Returns the query as dynamic fold. Use this to assign folds in runtime, without knowing the types.
      * @example

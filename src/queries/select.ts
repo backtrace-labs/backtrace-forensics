@@ -8,7 +8,7 @@ import { CommonCoronerQuery } from './common';
 export interface SelectCoronerQuery<
     AL extends AttributeList = AttributeList,
     R extends SelectQueryRequest = SelectQueryRequest<[]>
-> extends CommonCoronerQuery<AL> {
+> extends CommonCoronerQuery<AL, R> {
     /**
      * Returns the query as dynamic select. Use this to assign select attributes in runtime, without knowing the types.
      * @example
@@ -59,7 +59,7 @@ export interface SelectedCoronerQuery<
 
 export type SelectOfRequest<R extends SelectQueryRequest> = NonNullable<R['select']>;
 
-export type AddSelect<R extends SelectQueryRequest, A extends string[]> = R extends SelectQueryRequest<infer S>
+export type AddSelect<R extends SelectQueryRequest, A extends readonly string[]> = R extends SelectQueryRequest<infer S>
     ? SelectQueryRequest<[...S, ...A]>
     : never;
 

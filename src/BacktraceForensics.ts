@@ -90,7 +90,7 @@ export class BacktraceForensics {
      */
     public create<AL extends AttributeList, R extends QueryRequest>(
         options?: CreateQueryOptions<AL, R>
-    ): CoronerQuery<AL>;
+    ): CoronerQuery<AL, R>;
     public create<AL extends AttributeList, R extends SelectQueryRequest>(
         options?: CreateQueryOptions<AL, R>
     ): SelectedCoronerQuery<AL, InferSelectQueryRequest<R>>;
@@ -99,7 +99,10 @@ export class BacktraceForensics {
     ): FoldedCoronerQuery<AL, InferFoldQueryRequest<R>>;
     public create<AL extends AttributeList>(
         options?: CreateQueryOptions<AL, QueryRequest>
-    ): CoronerQuery<AL> | SelectCoronerQuery<AL, SelectQueryRequest> | FoldCoronerQuery<AL, FoldQueryRequest> {
+    ):
+        | CoronerQuery<AL, QueryRequest>
+        | SelectCoronerQuery<AL, SelectQueryRequest>
+        | FoldCoronerQuery<AL, FoldQueryRequest> {
         if (options) {
             const { request, attributeList } = options;
             if (request) {
@@ -126,7 +129,7 @@ export class BacktraceForensics {
     public static create<AL extends AttributeList, R extends QueryRequest>(
         options?: Partial<BacktraceForensicOptions>,
         createOptions?: CreateQueryOptions<AL, R>
-    ): CoronerQuery<AL>;
+    ): CoronerQuery<AL, R>;
     public static create<AL extends AttributeList, R extends SelectQueryRequest>(
         options?: Partial<BacktraceForensicOptions>,
         createOptions?: CreateQueryOptions<AL, R>
@@ -138,7 +141,10 @@ export class BacktraceForensics {
     public static create<AL extends AttributeList>(
         options?: Partial<BacktraceForensicOptions>,
         createOptions?: CreateQueryOptions<AL, QueryRequest>
-    ): CoronerQuery<AL> | SelectCoronerQuery<AL, SelectQueryRequest> | FoldCoronerQuery<AL, FoldQueryRequest> {
+    ):
+        | CoronerQuery<AL, QueryRequest>
+        | SelectCoronerQuery<AL, SelectQueryRequest>
+        | FoldCoronerQuery<AL, FoldQueryRequest> {
         return new BacktraceForensics(options).create(createOptions);
     }
 

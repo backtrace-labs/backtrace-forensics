@@ -1,5 +1,6 @@
 import { AttributeList } from '../common/attributes';
 import { CommonCoronerQuery, CoronerQuery } from '../queries';
+import { QueryRequest } from '../requests';
 
 export type QueryColumn = [string, string];
 
@@ -55,5 +56,5 @@ export type RawCoronerResponse<R extends RawQueryResponse = RawQueryResponse> = 
 
 export type QueryResponse<
     R extends RawQueryResponse = RawQueryResponse,
-    Q extends CoronerQuery<AttributeList> = CoronerQuery<AttributeList>,
+    Q extends CoronerQuery<AttributeList, QueryRequest> = CoronerQuery<AttributeList, QueryRequest>
 > = SuccessfulQueryResponse<R, Q> | FailedQueryResponse;

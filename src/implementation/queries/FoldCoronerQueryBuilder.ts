@@ -1,5 +1,5 @@
 import { format } from 'util';
-import { AttributeList, AttributeType } from '../../common/attributes';
+import { AttributeList } from '../../common/attributes';
 import { ICoronerQueryExecutor } from '../../interfaces/ICoronerQueryExecutor';
 import { IFoldCoronerSimpleResponseBuilder } from '../../interfaces/responses/IFoldCoronerSimpleResponseBuilder';
 import { QuerySource } from '../../models/QuerySource';
@@ -43,9 +43,9 @@ export class FoldedCoronerQueryBuilder<
         this.#simpleResponseBuilder = builder;
     }
 
-    public fold<A extends string, V extends A extends keyof AL ? AL[A][2] : AttributeType, O extends FoldOperator<V>>(
-        attribute: A,
-        ...fold: O
+    public fold<A extends string, O extends FoldOperator>(
+        attribute: string,
+        ...fold: FoldOperator
     ): FoldedCoronerQuery<AL, AddFold<R, A, O>> {
         const request = cloneFoldRequest(this.#request);
 

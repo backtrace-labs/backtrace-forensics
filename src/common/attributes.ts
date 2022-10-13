@@ -48,6 +48,8 @@ export type AttributeValueType<T extends AttributeType = AttributeType> =
           ? string
           : T extends BooleanType
           ? boolean
+          : T extends StringType
+          ? string
           : never)
     | null;
 

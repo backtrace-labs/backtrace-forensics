@@ -3,7 +3,7 @@ import { FilterOperator, QueryAttributeFilter, QueryFilter, QueryRequest } from 
 import { FoldCoronerQuery } from './fold';
 import { SelectCoronerQuery } from './select';
 
-export interface CommonCoronerQuery<AL extends AttributeList = AttributeList> {
+export interface CommonCoronerQuery<AL extends AttributeList = AttributeList, R extends QueryRequest = QueryRequest> {
     /**
      * Sets limit of rows in response.
      *
@@ -116,7 +116,6 @@ export interface CommonCoronerQuery<AL extends AttributeList = AttributeList> {
     json(): QueryRequest;
 }
 
-export interface CoronerQuery<AL extends AttributeList>
-    extends CommonCoronerQuery<AL>,
-        SelectCoronerQuery<AL>,
-        FoldCoronerQuery<AL> {}
+export type CoronerQuery<AL extends AttributeList, R extends QueryRequest> = CommonCoronerQuery<AL, R> &
+    SelectCoronerQuery<AL> &
+    FoldCoronerQuery<AL>;
