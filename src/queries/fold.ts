@@ -5,8 +5,10 @@ import { FoldOperator, FoldQueryRequest, Folds, GetRequestFold } from '../reques
 import { FoldQueryResponse } from '../responses/fold';
 import { CommonCoronerQuery } from './common';
 
-export interface FoldCoronerQuery<AL extends AttributeList, R extends FoldQueryRequest = FoldQueryRequest<never, ['*']>>
-    extends CommonCoronerQuery<AL> {
+export interface FoldCoronerQuery<
+    AL extends AttributeList = AttributeList,
+    R extends FoldQueryRequest = FoldQueryRequest<never, ['*']>
+> extends CommonCoronerQuery<AL> {
     /**
      * Returns the query as dynamic fold. Use this to assign folds in runtime, without knowing the types.
      * @example
@@ -14,7 +16,7 @@ export interface FoldCoronerQuery<AL extends AttributeList, R extends FoldQueryR
      * query = query.fold('fingerprint', 'head');
      * query = query.fold('timestamp', 'tail');
      */
-    dynamicFold(): FoldedCoronerQuery<AttributeList, FoldQueryRequest<Folds>>;
+    dynamicFold(): DynamicFoldedCoronerQuery<AL>;
 
     /**
      * Adds provided fold to the request.
@@ -47,8 +49,10 @@ export interface FoldCoronerQuery<AL extends AttributeList, R extends FoldQueryR
     group<A extends string>(attribute: A): FoldedCoronerQuery<AL, SetFoldGroup<R, A>>;
 }
 
-export interface FoldedCoronerQuery<AL extends AttributeList, R extends FoldQueryRequest>
-    extends FoldCoronerQuery<AL, R> {
+export interface FoldedCoronerQuery<
+    AL extends AttributeList = AttributeList,
+    R extends FoldQueryRequest = FoldQueryRequest<never, ['*']>
+> extends FoldCoronerQuery<AL, R> {
     /**
      * Adds order on attribute fold with index and direction specified.
      * @param attribute Attribute to order by.
@@ -134,3 +138,8 @@ export type SetFoldGroup<R extends FoldQueryRequest, A extends string> = FoldQue
 export type FoldOfRequest<R extends FoldQueryRequest> = NonNullable<R['fold']>;
 
 export type DefaultGroup = '*';
+
+export type DynamicFoldedCoronerQuery<AL extends AttributeList = AttributeList> = FoldedCoronerQuery<
+    AL,
+    FoldQueryRequest<Folds>
+>;

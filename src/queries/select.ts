@@ -5,8 +5,10 @@ import { SelectQueryRequest } from '../requests/select';
 import { SelectQueryResponse } from '../responses/select';
 import { CommonCoronerQuery } from './common';
 
-export interface SelectCoronerQuery<AL extends AttributeList, R extends SelectQueryRequest = SelectQueryRequest<[]>>
-    extends CommonCoronerQuery<AL> {
+export interface SelectCoronerQuery<
+    AL extends AttributeList = AttributeList,
+    R extends SelectQueryRequest = SelectQueryRequest<[]>
+> extends CommonCoronerQuery<AL> {
     /**
      * Returns the query as dynamic select. Use this to assign select attributes in runtime, without knowing the types.
      * @example
@@ -14,7 +16,7 @@ export interface SelectCoronerQuery<AL extends AttributeList, R extends SelectQu
      * query = query.select('a');
      * query = query.select('b');
      */
-    dynamicSelect(): SelectedCoronerQuery<AL, SelectQueryRequest<string[]>>;
+    dynamicSelect(): DynamicSelectedCoronerQuery<AL>;
 
     /**
      * Adds provided attributes to the select request. You can add multiple attributes at once, or chain `select` calls.
@@ -29,8 +31,10 @@ export interface SelectCoronerQuery<AL extends AttributeList, R extends SelectQu
     select<A extends string[]>(...attributes: A): SelectedCoronerQuery<AL, AddSelect<R, A>>;
 }
 
-export interface SelectedCoronerQuery<AL extends AttributeList, R extends SelectQueryRequest>
-    extends SelectCoronerQuery<AL, R> {
+export interface SelectedCoronerQuery<
+    AL extends AttributeList = AttributeList,
+    R extends SelectQueryRequest = SelectQueryRequest<[]>
+> extends SelectCoronerQuery<AL, R> {
     /**
      * Adds order on attribute with direction specified.
      * @param attribute Attribute to order by.
@@ -58,3 +62,8 @@ export type SelectOfRequest<R extends SelectQueryRequest> = NonNullable<R['selec
 export type AddSelect<R extends SelectQueryRequest, A extends string[]> = R extends SelectQueryRequest<infer S>
     ? SelectQueryRequest<[...S, ...A]>
     : never;
+
+export type DynamicSelectedCoronerQuery<AL extends AttributeList = AttributeList> = SelectedCoronerQuery<
+    AL,
+    SelectQueryRequest<string[]>
+>;
