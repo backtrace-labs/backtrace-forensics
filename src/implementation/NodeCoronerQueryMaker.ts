@@ -7,25 +7,37 @@ import { RawCoronerResponse, RawQueryResponse } from '../responses/common';
 
 export class NodeCoronerQueryMaker implements ICoronerQueryMaker {
     public async query<R extends RawQueryResponse>(
-        source: QuerySource,
+        source: Partial<QuerySource>,
         request: QueryRequest
     ): Promise<RawCoronerResponse<R>> {
         const data = JSON.stringify(request);
+        let { address, token, project, location } = source;
+        if (!address) {
+            throw new Error('Coroner address is not available.');
+        }
 
-        const url = new URL(source.address);
+        if (!token) {
+            throw new Error('Coroner token is not available.');
+        }
+
+        if (!project) {
+            throw new Error('Coroner project is not available.');
+        }
+
+        const url = new URL(address);
         const protocol = url.protocol.startsWith('https') ? https : http;
 
         return new Promise<RawCoronerResponse<R>>((resolve, reject) => {
             const req = protocol.request(
                 {
                     hostname: url.hostname,
-                    path: `/api/query?project=${source.project}`,
+                    path: `/api/query?project=${project}`,
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Content-Length': data.length,
-                        'X-Coroner-Location': source.location ?? source.address,
-                        'X-Coroner-Token': source.token,
+                        'X-Coroner-Location': location ?? address,
+                        'X-Coroner-Token': token,
                     },
                 },
                 (res) => {
