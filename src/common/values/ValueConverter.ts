@@ -1,3 +1,4 @@
+import { IssueInvariant } from './models/IssueInvariant';
 import { Ticket } from './models/Ticket';
 
 export class ValueConverter {
@@ -32,6 +33,18 @@ export class ValueConverter {
     }
 
     public static toTickets(value: unknown): Ticket[] {
+        if (typeof value !== 'string') {
+            throw new TypeError('Invalid value type, expected string.');
+        }
+
+        const obj = JSON.parse(value);
+
+        // TODO: Further checks?
+
+        return obj;
+    }
+
+    public static toIssueInvariants(value: unknown): IssueInvariant[] {
         if (typeof value !== 'string') {
             throw new TypeError('Invalid value type, expected string.');
         }
