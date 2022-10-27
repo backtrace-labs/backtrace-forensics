@@ -2,32 +2,53 @@ import { AttributeType, AttributeValueType } from '../../common/attributes';
 import { DefaultGroup, FoldOfRequest } from '../../queries';
 import { CoronerValueType } from '../../requests/common';
 import { BinFoldOperator, DistributionFoldOperator, FoldOperator, FoldQueryRequest, Folds } from '../../requests/fold';
+import {
+    BinQueryColumnValue,
+    DistributionQueryColumnValue,
+    HistogramQueryColumnValue,
+    RangeQueryColumnValue,
+} from '../fold';
 
 export interface SimpleFoldDistributionValue<T extends AttributeType = AttributeType> {
     value: AttributeValueType<T>;
     count: number;
+    raw: [AttributeValueType<T>, number];
 }
 
 export interface SimpleFoldDistributionValues<T extends AttributeType = AttributeType> {
     keys: number;
     tail: number;
     values: SimpleFoldDistributionValue<T>[];
+    raw: DistributionQueryColumnValue<AttributeValueType<T>>;
 }
 
 export interface SimpleFoldRangeValue<T extends AttributeType = AttributeType> {
     from: AttributeValueType<T>;
     to: AttributeValueType<T>;
+    raw: RangeQueryColumnValue<AttributeValueType<T>>;
 }
 
 export interface SimpleFoldBinValue<T extends AttributeType = AttributeType> {
     from: AttributeValueType<T>;
     to: AttributeValueType<T>;
     count: number;
+    raw: BinQueryColumnValue[number];
+}
+
+export interface SimpleFoldBinValues<T extends AttributeType = AttributeType> {
+    values: SimpleFoldBinValue<T>[];
+    raw: BinQueryColumnValue;
 }
 
 export interface SimpleFoldHistogramValue<T extends AttributeType = AttributeType> {
     value: AttributeValueType<T>;
     count: number;
+    raw: HistogramQueryColumnValue<AttributeValueType<T>>[number];
+}
+
+export interface SimpleFoldHistogramValues<T extends AttributeType = AttributeType> {
+    values: SimpleFoldHistogramValue<T>[];
+    raw: HistogramQueryColumnValue<AttributeValueType<T>>;
 }
 
 export type SimpleFoldValue<
@@ -36,11 +57,11 @@ export type SimpleFoldValue<
 > = F extends DistributionFoldOperator[0]
     ? SimpleFoldDistributionValues<T>
     : F extends BinFoldOperator[0]
-    ? SimpleFoldBinValue<T>[]
+    ? SimpleFoldBinValues<T>
     : F extends 'range'
     ? SimpleFoldRangeValue<T>
     : F extends 'histogram'
-    ? SimpleFoldHistogramValue<T>[]
+    ? SimpleFoldHistogramValues<T>
     : F extends 'unique'
     ? number
     : AttributeValueType<T>;

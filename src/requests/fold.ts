@@ -1,4 +1,12 @@
-import { AttributeType, BooleanType, DictionaryType, StringType, UIntType, UUIDType } from '../common/attributes';
+import {
+    AttributeType,
+    AttributeValueType,
+    BooleanType,
+    DictionaryType,
+    StringType,
+    UIntType,
+    UUIDType,
+} from '../common/attributes';
 import { OrderDirection, QueryRequest } from './common';
 
 export type DistributionFoldOperator = readonly ['distribution', number];
@@ -30,6 +38,8 @@ export type StringFoldOperator =
     | readonly ['unique'];
 export type DictionaryFoldOperator = StringFoldOperator;
 
+export type FoldFilterParamOperator = '==' | '!=' | '<' | '>' | '>=' | '<=';
+
 export type FoldOperator<T extends AttributeType = AttributeType> = T extends StringType
     ? StringFoldOperator
     : T extends UIntType
@@ -55,6 +65,19 @@ export type CountFoldOrder = {
     name: `;count`;
     ordering: OrderDirection;
 };
+
+export type FoldParamFilter = {
+    op: FoldFilterParamOperator;
+    params: [AttributeValueType];
+    property: [`${string};${number};${number}`];
+};
+
+export type FoldBooleanFilter = {
+    op: 'boolean';
+    params: ['and'];
+};
+
+export type FoldFilter = FoldParamFilter | FoldBooleanFilter;
 
 export type GroupFoldOrder = {
     name: `;group`;
@@ -100,6 +123,17 @@ export interface FoldQueryRequest<F extends Folds = Folds, G extends readonly st
      * }]
      */
     order?: readonly (FoldOrder | CountFoldOrder | GroupFoldOrder)[];
+
+    /**
+     * Post-aggregation filters.
+     * @example
+     * request.having = [{
+     *     params: ['value'],
+     *     op: '>=',
+     *     property: ['attribute;0;0']
+     * }]
+     */
+    having?: readonly FoldFilter[];
 }
 
 export type InferFoldQueryRequest<T> = T extends FoldQueryRequest<infer F, infer G> ? FoldQueryRequest<F, G> : never;

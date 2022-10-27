@@ -12,10 +12,12 @@ import {
     SimpleFold,
     SimpleFoldAttributes,
     SimpleFoldBinValue,
+    SimpleFoldBinValues,
     SimpleFoldDistributionValue,
     SimpleFoldDistributionValues,
     SimpleFoldGroup,
     SimpleFoldHistogramValue,
+    SimpleFoldHistogramValues,
     SimpleFoldRangeValue,
     SimpleFoldRow,
     SimpleFoldRows,
@@ -25,7 +27,7 @@ import {
 export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleResponseBuilder {
     public first<R extends FoldQueryRequest>(
         response: RawFoldQueryResponse<R>,
-        request?: R,
+        request?: R
     ): SimpleFoldRow<R> | undefined {
         return this.buildRows<R>(response, request, 1).rows[0];
     }
@@ -37,7 +39,7 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
     private buildRows<R extends FoldQueryRequest>(
         response: RawFoldQueryResponse<R>,
         request?: R,
-        limit?: number,
+        limit?: number
     ): SimpleFoldRows<R> {
         const keyDescription = response.factors_desc ? response.factors_desc[0] : null;
         const rows: SimpleFoldRow<FoldQueryRequest>[] = [];
@@ -111,7 +113,7 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
                     if (result.length > 1) {
                         throw new Error(
                             'Ambiguous results found. This can happen when there are two columns with the same fold operator. ' +
-                                'Try providing the built request to the simple response builder.',
+                                'Try providing the built request to the simple response builder.'
                         );
                     }
 
@@ -241,7 +243,7 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
         response: RawFoldQueryResponse<R>,
         attribute: string,
         operator: FoldOperator[0],
-        columnIndex: number,
+        columnIndex: number
     ) {
         const folds = request.fold && request.fold[attribute];
         if (!folds) {
@@ -285,19 +287,26 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
                         c.push({
                             value: v[0],
                             count: v[1],
+                            raw: v,
                         });
                         return c;
                     }, [] as SimpleFoldDistributionValue[]),
+                    raw: [distribution],
                 };
                 return result;
             }
             case 'bin': {
                 const bin = columnValue as BinQueryColumnValue;
-                const result: SimpleFoldBinValue[] = bin.map((m) => ({
+                const values: SimpleFoldBinValue[] = bin.map((m) => ({
                     from: m[0],
                     to: m[1],
                     count: m[2],
+                    raw: m,
                 }));
+                const result: SimpleFoldBinValues = {
+                    values,
+                    raw: bin,
+                };
                 return result;
             }
             case 'range': {
@@ -305,15 +314,22 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
                 const result: SimpleFoldRangeValue = {
                     from: range[0],
                     to: range[1],
+                    raw: range,
                 };
                 return result;
             }
             case 'histogram': {
                 const histogram = columnValue as HistogramQueryColumnValue;
-                const result: SimpleFoldHistogramValue[] = histogram.map((h) => ({
+                const values: SimpleFoldHistogramValue[] = histogram.map((h) => ({
                     value: h[0],
                     count: h[1],
+                    raw: h,
                 }));
+
+                const result: SimpleFoldHistogramValues = {
+                    values,
+                    raw: histogram,
+                };
                 return result;
             }
             case 'unique':

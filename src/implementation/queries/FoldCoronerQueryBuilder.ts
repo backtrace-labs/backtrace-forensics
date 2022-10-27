@@ -1,14 +1,22 @@
 import { format } from 'util';
-import { AttributeList } from '../../common/attributes';
+import { AttributeList, AttributeValueType } from '../../common/attributes';
 import { ICoronerQueryExecutor } from '../../interfaces/ICoronerQueryExecutor';
 import { IFoldCoronerSimpleResponseBuilder } from '../../interfaces/responses/IFoldCoronerSimpleResponseBuilder';
 import { QuerySource } from '../../models/QuerySource';
-import { AddFold, FoldedCoronerQuery, SetFoldGroup } from '../../queries/fold';
+import {
+    AddFold,
+    FoldedCoronerQuery,
+    FoldFilterInput,
+    FoldFilterOperatorInput,
+    SetFoldGroup,
+} from '../../queries/fold';
 import { nextPage, OrderDirection } from '../../requests/common';
 import {
     CountFoldOrder,
+    FoldFilterParamOperator,
     FoldOperator,
     FoldOrder,
+    FoldParamFilter,
     FoldQueryRequest,
     Folds,
     GetRequestFold,
@@ -96,24 +104,7 @@ export class FoldedCoronerQueryBuilder<
         if (typeof foldOrIndex[0] === 'number') {
             index = foldOrIndex[0];
         } else {
-            const attributeFolds = this.#request.fold && this.#request.fold[attribute];
-            if (!attributeFolds) {
-                throw new Error(`Attribute ${attribute} was not folded before.`);
-            }
-
-            index = attributeFolds.findIndex((d) => {
-                for (let i = 0; i < d.length; i++) {
-                    if (d[i] !== foldOrIndex[i]) {
-                        return false;
-                    }
-                }
-
-                return true;
-            });
-
-            if (index === -1) {
-                throw new Error(`Attribute ${attribute} is not folded on ${format(foldOrIndex)}.`);
-            }
+            index = this.findAttributeFoldIndex(attribute, foldOrIndex as FoldOperator);
         }
 
         const request = cloneFoldRequest(this.#request);
@@ -149,6 +140,38 @@ export class FoldedCoronerQueryBuilder<
         return this.createInstance(request);
     }
 
+    public having(
+        attribute: string,
+        foldOrIndex: number | FoldOperator,
+        operator: FoldFilterOperatorInput,
+        valueIndexOrValue: number | FoldFilterInput<FoldOperator>,
+        value?: unknown
+    ): FoldedCoronerQuery<AL, R> {
+        let index: number;
+        if (typeof foldOrIndex === 'number') {
+            index = foldOrIndex;
+        } else {
+            index = this.findAttributeFoldIndex(attribute, foldOrIndex as FoldOperator);
+        }
+
+        const op = this.getFoldFilterOperator(operator);
+
+        let values: [number, unknown][] = [];
+        // If value is undefined, this must mean that valueIndexOrValue is a fold-specific filter
+        if (value === undefined) {
+            values = this.getFoldFilterValues(valueIndexOrValue);
+        } else {
+            values = [[valueIndexOrValue as number, value]];
+        }
+
+        let request = cloneFoldRequest(this.#request);
+        for (const [valueIndex, value] of values) {
+            request = this.havingIndexes(request, attribute, index, op, valueIndex, value);
+        }
+
+        return this.createInstance(request);
+    }
+
     public orderByGroup(direction: OrderDirection): FoldedCoronerQuery<AL, R> {
         const request = cloneFoldRequest(this.#request);
 
@@ -164,6 +187,36 @@ export class FoldedCoronerQueryBuilder<
         }
 
         return this.createInstance(request);
+    }
+
+    private havingIndexes(
+        request: R,
+        attribute: string,
+        index: number,
+        operator: FoldFilterParamOperator,
+        valueIndex: number,
+        value: unknown
+    ): R {
+        const foldFilter: FoldParamFilter = {
+            op: operator,
+            params: [value as AttributeValueType],
+            property: [`${attribute};${index};${valueIndex}`],
+        };
+
+        if (!request.having || request.having.length === 0) {
+            request.having = [foldFilter];
+        } else {
+            request.having = [
+                ...request.having,
+                foldFilter,
+                {
+                    op: 'boolean',
+                    params: ['and'],
+                },
+            ];
+        }
+
+        return request;
     }
 
     public json(): R {
@@ -202,5 +255,76 @@ export class FoldedCoronerQueryBuilder<
             this.#executor,
             this.#simpleResponseBuilder
         ) as this;
+    }
+
+    private findAttributeFoldIndex(attribute: string, operator: FoldOperator) {
+        const attributeFolds = this.#request.fold && this.#request.fold[attribute];
+        if (!attributeFolds) {
+            throw new Error(`Attribute ${attribute} was not folded before.`);
+        }
+
+        const index = attributeFolds.findIndex((d) => {
+            for (let i = 0; i < d.length; i++) {
+                if (d[i] !== operator[i]) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+
+        if (index === -1) {
+            throw new Error(`Attribute ${attribute} is not folded on ${format(operator)}.`);
+        }
+
+        return index;
+    }
+
+    private getFoldFilterOperator(operator: FoldFilterOperatorInput): FoldFilterParamOperator {
+        switch (operator) {
+            case 'equal':
+                return '==';
+            case 'not-equal':
+                return '!=';
+            case 'greater-than':
+                return '>';
+            case 'less-than':
+                return '<';
+            case 'at-least':
+                return '>=';
+            case 'at-most':
+                return '<=';
+            default:
+                return operator;
+        }
+    }
+
+    private getFoldFilterValues(foldFilterInput: FoldFilterInput): [number, unknown][] {
+        if (foldFilterInput == null) {
+            return [];
+        }
+
+        const result: [number, unknown][] = [];
+        if (typeof foldFilterInput === 'object') {
+            if ('from' in foldFilterInput || 'to' in foldFilterInput) {
+                if (foldFilterInput.from !== undefined) {
+                    result.push([0, foldFilterInput.from]);
+                }
+                if (foldFilterInput.to !== undefined) {
+                    result.push([1, foldFilterInput.to]);
+                }
+            } else if ('keys' in foldFilterInput || 'tail' in foldFilterInput) {
+                if (foldFilterInput.keys !== undefined) {
+                    result.push([0, foldFilterInput.keys]);
+                }
+                if (foldFilterInput.tail !== undefined) {
+                    result.push([1, foldFilterInput.tail]);
+                }
+            }
+        } else {
+            result.push([0, foldFilterInput]);
+        }
+
+        return result;
     }
 }

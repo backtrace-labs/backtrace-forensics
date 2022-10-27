@@ -18,6 +18,7 @@ describe('CoronerQueryBuilder', () => {
         order: jest.fn().mockReturnThis(),
         orderByCount: jest.fn().mockReturnThis(),
         orderByGroup: jest.fn().mockReturnThis(),
+        having: jest.fn().mockReturnThis(),
         table: jest.fn().mockReturnThis(),
     };
 

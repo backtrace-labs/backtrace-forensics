@@ -1,9 +1,75 @@
-import { AttributeList, AttributeType } from '../common/attributes';
+import { AttributeList, AttributeType, AttributeValueType } from '../common/attributes';
 import { QuerySource } from '../models/QuerySource';
 import { OrderDirection } from '../requests';
-import { FoldOperator, FoldQueryRequest, Folds, GetRequestFold } from '../requests/fold';
+import { FoldFilterParamOperator, FoldOperator, FoldQueryRequest, Folds, GetRequestFold } from '../requests/fold';
 import { FoldQueryResponse } from '../responses/fold';
 import { CommonCoronerQuery } from './common';
+
+export type RangeFoldFilterInput<VT extends AttributeValueType> = {
+    from?: VT;
+    to?: VT;
+};
+
+export type DistributionFoldFilterInput = {
+    keys?: number;
+    tail?: number;
+};
+
+export type UnaryFoldFilterInput<VT extends AttributeValueType> = VT;
+
+export type SupportedFoldFilterFolds =
+    | 'head'
+    | 'max'
+    | 'mean'
+    | 'min'
+    | 'range'
+    | 'sum'
+    | 'tail'
+    | 'unique'
+    | 'distribution';
+
+export type FoldFilterInput<O extends FoldOperator = FoldOperator> = O extends FoldOperator<infer T>
+    ? O[0] extends 'distribution'
+        ? DistributionFoldFilterInput
+        : O[0] extends 'range'
+        ? RangeFoldFilterInput<AttributeValueType<T>>
+        : O[0] extends SupportedFoldFilterFolds
+        ? UnaryFoldFilterInput<AttributeValueType<T>>
+        : never
+    : never;
+
+export type FoldFilterIndexInput<O extends FoldOperator, I extends number> = O extends FoldOperator<infer T>
+    ? O[0] extends 'distribution'
+        ? I extends 0 | 1
+            ? number
+            : never
+        : O[0] extends 'range'
+        ? I extends 0 | 1
+            ? AttributeValueType<T>
+            : never
+        : O[0] extends SupportedFoldFilterFolds
+        ? I extends 0
+            ? AttributeValueType<T>
+            : never
+        : never
+    : never;
+
+export type FoldFilterValueIndex<O extends FoldOperator> = O[0] extends 'distribution'
+    ? 0 | 1
+    : O[0] extends 'range'
+    ? 0 | 1
+    : O[0] extends SupportedFoldFilterFolds
+    ? 0
+    : never;
+
+export type FoldFilterOperatorInput =
+    | FoldFilterParamOperator
+    | 'equal'
+    | 'not-equal'
+    | 'at-least'
+    | 'at-most'
+    | 'greater-than'
+    | 'less-than';
 
 export interface FoldCoronerQuery<
     AL extends AttributeList = AttributeList,
@@ -93,6 +159,230 @@ export interface FoldedCoronerQuery<
      * query.fold('a', 'head').fold('a', 'tail').orderByCount('descending')
      */
     orderByCount(direction: OrderDirection): FoldedCoronerQuery<AL, R>;
+
+    /**
+     * Adds a post-aggregation filter on params specified.
+     * @param attribute Attribute to add filter on.
+     * @param index Index of fold to filter on.
+     * @param operator Operator to use.
+     * @param value Value to filter by.
+     * @example
+     * // Filters on 'head' fold
+     * query.fold('a', 'head').having('a', 0, 'less-than', 123)
+     *
+     * // Filters on 'range' fold
+     * query.fold('a', 'head').fold('a', 'range').having('b', 1, 'less-than', { from: 123 })
+     */
+    having<
+        F extends GetRequestFold<R>,
+        A extends keyof AL & string,
+        O extends FoldFilterOperatorInput,
+        I extends number
+    >(
+        attribute: A,
+        index: I,
+        operator: O,
+        value: FoldFilterInput<F[A][I]>
+    ): FoldedCoronerQuery<AL, R>;
+
+    /**
+     * Adds a post-aggregation filter on params specified.
+     * @param attribute Attribute to add filter on.
+     * @param index Index of fold to filter on.
+     * @param operator Operator to use.
+     * @param value Value to filter by.
+     * @example
+     * // Filters on 'head' fold
+     * query.fold('a', 'head').having('a', 0, 'less-than', 123)
+     *
+     * // Filters on 'range' fold
+     * query.fold('a', 'head').fold('a', 'range').having('b', 1, 'less-than', { from: 123 })
+     */
+    having<
+        F extends GetRequestFold<R>,
+        A extends keyof F & string,
+        O extends FoldFilterOperatorInput,
+        I extends number
+    >(
+        attribute: A,
+        index: I,
+        operator: O,
+        value: FoldFilterInput<F[A][I]>
+    ): FoldedCoronerQuery<AL, R>;
+
+    /**
+     * Adds a post-aggregation filter on params specified.
+     * @param attribute Attribute to add filter on.
+     * @param fold Fold to filter on.
+     * @param operator Operator to use.
+     * @param value Value to filter by.
+     * @example
+     * // Filters on 'head' fold
+     * query.fold('a', 'head').having('a', ['head'], 'less-than', 123)
+     *
+     * // Filters on 'distribution, 3' fold
+     * query.fold('a', 'distribution', 3).having('a', ['distribution', 3], 'less-than', { keys: 123 })
+     */
+    having<
+        F extends GetRequestFold<R>,
+        A extends keyof AL & string,
+        O extends FoldFilterOperatorInput,
+        FF extends F[A][number] & [SupportedFoldFilterFolds, ...unknown[]]
+    >(
+        attribute: A,
+        fold: FF,
+        operator: O,
+        value: FoldFilterInput<FF>
+    ): FoldedCoronerQuery<AL, R>;
+
+    /**
+     * Adds a post-aggregation filter on params specified.
+     * @param attribute Attribute to add filter on.
+     * @param fold Fold to filter on.
+     * @param operator Operator to use.
+     * @param value Value to filter by.
+     * @example
+     * // Filters on 'head' fold
+     * query.fold('a', 'head').having('a', ['head'], 'less-than', 123)
+     *
+     * // Filters on 'distribution, 3' fold
+     * query.fold('a', 'distribution', 3).having('a', ['distribution', 3], 'less-than', { keys: 123 })
+     */
+    having<
+        F extends GetRequestFold<R>,
+        A extends keyof F & string,
+        O extends FoldFilterOperatorInput,
+        FF extends F[A][number] & [SupportedFoldFilterFolds, ...unknown[]]
+    >(
+        attribute: A,
+        fold: FF,
+        operator: O,
+        value: FoldFilterInput<FF>
+    ): FoldedCoronerQuery<AL, R>;
+
+    /**
+     * Adds a post-aggregation filter on params specified.
+     * @param attribute Attribute to add filter on.
+     * @param index Index of fold to filter on.
+     * @param operator Operator to use.
+     * @param valueIndex Index of value to filter on. For example, to filter by range "to" value, use index 1.
+     * @param value Value to filter by.
+     * @example
+     * // Filters on 'head' fold
+     * query.fold('a', 'head').having('a', 0, 'less-than', 0, 123)
+     *
+     * // Filters on 'range' fold, value 'from'
+     * query.fold('a', 'range').having('a', 0, 'less-than', 0, 123)
+     *
+     * // Filters on 'range' fold, value 'to'
+     * query.fold('a', 'range').having('a', 0, 'less-than', 1, 123)
+     */
+    having<
+        F extends GetRequestFold<R>,
+        A extends keyof AL & string,
+        O extends FoldFilterOperatorInput,
+        I extends number,
+        VI extends FoldFilterValueIndex<F[A][I]>
+    >(
+        attribute: A,
+        index: I,
+        operator: O,
+        valueIndex: VI,
+        value: FoldFilterIndexInput<F[A][I], VI>
+    ): FoldedCoronerQuery<AL, R>;
+
+    /**
+     * Adds a post-aggregation filter on params specified.
+     * @param attribute Attribute to add filter on.
+     * @param index Index of fold to filter on.
+     * @param operator Operator to use.
+     * @param valueIndex Index of value to filter on. For example, to filter by range "to" value, use index 1.
+     * @param value Value to filter by.
+     * @example
+     * // Filters on 'head' fold
+     * query.fold('a', 'head').having('a', 0, 'less-than', 0, 123)
+     *
+     * // Filters on 'range' fold, value 'from'
+     * query.fold('a', 'range').having('a', 0, 'less-than', 0, 123)
+     *
+     * // Filters on 'range' fold, value 'to'
+     * query.fold('a', 'range').having('a', 0, 'less-than', 1, 123)
+     */
+    having<
+        F extends GetRequestFold<R>,
+        A extends keyof F & string,
+        O extends FoldFilterOperatorInput,
+        I extends number,
+        VI extends FoldFilterValueIndex<F[A][I]>
+    >(
+        attribute: A,
+        index: I,
+        operator: O,
+        valueIndex: VI,
+        value: FoldFilterIndexInput<F[A][I], VI>
+    ): FoldedCoronerQuery<AL, R>;
+
+    /**
+     * Adds a post-aggregation filter on params specified.
+     * @param attribute Attribute to add filter on.
+     * @param fold Fold to filter on.
+     * @param operator Operator to use.
+     * @param valueIndex Index of value to filter on. For example, to filter by range "to" value, use index 1.
+     * @param value Value to filter by.
+     * @example
+     * // Filters on 'head' fold
+     * query.fold('a', 'head').having('a', ['head'], 'less-than', 0, 123)
+     *
+     * // Filters on 'range' fold, value 'from'
+     * query.fold('a', 'range').having('a', ['range'], 'less-than', 0, 123)
+     *
+     * // Filters on 'range' fold, value 'to'
+     * query.fold('a', 'range').having('a', ['range'], 'less-than', 1, 123)
+     */
+    having<
+        F extends GetRequestFold<R>,
+        A extends keyof AL & string,
+        O extends FoldFilterOperatorInput,
+        FF extends F[A][number] & [SupportedFoldFilterFolds, ...unknown[]],
+        VI extends FoldFilterValueIndex<FF>
+    >(
+        attribute: A,
+        fold: FF,
+        operator: O,
+        valueIndex: VI,
+        value: FoldFilterInput<FF>
+    ): FoldedCoronerQuery<AL, R>;
+
+    /**
+     * Adds a post-aggregation filter on params specified.
+     * @param attribute Attribute to add filter on.
+     * @param fold Fold to filter on.
+     * @param operator Operator to use.
+     * @param valueIndex Index of value to filter on. For example, to filter by range "to" value, use index 1.
+     * @param value Value to filter by.
+     * @example
+     * // Filters on 'head' fold
+     * query.fold('a', 'head').having('a', ['head'], 'less-than', 0, 123)
+     *
+     * // Filters on 'range' fold, value 'from'
+     * query.fold('a', 'range').having('a', ['range'], 'less-than', 0, 123)
+     *
+     * // Filters on 'range' fold, value 'to'
+     * query.fold('a', 'range').having('a', ['range'], 'less-than', 1, 123)
+     */
+    having<
+        F extends GetRequestFold<R>,
+        A extends keyof F & string,
+        O extends FoldFilterOperatorInput,
+        FF extends F[A][number] & [SupportedFoldFilterFolds, ...unknown[]],
+        VI extends FoldFilterValueIndex<FF>
+    >(
+        attribute: A,
+        fold: FF,
+        operator: O,
+        valueIndex: VI,
+        value: FoldFilterInput<FF>
+    ): FoldedCoronerQuery<AL, R>;
 
     /**
      * Adds order on group with direction specified.

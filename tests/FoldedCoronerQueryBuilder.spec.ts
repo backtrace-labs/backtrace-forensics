@@ -206,4 +206,334 @@ describe('FoldedCoronerQueryBuilder', () => {
 
         await expect(queryable.post()).rejects.toThrow('Fold or group query expected.');
     });
+
+    it('should add post-aggregation range filter by fold when initial having is empty', async () => {
+        const request: FoldQueryRequest = {
+            fold: {
+                a: [['distribution', 3], ['range'], ['distribution', 5]],
+            },
+        };
+        const queryable = new FoldedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
+
+        const newRequest = queryable.having('a', ['range'], '==', { from: 123, to: 456 }).json();
+
+        expect(newRequest).toMatchObject({
+            having: [
+                {
+                    op: '==',
+                    params: [123],
+                    property: ['a;1;0'],
+                },
+                {
+                    op: '==',
+                    params: [456],
+                    property: ['a;1;1'],
+                },
+                {
+                    op: 'boolean',
+                    params: ['and'],
+                },
+            ],
+        });
+    });
+
+    it('should add post-aggregation distribution filter by fold when initial having is empty', async () => {
+        const request: FoldQueryRequest = {
+            fold: {
+                a: [['distribution', 3], ['range'], ['distribution', 5]],
+            },
+        };
+        const queryable = new FoldedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
+
+        const newRequest = queryable.having('a', ['distribution', 5], '==', { keys: 123, tail: 456 }).json();
+
+        expect(newRequest).toMatchObject({
+            having: [
+                {
+                    op: '==',
+                    params: [123],
+                    property: ['a;2;0'],
+                },
+                {
+                    op: '==',
+                    params: [456],
+                    property: ['a;2;1'],
+                },
+                {
+                    op: 'boolean',
+                    params: ['and'],
+                },
+            ],
+        });
+    });
+
+    it('should add post-aggregation head filter by fold when initial having is empty', async () => {
+        const request: FoldQueryRequest = {
+            fold: {
+                a: [['head']],
+            },
+        };
+        const queryable = new FoldedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
+
+        const newRequest = queryable.having('a', ['head'], '==', 123).json();
+
+        expect(newRequest).toMatchObject({
+            having: [
+                {
+                    op: '==',
+                    params: [123],
+                    property: ['a;0;0'],
+                },
+            ],
+        });
+    });
+
+    it('should add post-aggregation range filter by fold and value index when initial having is empty', async () => {
+        const request: FoldQueryRequest = {
+            fold: {
+                a: [['distribution', 3], ['range'], ['distribution', 5]],
+            },
+        };
+        const queryable = new FoldedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
+
+        const newRequest = queryable.having('a', ['range'], '==', 1, 123).json();
+
+        expect(newRequest).toMatchObject({
+            having: [
+                {
+                    op: '==',
+                    params: [123],
+                    property: ['a;1;1'],
+                },
+            ],
+        });
+    });
+
+    it('should add post-aggregation distribution filter by fold when initial having is empty', async () => {
+        const request: FoldQueryRequest = {
+            fold: {
+                a: [['distribution', 3], ['range'], ['distribution', 5]],
+            },
+        };
+        const queryable = new FoldedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
+
+        const newRequest = queryable.having('a', ['distribution', 5], '==', 0, 123).json();
+
+        expect(newRequest).toMatchObject({
+            having: [
+                {
+                    op: '==',
+                    params: [123],
+                    property: ['a;2;0'],
+                },
+            ],
+        });
+    });
+
+    it('should add post-aggregation head filter by fold when initial having is empty', async () => {
+        const request: FoldQueryRequest = {
+            fold: {
+                a: [['head']],
+            },
+        };
+        const queryable = new FoldedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
+
+        const newRequest = queryable.having('a', ['head'], '==', 0, 123).json();
+
+        expect(newRequest).toMatchObject({
+            having: [
+                {
+                    op: '==',
+                    params: [123],
+                    property: ['a;0;0'],
+                },
+            ],
+        });
+    });
+
+    it('should add post-aggregation head filter by index when initial having is empty', async () => {
+        const request: FoldQueryRequest = {
+            fold: {
+                a: [['head']],
+            },
+        };
+        const queryable = new FoldedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
+
+        const newRequest = queryable.having('a', 0, 'equal', 123).json();
+
+        expect(newRequest).toMatchObject({
+            having: [
+                {
+                    op: '==',
+                    params: [123],
+                    property: ['a;0;0'],
+                },
+            ],
+        });
+    });
+
+    it('should add post-aggregation range filter by index when initial having is empty', async () => {
+        const request: FoldQueryRequest = {
+            fold: {
+                a: [['distribution', 3], ['range'], ['distribution', 5]],
+            },
+        };
+        const queryable = new FoldedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
+
+        const newRequest = queryable.having('a', 1, '==', { from: 123, to: 456 }).json();
+
+        expect(newRequest).toMatchObject({
+            having: [
+                {
+                    op: '==',
+                    params: [123],
+                    property: ['a;1;0'],
+                },
+                {
+                    op: '==',
+                    params: [456],
+                    property: ['a;1;1'],
+                },
+                {
+                    op: 'boolean',
+                    params: ['and'],
+                },
+            ],
+        });
+    });
+
+    it('should add post-aggregation distribution filter by index when initial having is empty', async () => {
+        const request: FoldQueryRequest = {
+            fold: {
+                a: [['distribution', 3], ['range'], ['distribution', 5]],
+            },
+        };
+        const queryable = new FoldedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
+
+        const newRequest = queryable.having('a', 2, '==', { keys: 123, tail: 456 }).json();
+
+        expect(newRequest).toMatchObject({
+            having: [
+                {
+                    op: '==',
+                    params: [123],
+                    property: ['a;2;0'],
+                },
+                {
+                    op: '==',
+                    params: [456],
+                    property: ['a;2;1'],
+                },
+                {
+                    op: 'boolean',
+                    params: ['and'],
+                },
+            ],
+        });
+    });
+
+    it('should add post-aggregation filter by index and value index when initial having is empty', async () => {
+        const request: FoldQueryRequest = {};
+        const queryable = new FoldedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
+
+        const newRequest = queryable.having('a', 2, '==', 0, 123).json();
+
+        expect(newRequest).toMatchObject({
+            having: [
+                {
+                    op: '==',
+                    params: [123],
+                    property: ['a;2;0'],
+                },
+            ],
+        });
+    });
+
+    it('should add post-aggregation filter by index and value index when initial having is not empty', async () => {
+        const request: FoldQueryRequest = {
+            having: [
+                {
+                    op: '<=',
+                    params: [456],
+                    property: ['a;1;0'],
+                },
+            ],
+        };
+
+        const queryable = new FoldedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
+
+        const newRequest = queryable.having('a', 2, '==', 0, 123).json();
+
+        expect(newRequest).toMatchObject({
+            having: [
+                {
+                    op: '<=',
+                    params: [456],
+                    property: ['a;1;0'],
+                },
+                {
+                    op: '==',
+                    params: [123],
+                    property: ['a;2;0'],
+                },
+                {
+                    op: 'boolean',
+                    params: ['and'],
+                },
+            ],
+        });
+    });
+
+    it('should add post-aggregation filter by index and value index when initial having is not empty', async () => {
+        const request: FoldQueryRequest = {
+            having: [
+                {
+                    op: '<=',
+                    params: [456],
+                    property: ['a;1;0'],
+                },
+                {
+                    op: '>=',
+                    params: [789],
+                    property: ['a;1;0'],
+                },
+                {
+                    op: 'boolean',
+                    params: ['and'],
+                },
+            ],
+        };
+
+        const queryable = new FoldedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
+
+        const newRequest = queryable.having('a', 2, '==', 0, 123).json();
+
+        expect(newRequest).toMatchObject({
+            having: [
+                {
+                    op: '<=',
+                    params: [456],
+                    property: ['a;1;0'],
+                },
+                {
+                    op: '>=',
+                    params: [789],
+                    property: ['a;1;0'],
+                },
+                {
+                    op: 'boolean',
+                    params: ['and'],
+                },
+                {
+                    op: '==',
+                    params: [123],
+                    property: ['a;2;0'],
+                },
+                {
+                    op: 'boolean',
+                    params: ['and'],
+                },
+            ],
+        });
+    });
 });

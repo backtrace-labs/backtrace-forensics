@@ -380,14 +380,28 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
                                     {
                                         value: '0',
                                         count: 56,
+                                        raw: ['0', 56],
                                     },
                                     {
                                         value: '8580858',
                                         count: 1,
+                                        raw: ['8580858', 1],
                                     },
                                     {
                                         value: '16395388',
                                         count: 1,
+                                        raw: ['16395388', 1],
+                                    },
+                                ],
+                                raw: [
+                                    {
+                                        keys: 316,
+                                        tail: 313,
+                                        vals: [
+                                            ['0', 56],
+                                            ['8580858', 1],
+                                            ['16395388', 1],
+                                        ],
                                     },
                                 ],
                             },
@@ -399,11 +413,24 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
                                 keys: 316,
                                 tail: 311,
                                 values: [
-                                    { value: '0', count: 56 },
-                                    { value: '8580858', count: 1 },
-                                    { value: '16395388', count: 1 },
-                                    { value: '16710727', count: 1 },
-                                    { value: '25412139', count: 1 },
+                                    { value: '0', count: 56, raw: ['0', 56] },
+                                    { value: '8580858', count: 1, raw: ['8580858', 1] },
+                                    { value: '16395388', count: 1, raw: ['16395388', 1] },
+                                    { value: '16710727', count: 1, raw: ['16710727', 1] },
+                                    { value: '25412139', count: 1, raw: ['25412139', 1] },
+                                ],
+                                raw: [
+                                    {
+                                        keys: 316,
+                                        tail: 311,
+                                        vals: [
+                                            ['0', 56],
+                                            ['8580858', 1],
+                                            ['16395388', 1],
+                                            ['16710727', 1],
+                                            ['25412139', 1],
+                                        ],
+                                    },
                                 ],
                             },
                         },
@@ -438,23 +465,34 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
                         {
                             fold: 'bin',
                             rawFold: ['bin'],
-                            value: [],
+                            value: {
+                                values: [],
+                                raw: [],
+                            },
                         },
                     ],
                     histogram: [
                         {
                             fold: 'histogram',
                             rawFold: ['histogram'],
-                            value: [
-                                {
-                                    value: '0aa7f056deb302321271d4db00f07f567aef7a16',
-                                    count: 1,
-                                },
-                                {
-                                    value: 'fefc0685a6b052624bb448878b4b4cd2e0cd0b86',
-                                    count: 3,
-                                },
-                            ],
+                            value: {
+                                values: [
+                                    {
+                                        value: '0aa7f056deb302321271d4db00f07f567aef7a16',
+                                        count: 1,
+                                        raw: ['0aa7f056deb302321271d4db00f07f567aef7a16', 1],
+                                    },
+                                    {
+                                        value: 'fefc0685a6b052624bb448878b4b4cd2e0cd0b86',
+                                        count: 3,
+                                        raw: ['fefc0685a6b052624bb448878b4b4cd2e0cd0b86', 3],
+                                    },
+                                ],
+                                raw: [
+                                    ['0aa7f056deb302321271d4db00f07f567aef7a16', 1],
+                                    ['fefc0685a6b052624bb448878b4b4cd2e0cd0b86', 3],
+                                ],
+                            },
                         },
                     ],
                 },
@@ -509,14 +547,28 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
                                     {
                                         value: '16395388',
                                         count: 1,
+                                        raw: ['16395388', 1],
                                     },
                                     {
                                         value: '16710727',
                                         count: 1,
+                                        raw: ['16710727', 1],
                                     },
                                     {
                                         value: '25412139',
                                         count: 1,
+                                        raw: ['25412139', 1],
+                                    },
+                                ],
+                                raw: [
+                                    {
+                                        keys: 204,
+                                        tail: 201,
+                                        vals: [
+                                            ['16395388', 1],
+                                            ['16710727', 1],
+                                            ['25412139', 1],
+                                        ],
                                     },
                                 ],
                             },
@@ -528,11 +580,24 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
                                 keys: 204,
                                 tail: 199,
                                 values: [
-                                    { value: '16395388', count: 1 },
-                                    { value: '16710727', count: 1 },
-                                    { value: '25412139', count: 1 },
-                                    { value: '28219319', count: 1 },
-                                    { value: '47839469', count: 1 },
+                                    { value: '16395388', count: 1, raw: ['16395388', 1] },
+                                    { value: '16710727', count: 1, raw: ['16710727', 1] },
+                                    { value: '25412139', count: 1, raw: ['25412139', 1] },
+                                    { value: '28219319', count: 1, raw: ['28219319', 1] },
+                                    { value: '47839469', count: 1, raw: ['47839469', 1] },
+                                ],
+                                raw: [
+                                    {
+                                        keys: 204,
+                                        tail: 199,
+                                        vals: [
+                                            ['16395388', 1],
+                                            ['16710727', 1],
+                                            ['25412139', 1],
+                                            ['28219319', 1],
+                                            ['47839469', 1],
+                                        ],
+                                    },
                                 ],
                             },
                         },
@@ -567,27 +632,40 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
                         {
                             fold: 'bin',
                             rawFold: ['bin'],
-                            value: [],
+                            value: {
+                                values: [],
+                                raw: [],
+                            },
                         },
                     ],
                     histogram: [
                         {
                             fold: 'histogram',
                             rawFold: ['histogram'],
-                            value: [
-                                {
-                                    value: '0c0621a40ae6170d93791742df171b75c1dd3017',
-                                    count: 1,
-                                },
-                                {
-                                    value: 'fefc0685a6b052624bb448878b4b4cd2e0cd0b86',
-                                    count: 3,
-                                },
-                                {
-                                    value: 'b32a8560f5be60e4a9569e4851b339a432254df0',
-                                    count: 2,
-                                },
-                            ],
+                            value: {
+                                values: [
+                                    {
+                                        value: '0c0621a40ae6170d93791742df171b75c1dd3017',
+                                        count: 1,
+                                        raw: ['0c0621a40ae6170d93791742df171b75c1dd3017', 1],
+                                    },
+                                    {
+                                        value: 'fefc0685a6b052624bb448878b4b4cd2e0cd0b86',
+                                        count: 3,
+                                        raw: ['fefc0685a6b052624bb448878b4b4cd2e0cd0b86', 3],
+                                    },
+                                    {
+                                        value: 'b32a8560f5be60e4a9569e4851b339a432254df0',
+                                        count: 2,
+                                        raw: ['b32a8560f5be60e4a9569e4851b339a432254df0', 2],
+                                    },
+                                ],
+                                raw: [
+                                    ['0c0621a40ae6170d93791742df171b75c1dd3017', 1],
+                                    ['fefc0685a6b052624bb448878b4b4cd2e0cd0b86', 3],
+                                    ['b32a8560f5be60e4a9569e4851b339a432254df0', 2],
+                                ],
+                            },
                         },
                     ],
                 },
@@ -647,11 +725,24 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
             keys: 316,
             tail: 311,
             values: [
-                { value: '0', count: 56 },
-                { value: '8580858', count: 1 },
-                { value: '16395388', count: 1 },
-                { value: '16710727', count: 1 },
-                { value: '25412139', count: 1 },
+                { value: '0', count: 56, raw: ['0', 56] },
+                { value: '8580858', count: 1, raw: ['8580858', 1] },
+                { value: '16395388', count: 1, raw: ['16395388', 1] },
+                { value: '16710727', count: 1, raw: ['16710727', 1] },
+                { value: '25412139', count: 1, raw: ['25412139', 1] },
+            ],
+            raw: [
+                {
+                    keys: 316,
+                    tail: 311,
+                    vals: [
+                        ['0', 56],
+                        ['8580858', 1],
+                        ['16395388', 1],
+                        ['16710727', 1],
+                        ['25412139', 1],
+                    ],
+                },
             ],
         };
 
@@ -668,11 +759,24 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
                 keys: 316,
                 tail: 311,
                 values: [
-                    { value: '0', count: 56 },
-                    { value: '8580858', count: 1 },
-                    { value: '16395388', count: 1 },
-                    { value: '16710727', count: 1 },
-                    { value: '25412139', count: 1 },
+                    { value: '0', count: 56, raw: ['0', 56] },
+                    { value: '8580858', count: 1, raw: ['8580858', 1] },
+                    { value: '16395388', count: 1, raw: ['16395388', 1] },
+                    { value: '16710727', count: 1, raw: ['16710727', 1] },
+                    { value: '25412139', count: 1, raw: ['25412139', 1] },
+                ],
+                raw: [
+                    {
+                        keys: 316,
+                        tail: 311,
+                        vals: [
+                            ['0', 56],
+                            ['8580858', 1],
+                            ['16395388', 1],
+                            ['16710727', 1],
+                            ['25412139', 1],
+                        ],
+                    },
                 ],
             },
         ];

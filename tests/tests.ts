@@ -123,6 +123,26 @@ import { RawSelectQueryResponse, SelectQueryResponse } from '../src/responses/se
         }
     }
 
+    const havingTest = await coronerQuery
+        .create()
+        .fold('a', 'head')
+        .fold('a', 'range')
+        .fold('a', 'min')
+        .fold('a', 'distribution', 3)
+        .fold('a', 'distribution', 5)
+        .having('a', ['range'], '==', {from: 123})
+        .having('a', 4, '==', 1, 123)
+
+    const dynamicHavingTest = await coronerQuery
+        .create()
+        .dynamicFold()
+        .fold('a', 'head')
+        .fold('a', 'range')
+        .fold('a', 'min')
+        .fold('a', 'distribution', 3)
+        .fold('a', 'distribution', 5)
+        .having('a', ['distribution', 24], '==', { keys: 123 })
+
     const staticFold1 = await coronerQuery
         .create()
         .fold('a', 'head')
@@ -208,6 +228,9 @@ if (selectResponse.success) {
 }
 
 const testFoldResponse: RawCoronerResponse<RawFoldQueryResponse<FoldQueryRequest>> = {
+    _: {
+        tx: 0,
+    },
     error: undefined,
     response: {
         version: '1.2.0',
@@ -587,6 +610,9 @@ const testFoldResponse: RawCoronerResponse<RawFoldQueryResponse<FoldQueryRequest
 };
 
 const testSelectResponse: RawCoronerResponse<RawSelectQueryResponse<SelectQueryRequest>> = {
+    _: {
+        tx: 0,
+    },
     error: undefined,
     response: {
         version: '1.2.0',

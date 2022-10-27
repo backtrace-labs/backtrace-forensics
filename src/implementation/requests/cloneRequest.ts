@@ -1,5 +1,12 @@
 import { QueryRequest } from '../../requests/common';
-import { FoldOperator, FoldQueryRequest, Folds } from '../../requests/fold';
+import {
+    FoldBooleanFilter,
+    FoldFilter,
+    FoldOperator,
+    FoldParamFilter,
+    FoldQueryRequest,
+    Folds,
+} from '../../requests/fold';
 import { SelectQueryRequest } from '../../requests/select';
 
 function cloneFold(fold?: Folds) {
@@ -40,6 +47,31 @@ function cloneSelect(select?: readonly string[]) {
     return [...select];
 }
 
+function cloneHaving(having?: readonly FoldFilter[]) {
+    if (!having) {
+        return undefined;
+    }
+
+    return [
+        ...having.map((h) => {
+            if (h.op !== 'boolean') {
+                const filter: FoldParamFilter = {
+                    op: h.op,
+                    params: [...h.params],
+                    property: [...h.property],
+                };
+                return filter;
+            } else {
+                const filter: FoldBooleanFilter = {
+                    op: h.op,
+                    params: [...h.params],
+                };
+                return filter;
+            }
+        }),
+    ];
+}
+
 export function cloneRequest(request: QueryRequest): QueryRequest {
     if ('fold' in request || 'group' in request) {
         const foldRequest = request as FoldQueryRequest;
@@ -47,6 +79,7 @@ export function cloneRequest(request: QueryRequest): QueryRequest {
             ...foldRequest,
             fold: cloneFold(foldRequest.fold),
             group: cloneGroup(foldRequest.group) as typeof foldRequest.group,
+            having: cloneHaving(foldRequest.having),
         };
         return result;
     } else if ('select' in request) {
