@@ -1,7 +1,23 @@
-import { AttributeList, AttributeType, AttributeValueType } from '../common/attributes';
+import {
+    AttributeList,
+    AttributeListFromArray,
+    AttributeType,
+    AttributeValueType,
+    ExtendAttributeList,
+} from '../common/attributes';
 import { QuerySource } from '../models/QuerySource';
-import { OrderDirection } from '../requests';
-import { FoldFilterParamOperator, FoldOperator, FoldQueryRequest, Folds, GetRequestFold } from '../requests/fold';
+import { OrderDirection, QueryRequest } from '../requests';
+import {
+    BackingColumnFoldVirtualColumn,
+    BackingColumnFoldVirtualColumnTypes,
+    FoldFilterParamOperator,
+    FoldOperator,
+    FoldQueryRequest,
+    Folds,
+    FoldVirtualColumn,
+    FoldVirtualColumnType,
+    GetRequestFold,
+} from '../requests/fold';
 import { FoldQueryResponse } from '../responses/fold';
 import { CommonCoronerQuery } from './common';
 
@@ -73,10 +89,11 @@ export type FoldFilterOperatorInput =
 
 export interface FoldCoronerQuery<
     AL extends AttributeList = AttributeList,
-    R extends FoldQueryRequest = FoldQueryRequest<never, ['*']>
+    R extends FoldQueryRequest = FoldQueryRequest<never, ['*'], []>
 > extends CommonCoronerQuery<AL, R> {
     /**
      * Returns the query as dynamic fold. Use this to assign folds in runtime, without knowing the types.
+     *
      * @example
      * let query = query.fold()
      * query = query.fold('fingerprint', 'head');
@@ -95,11 +112,19 @@ export interface FoldCoronerQuery<
      *      .fold('fingerprint', 'tail')
      *      .fold('timestamp', 'distribution', 3)
      */
-    fold<A extends keyof AL & string, V extends AL[A][2], O extends FoldOperator<V>>(
+    fold<
+        A extends keyof AttributeListWithVirtualColumns<AL, R> & string,
+        V extends AttributeListWithVirtualColumns<AL, R>[A][2],
+        O extends FoldOperator<V>
+    >(
         attribute: A,
         ...fold: O
     ): FoldedCoronerQuery<AL, AddFold<R, A, O>>;
-    fold<A extends string, V extends A extends keyof AL ? AL[A][2] : AttributeType, O extends FoldOperator<V>>(
+    fold<A extends string, V extends AttributeListWithVirtualColumns<AL, R>[A][2], O extends FoldOperator<V>>(
+        attribute: A,
+        ...fold: O
+    ): FoldedCoronerQuery<AL, AddFold<R, A, O>>;
+    fold<A extends string, V extends AttributeType, O extends FoldOperator<V>>(
         attribute: A,
         ...fold: O
     ): FoldedCoronerQuery<AL, AddFold<R, A, O>>;
@@ -112,12 +137,47 @@ export interface FoldCoronerQuery<
      * @example
      * query.group('fingerprint')
      */
+    group<A extends keyof AttributeListWithVirtualColumns<AL, R> & string>(
+        attribute: A
+    ): FoldedCoronerQuery<AL, SetFoldGroup<R, A>>;
     group<A extends string>(attribute: A): FoldedCoronerQuery<AL, SetFoldGroup<R, A>>;
+
+    /**
+     * Adds a virtual column. The virtual column can be then filtered,
+     *
+     * Request mutation: `request.virtual_columns += { name, type, [type]: params }`
+     * @param name Name of the virtual column.
+     * @param type Type of the virtual column.
+     * @param params Params for the specified type.
+     * @example
+     * // Adds a virtual column with name 'a'
+     * query.virtualColumn('a', 'quantized_uint', { backing_column: 'timestamp', size: 3600, offset: 86400 })
+     */
+    virtualColumn<
+        A extends string,
+        T extends FoldVirtualColumnType,
+        BC extends keyof AttributeListWithVirtualColumns<AL, R> & string,
+        FVC extends BackingColumnFoldVirtualColumn<A, T, BC>
+    >(
+        name: A,
+        type: T,
+        params: BackingColumnFoldVirtualColumnTypes<A, BC>[T][1]
+    ): FoldedCoronerQuery<AL, AddVirtualColumn<R, FVC>>;
+    virtualColumn<
+        A extends string,
+        T extends FoldVirtualColumnType,
+        BC extends string,
+        FVC extends BackingColumnFoldVirtualColumn<A, T, BC>
+    >(
+        name: A,
+        type: T,
+        params: BackingColumnFoldVirtualColumnTypes<A, BC>[T][1]
+    ): FoldedCoronerQuery<AL, AddVirtualColumn<R, FVC>>;
 }
 
 export interface FoldedCoronerQuery<
     AL extends AttributeList = AttributeList,
-    R extends FoldQueryRequest = FoldQueryRequest<never, ['*']>
+    R extends FoldQueryRequest = FoldQueryRequest<never, ['*'], []>
 > extends FoldCoronerQuery<AL, R> {
     /**
      * Adds order on attribute fold with index and direction specified.
@@ -414,16 +474,31 @@ export interface FoldedCoronerQuery<
 
 export type AddFold<R extends FoldQueryRequest, A extends string, O extends FoldOperator> = R extends FoldQueryRequest<
     infer F,
-    infer G
+    infer G,
+    infer VC
 >
     ? [F] extends [never]
-        ? FoldQueryRequest<Folds<A, readonly [O]>, G>
+        ? FoldQueryRequest<Folds<A, readonly [O]>, G, VC>
         : A extends keyof F
-        ? FoldQueryRequest<Omit<F, A> & Folds<A, [...F[A], O]>, G>
-        : FoldQueryRequest<F & Folds<A, readonly [O]>, G>
+        ? FoldQueryRequest<Omit<F, A> & Folds<A, [...F[A], O]>, G, VC>
+        : FoldQueryRequest<F & Folds<A, readonly [O]>, G, VC>
     : never;
 
-export type SetFoldGroup<R extends FoldQueryRequest, A extends string> = FoldQueryRequest<FoldOfRequest<R>, [A]>;
+export type AddVirtualColumn<R extends FoldQueryRequest, NVC extends FoldVirtualColumn> = R extends FoldQueryRequest<
+    infer F,
+    infer G,
+    infer VC
+>
+    ? FoldQueryRequest<F, G, [...VC, NVC]>
+    : never;
+
+export type SetFoldGroup<R extends FoldQueryRequest, A extends string> = R extends FoldQueryRequest<
+    infer F,
+    infer _,
+    infer VC
+>
+    ? FoldQueryRequest<F, [A], VC>
+    : never;
 
 export type FoldOfRequest<R extends FoldQueryRequest> = NonNullable<R['fold']>;
 
@@ -433,3 +508,23 @@ export type DynamicFoldedCoronerQuery<AL extends AttributeList = AttributeList> 
     AL,
     FoldQueryRequest<Folds>
 >;
+
+export type AttributeListWithVirtualColumns<
+    AL extends AttributeList,
+    R extends QueryRequest
+> = R extends FoldQueryRequest<infer _, infer __, infer VC>
+    ? ExtendAttributeList<
+          AL,
+          AttributeListFromArray<{
+              [I in keyof VC]: [
+                  VC[I]['name'],
+                  VC[I] extends BackingColumnFoldVirtualColumn<infer ___, infer ____, infer BC>
+                      ? BC extends keyof AL
+                          ? AL[BC][1]
+                          : 'none'
+                      : 'none',
+                  'uint64'
+              ];
+          }>
+      >
+    : AL;

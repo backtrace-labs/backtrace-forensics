@@ -2,11 +2,18 @@ import { AttributeList } from '../../common/attributes';
 import { IFoldCoronerQueryBuilderFactory } from '../../interfaces/factories/IFoldCoronerQueryBuilderFactory';
 import { ISelectCoronerQueryBuilderFactory } from '../../interfaces/factories/ISelectCoronerQueryBuilderFactory';
 import { CoronerQuery } from '../../queries/common';
-import { AddFold, FoldedCoronerQuery, SetFoldGroup } from '../../queries/fold';
+import { AddFold, FoldedCoronerQuery } from '../../queries/fold';
 import { AddSelect, SelectedCoronerQuery } from '../../queries/select';
 import { SelectQueryRequest } from '../../requests';
 import { QueryRequest } from '../../requests/common';
-import { FoldOperator, FoldQueryRequest, Folds } from '../../requests/fold';
+import {
+    FoldOperator,
+    FoldQueryRequest,
+    Folds,
+    FoldVirtualColumn,
+    FoldVirtualColumnType,
+    FoldVirtualColumnTypes,
+} from '../../requests/fold';
 import { CommonCoronerQueryBuilder } from './CommonCoronerQueryBuilder';
 
 export class CoronerQueryBuilder<AL extends AttributeList, R extends QueryRequest>
@@ -51,11 +58,21 @@ export class CoronerQueryBuilder<AL extends AttributeList, R extends QueryReques
         return query.dynamicFold();
     }
 
-    public group<A extends string>(
-        attribute: A
-    ): FoldedCoronerQuery<AL, SetFoldGroup<FoldQueryRequest<never, ['*']>, A>> {
+    public group(attribute: string): FoldedCoronerQuery<AL, FoldQueryRequest<never, [string], []>> {
         const query = this.#foldQueryFactory.create(this.#request as FoldQueryRequest, this.#attributeList);
-        return query.group(attribute) as FoldedCoronerQuery<AL, SetFoldGroup<FoldQueryRequest<never, ['*']>, A>>;
+        return query.group(attribute) as FoldedCoronerQuery<AL, FoldQueryRequest<never, [string], []>>;
+    }
+
+    public virtualColumn(
+        name: string,
+        type: FoldVirtualColumnType,
+        params: FoldVirtualColumnTypes[keyof FoldVirtualColumnTypes][1]
+    ): FoldedCoronerQuery<AL, FoldQueryRequest<never, ['*'], [FoldVirtualColumn]>> {
+        const query = this.#foldQueryFactory.create(this.#request as FoldQueryRequest, this.#attributeList);
+        return query.virtualColumn(name, type, params) as FoldedCoronerQuery<
+            AL,
+            FoldQueryRequest<never, ['*'], [FoldVirtualColumn]>
+        >;
     }
 
     protected createInstance(request: QueryRequest): this {

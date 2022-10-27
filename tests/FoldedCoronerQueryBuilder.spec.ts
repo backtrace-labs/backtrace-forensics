@@ -1,7 +1,8 @@
-import { CommonAttributes } from '../src/common/attributes';
+import { AttributeList, CommonAttributes } from '../src/common/attributes';
 import { FoldedCoronerQueryBuilder } from '../src/implementation/queries/FoldCoronerQueryBuilder';
 import { ICoronerQueryExecutor } from '../src/interfaces/ICoronerQueryExecutor';
 import { IFoldCoronerSimpleResponseBuilder } from '../src/interfaces/responses/IFoldCoronerSimpleResponseBuilder';
+import { FoldedCoronerQuery } from '../src/queries';
 import { createFoldRequest, FoldQueryRequest } from '../src/requests/fold';
 
 describe('FoldedCoronerQueryBuilder', () => {
@@ -196,6 +197,80 @@ describe('FoldedCoronerQueryBuilder', () => {
             {
                 name: ';count',
                 ordering: 'ascending',
+            },
+        ]);
+    });
+
+    it('should add virtual column when initial virtual columns are empty', () => {
+        const request: FoldQueryRequest = {};
+
+        const queryable: FoldedCoronerQuery<AttributeList, typeof request> = new FoldedCoronerQueryBuilder(
+            request,
+            CommonAttributes,
+            executorMock,
+            builderMock
+        );
+
+        const newRequest = queryable
+            .virtualColumn('a', 'quantize_uint', { backing_column: 'b', offset: 123, size: 456 })
+            .json();
+
+        expect(newRequest.virtual_columns).toEqual([
+            {
+                name: 'a',
+                type: 'quantize_uint',
+                quantize_uint: {
+                    backing_column: 'b',
+                    offset: 123,
+                    size: 456,
+                },
+            },
+        ]);
+    });
+
+    it('should add virtual column when initial virtual columns are not empty', () => {
+        const request: FoldQueryRequest = createFoldRequest({
+            virtual_columns: [
+                {
+                    name: 'a',
+                    type: 'quantize_uint',
+                    quantize_uint: {
+                        backing_column: 'x',
+                        offset: 123,
+                        size: 456,
+                    },
+                },
+            ],
+        });
+
+        const queryable: FoldedCoronerQuery<AttributeList, typeof request> = new FoldedCoronerQueryBuilder(
+            request,
+            CommonAttributes,
+            executorMock,
+            builderMock
+        );
+
+        const newRequest = queryable
+            .virtualColumn('b', 'truncate_timestamp', { backing_column: 'y', granularity: 'day' })
+            .json();
+
+        expect(newRequest.virtual_columns).toEqual([
+            {
+                name: 'a',
+                type: 'quantize_uint',
+                quantize_uint: {
+                    backing_column: 'x',
+                    offset: 123,
+                    size: 456,
+                },
+            },
+            {
+                name: 'b',
+                type: 'truncate_timestamp',
+                truncate_timestamp: {
+                    backing_column: 'y',
+                    granularity: 'day',
+                },
             },
         ]);
     });

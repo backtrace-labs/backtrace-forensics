@@ -20,6 +20,7 @@ describe('CoronerQueryBuilder', () => {
         orderByGroup: jest.fn().mockReturnThis(),
         having: jest.fn().mockReturnThis(),
         table: jest.fn().mockReturnThis(),
+        virtualColumn: jest.fn().mockReturnThis(),
     };
 
     const foldFactory: IFoldCoronerQueryBuilderFactory = {

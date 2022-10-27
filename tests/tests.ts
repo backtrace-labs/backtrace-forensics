@@ -1,4 +1,4 @@
-import { BacktraceForensics } from '../src';
+import { BacktraceForensics, CommonAttributes } from '../src';
 import { createFoldRequest, FoldQueryRequest } from '../src/requests/fold';
 import { createSelectRequest, SelectQueryRequest } from '../src/requests/select';
 import { RawCoronerResponse } from '../src/responses/common';
@@ -80,14 +80,17 @@ import { RawSelectQueryResponse, SelectQueryResponse } from '../src/responses/se
     }
 
     const dynamicSelectQuery = coronerQuery
-        .create()
+        .create({ attributeList: CommonAttributes })
+        .filter('fingerprint', 'equal', 'asd')
+        .filter('fingerprint', 'equal', 'asd')
         // .filter('b', 'greater-than', 456)
         // .filter('a', 'regular-expression', '123')
         // .filter('c', 'regular-expression', 'abx')
         // .filter('b', 'at-least', 456)
         .select('a')
         .select('b')
-        .select('c');
+        .select('c')
+        .filter('asda', 'at-least', 'asdas');
 
     const dynamicSelectResult = await dynamicSelectQuery.post();
     if (dynamicSelectResult.success) {
@@ -144,10 +147,14 @@ import { RawSelectQueryResponse, SelectQueryResponse } from '../src/responses/se
         .having('a', ['distribution', 24], '==', { keys: 123 })
 
     const staticFold1 = await coronerQuery
-        .create()
+        .create({ attributeList: CommonAttributes})
+        .fold('hostname', 'head')
+        .virtualColumn('a', 'quantize_uint', { backing_column: 'callstack', offset: 123, size: 456})
+        .virtualColumn('b', 'truncate_timestamp', {backing_column: 'timestamp', granularity: 'day'})
         .fold('a', 'head')
         .fold('a', 'distribution', 3)
         .fold('a', 'distribution', 4)
+        // .fold('')
         .order('a', 'descending', 1)
         .order('a', 'descending', 'distribution', 4)
         .post();

@@ -5,6 +5,7 @@ import { IFoldCoronerSimpleResponseBuilder } from '../../interfaces/responses/IF
 import { QuerySource } from '../../models/QuerySource';
 import {
     AddFold,
+    AddVirtualColumn,
     FoldedCoronerQuery,
     FoldFilterInput,
     FoldFilterOperatorInput,
@@ -19,6 +20,9 @@ import {
     FoldParamFilter,
     FoldQueryRequest,
     Folds,
+    FoldVirtualColumn,
+    FoldVirtualColumnType,
+    FoldVirtualColumnTypes,
     GetRequestFold,
     GroupFoldOrder,
 } from '../../requests/fold';
@@ -187,6 +191,31 @@ export class FoldedCoronerQueryBuilder<
         }
 
         return this.createInstance(request);
+    }
+
+    public virtualColumn(
+        name: string,
+        type: FoldVirtualColumnType,
+        params: FoldVirtualColumnTypes[keyof FoldVirtualColumnTypes][1]
+    ): FoldedCoronerQuery<AL, AddVirtualColumn<R, FoldVirtualColumn>> {
+        const request = cloneFoldRequest(this.#request);
+
+        const virtualColumn = {
+            name,
+            type,
+            [type]: params,
+        } as FoldVirtualColumn;
+
+        if (request.virtual_columns) {
+            request.virtual_columns = [...request.virtual_columns, virtualColumn];
+        } else {
+            request.virtual_columns = [virtualColumn];
+        }
+
+        return this.createInstance(request) as unknown as FoldedCoronerQuery<
+            AL,
+            AddVirtualColumn<R, FoldVirtualColumn>
+        >;
     }
 
     private havingIndexes(

@@ -9,6 +9,48 @@ import {
 } from '../common/attributes';
 import { OrderDirection, QueryRequest } from './common';
 
+export type QuantizeUintFoldVirtualColumn<A extends string = string, BC extends string = string> = {
+    name: A;
+    type: 'quantize_uint';
+    quantize_uint: {
+        backing_column: BC;
+        size: number;
+        offset: number;
+    };
+};
+
+export type TruncateTimestampFoldVirtualColumn<A extends string = string, BC extends string = string> = {
+    name: A;
+    type: 'truncate_timestamp';
+    truncate_timestamp: {
+        backing_column: BC;
+        granularity: 'day' | 'month' | 'quarter' | 'year';
+    };
+};
+
+export type BackingColumnFoldVirtualColumnTypes<A extends string = string, BC extends string = string> = {
+    quantize_uint: [QuantizeUintFoldVirtualColumn<A, BC>, QuantizeUintFoldVirtualColumn<A, BC>['quantize_uint']];
+    truncate_timestamp: [
+        TruncateTimestampFoldVirtualColumn<A, BC>,
+        TruncateTimestampFoldVirtualColumn<A, BC>['truncate_timestamp']
+    ];
+};
+
+export type FoldVirtualColumnTypes<A extends string = string> = BackingColumnFoldVirtualColumnTypes<A>;
+
+export type FoldVirtualColumnType = keyof BackingColumnFoldVirtualColumnTypes<string>;
+
+export type BackingColumnFoldVirtualColumn<
+    A extends string = string,
+    T extends FoldVirtualColumnType = FoldVirtualColumnType,
+    BC extends string = string
+> = BackingColumnFoldVirtualColumnTypes<A, BC>[T][0];
+
+export type FoldVirtualColumn<
+    A extends string = string,
+    T extends FoldVirtualColumnType = FoldVirtualColumnType
+> = BackingColumnFoldVirtualColumn<A, T>;
+
 export type DistributionFoldOperator = readonly ['distribution', number];
 export type BinFoldOperator = readonly ['bin', ...number[]];
 
@@ -89,8 +131,11 @@ export type Folds<A extends string = string, O extends readonly FoldOperator[] =
     O
 >;
 
-export interface FoldQueryRequest<F extends Folds = Folds, G extends readonly string[] = readonly string[]>
-    extends QueryRequest {
+export interface FoldQueryRequest<
+    F extends Folds = Folds,
+    G extends readonly string[] = readonly string[],
+    VC extends readonly FoldVirtualColumn[] = readonly FoldVirtualColumn[]
+> extends QueryRequest {
     /**
      * Attribute to group on.
      * @example
@@ -123,6 +168,19 @@ export interface FoldQueryRequest<F extends Folds = Folds, G extends readonly st
      * }]
      */
     order?: readonly (FoldOrder | CountFoldOrder | GroupFoldOrder)[];
+
+    /**
+     * Virtual columns to use.
+     * @example
+     * request.virtual_columns = [{
+     *     name: 'a',
+     *     type: 'quantize_uint',
+     *     quantize_uint: {
+     *         ...
+     *     }
+     * }]
+     */
+    virtual_columns?: VC;
 
     /**
      * Post-aggregation filters.
