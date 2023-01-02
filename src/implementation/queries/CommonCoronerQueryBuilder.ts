@@ -31,17 +31,17 @@ export abstract class CommonCoronerQueryBuilder<AL extends AttributeList> implem
 
     public filter<
         A extends string,
-        V extends A extends keyof CommonAttributes ? CommonAttributes[A][2] : AttributeType
+        V extends A extends keyof CommonAttributes ? CommonAttributes[A][2] : AttributeType,
     >(attribute: A, operator: FilterOperator<V>, value: AttributeValueType<V>): this;
     public filter<A extends string>(attribute: A, filters: readonly QueryAttributeFilter[]): this;
     public filter<A extends string>(filters: QueryFilter<A>): this;
     public filter<
         A extends string,
-        V extends A extends keyof CommonAttributes ? CommonAttributes[A][2] : AttributeType
+        V extends A extends keyof CommonAttributes ? CommonAttributes[A][2] : AttributeType,
     >(
         attributeOrFilters: A | QueryFilter<A>,
         operatorOrFilters?: FilterOperator<V> | readonly QueryAttributeFilter[],
-        value?: AttributeValueType<V>
+        value?: AttributeValueType<V>,
     ): this {
         const request = cloneRequest(this.#request);
         if (typeof attributeOrFilters === 'string') {
@@ -70,7 +70,7 @@ export abstract class CommonCoronerQueryBuilder<AL extends AttributeList> implem
         } else {
             let instance = this;
             for (const key in attributeOrFilters) {
-                instance = this.filter(key, attributeOrFilters[key]);
+                instance = instance.filter(key, attributeOrFilters[key]);
             }
             return instance;
         }
