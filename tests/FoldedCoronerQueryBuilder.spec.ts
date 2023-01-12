@@ -611,4 +611,74 @@ describe('FoldedCoronerQueryBuilder', () => {
             ],
         });
     });
+
+    it('should add post-aggregation filter on count when initial having is empty', () => {
+        const request: FoldQueryRequest = {};
+        const queryable = new FoldedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
+
+        const newRequest = queryable.havingCount('==', 50).json();
+
+        expect(newRequest).toMatchObject({
+            having: [
+                {
+                    op: '==',
+                    params: [50],
+                    property: [';count'],
+                },
+            ],
+        });
+    });
+
+    it('should add post-aggregation filter on count when initial having is not empty', () => {
+        const request: FoldQueryRequest = {
+            having: [
+                {
+                    op: '<=',
+                    params: [456],
+                    property: [';count'],
+                },
+                {
+                    op: '>=',
+                    params: [789],
+                    property: ['a;1;0'],
+                },
+                {
+                    op: 'boolean',
+                    params: ['and'],
+                },
+            ],
+        };
+
+        const queryable = new FoldedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
+
+        const newRequest = queryable.havingCount('==', 123).json();
+
+        expect(newRequest).toMatchObject({
+            having: [
+                {
+                    op: '<=',
+                    params: [456],
+                    property: [';count'],
+                },
+                {
+                    op: '>=',
+                    params: [789],
+                    property: ['a;1;0'],
+                },
+                {
+                    op: 'boolean',
+                    params: ['and'],
+                },
+                {
+                    op: '==',
+                    params: [123],
+                    property: [';count'],
+                },
+                {
+                    op: 'boolean',
+                    params: ['and'],
+                },
+            ],
+        });
+    });
 });

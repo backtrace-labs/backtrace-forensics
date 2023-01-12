@@ -14,10 +14,10 @@ import {
 import { nextPage, OrderDirection } from '../../requests/common';
 import {
     CountFoldOrder,
+    FoldFilter,
     FoldFilterParamOperator,
     FoldOperator,
     FoldOrder,
-    FoldParamFilter,
     FoldQueryRequest,
     Folds,
     FoldVirtualColumn,
@@ -170,8 +170,25 @@ export class FoldedCoronerQueryBuilder<
 
         let request = cloneFoldRequest(this.#request);
         for (const [valueIndex, value] of values) {
-            request = this.havingIndexes(request, attribute, index, op, valueIndex, value);
+            request = this.addHaving(request, {
+                op,
+                params: [value as AttributeValueType],
+                property: [`${attribute};${index};${valueIndex}`],
+            });
         }
+
+        return this.createInstance(request);
+    }
+
+    public havingCount<O extends FoldFilterOperatorInput>(operator: O, value: number): FoldedCoronerQuery<AL, R> {
+        const op = this.getFoldFilterOperator(operator);
+
+        let request = cloneFoldRequest(this.#request);
+        request = this.addHaving(request, {
+            op,
+            params: [value],
+            property: [';count'],
+        });
 
         return this.createInstance(request);
     }
@@ -218,20 +235,7 @@ export class FoldedCoronerQueryBuilder<
         >;
     }
 
-    private havingIndexes(
-        request: R,
-        attribute: string,
-        index: number,
-        operator: FoldFilterParamOperator,
-        valueIndex: number,
-        value: unknown
-    ): R {
-        const foldFilter: FoldParamFilter = {
-            op: operator,
-            params: [value as AttributeValueType],
-            property: [`${attribute};${index};${valueIndex}`],
-        };
-
+    private addHaving(request: R, foldFilter: FoldFilter): R {
         if (!request.having || request.having.length === 0) {
             request.having = [foldFilter];
         } else {

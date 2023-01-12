@@ -59,7 +59,7 @@ function cloneHaving(having?: readonly FoldFilter[]) {
                     op: h.op,
                     params: [...h.params],
                     property: [...h.property],
-                };
+                } as FoldParamFilter;
                 return filter;
             } else {
                 const filter: FoldBooleanFilter = {

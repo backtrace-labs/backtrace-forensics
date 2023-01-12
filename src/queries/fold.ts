@@ -445,6 +445,16 @@ export interface FoldedCoronerQuery<
     ): FoldedCoronerQuery<AL, R>;
 
     /**
+     * Adds a post-aggregation filter on count.
+     * @param operator Operator to use.
+     * @param value Value to filter by.
+     * @example
+     * // Filters on 'count'
+     * query.havingCount('greater-than', 10)
+     */
+    havingCount<O extends FoldFilterOperatorInput>(operator: O, value: number): FoldedCoronerQuery<AL, R>;
+
+    /**
      * Adds order on group with direction specified.
      * @param direction Order direction.
      * @example

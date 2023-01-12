@@ -119,7 +119,13 @@ export type FoldBooleanFilter = {
     params: ['and'];
 };
 
-export type FoldFilter = FoldParamFilter | FoldBooleanFilter;
+export type FoldCountFilter = {
+    op: FoldFilterParamOperator;
+    params: [AttributeValueType<UIntType>];
+    property: [';count'];
+};
+
+export type FoldFilter = FoldParamFilter | FoldBooleanFilter | FoldCountFilter;
 
 export type GroupFoldOrder = {
     name: `;group`;
