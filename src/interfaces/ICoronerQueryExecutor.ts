@@ -1,6 +1,5 @@
+import { QueryRequest, RawCoronerResponse, RawQueryResponse } from '../coroner/common';
 import { QuerySource } from '../models/QuerySource';
-import { QueryRequest } from '../requests/common';
-import { RawCoronerResponse, RawQueryResponse } from '../responses/common';
 
 export interface ICoronerQueryExecutor {
     execute<R extends RawQueryResponse>(

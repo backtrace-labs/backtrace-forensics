@@ -1,7 +1,6 @@
-import { AttributeList } from '../../common/attributes';
+import { QueryRequest } from '../../coroner/common';
 import { IFoldCoronerQueryBuilderFactory } from '../../interfaces/factories/IFoldCoronerQueryBuilderFactory';
 import { ISelectCoronerQueryBuilderFactory } from '../../interfaces/factories/ISelectCoronerQueryBuilderFactory';
-import { QueryRequest } from '../../requests/common';
 import { CoronerQueryBuilder } from '../queries/CoronerQueryBuilder';
 
 export class CoronerQueryBuilderFactory {
@@ -16,7 +15,7 @@ export class CoronerQueryBuilderFactory {
         this.#selectQueryFactory = selectQueryFactory;
     }
 
-    public create<AL extends AttributeList>(request: QueryRequest, attributeList: AL) {
-        return new CoronerQueryBuilder(request, attributeList, this.#foldQueryFactory, this.#selectQueryFactory);
+    public create(request: QueryRequest) {
+        return new CoronerQueryBuilder(request, this.#foldQueryFactory, this.#selectQueryFactory);
     }
 }

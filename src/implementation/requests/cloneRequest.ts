@@ -1,4 +1,4 @@
-import { QueryRequest } from '../../requests/common';
+import { QueryRequest } from '../../coroner/common';
 import {
     FoldBooleanFilter,
     FoldFilter,
@@ -6,8 +6,8 @@ import {
     FoldParamFilter,
     FoldQueryRequest,
     Folds,
-} from '../../requests/fold';
-import { SelectQueryRequest } from '../../requests/select';
+} from '../../coroner/fold';
+import { SelectQueryRequest } from '../../coroner/select';
 
 function cloneFold(fold?: Folds) {
     if (!fold) {

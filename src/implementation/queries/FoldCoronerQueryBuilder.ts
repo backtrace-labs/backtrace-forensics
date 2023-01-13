@@ -1,64 +1,50 @@
 import { format } from 'util';
-import { AttributeList, AttributeValueType } from '../../common/attributes';
-import { ICoronerQueryExecutor } from '../../interfaces/ICoronerQueryExecutor';
-import { IFoldCoronerSimpleResponseBuilder } from '../../interfaces/responses/IFoldCoronerSimpleResponseBuilder';
-import { QuerySource } from '../../models/QuerySource';
-import {
-    AddFold,
-    AddVirtualColumn,
-    FoldedCoronerQuery,
-    FoldFilterInput,
-    FoldFilterOperatorInput,
-    SetFoldGroup,
-} from '../../queries/fold';
-import { nextPage, OrderDirection } from '../../requests/common';
+import { nextPage, OrderDirection } from '../../coroner/common';
+import { AttributeValueType } from '../../coroner/common/attributes';
 import {
     CountFoldOrder,
+    FoldedCoronerQuery,
     FoldFilter,
+    FoldFilterInput,
+    FoldFilterOperatorInput,
     FoldFilterParamOperator,
     FoldOperator,
     FoldOrder,
     FoldQueryRequest,
-    Folds,
+    FoldQueryResponse,
     FoldVirtualColumn,
     FoldVirtualColumnType,
     FoldVirtualColumnTypes,
-    GetRequestFold,
     GroupFoldOrder,
-} from '../../requests/fold';
-import { FoldQueryResponse, RawFoldQueryResponse } from '../../responses/fold';
+    RawFoldQueryResponse,
+} from '../../coroner/fold';
+import { ICoronerQueryExecutor } from '../../interfaces/ICoronerQueryExecutor';
+import { IFoldCoronerSimpleResponseBuilder } from '../../interfaces/responses/IFoldCoronerSimpleResponseBuilder';
+import { QuerySource } from '../../models/QuerySource';
 import { cloneFoldRequest } from '../requests/cloneRequest';
 import { CommonCoronerQueryBuilder } from './CommonCoronerQueryBuilder';
 
-export class FoldedCoronerQueryBuilder<
-        AL extends AttributeList,
-        R extends FoldQueryRequest = FoldQueryRequest<never, ['*']>
-    >
-    extends CommonCoronerQueryBuilder<AL>
-    implements FoldedCoronerQuery<AL, R>
-{
-    readonly #request: R;
-    readonly #attributeList: AL;
+export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder implements FoldedCoronerQuery {
+    readonly #request: FoldQueryRequest;
     readonly #executor: ICoronerQueryExecutor;
     readonly #simpleResponseBuilder: IFoldCoronerSimpleResponseBuilder;
 
     constructor(
-        request: R,
-        attributeList: AL,
+        request: FoldQueryRequest,
         executor: ICoronerQueryExecutor,
         builder: IFoldCoronerSimpleResponseBuilder
     ) {
         super(request);
         this.#request = request;
-        this.#attributeList = attributeList;
         this.#executor = executor;
         this.#simpleResponseBuilder = builder;
     }
 
-    public fold<A extends string, O extends FoldOperator>(
-        attribute: string,
-        ...fold: FoldOperator
-    ): FoldedCoronerQuery<AL, AddFold<R, A, O>> {
+    public fold(attribute?: string, ...fold: FoldOperator): this {
+        if (!attribute) {
+            return this;
+        }
+
         const request = cloneFoldRequest(this.#request);
 
         if (!request.fold) {
@@ -71,14 +57,10 @@ export class FoldedCoronerQueryBuilder<
             request.fold[attribute] = [fold];
         }
 
-        return this.createInstance(request) as unknown as FoldedCoronerQuery<AL, AddFold<R, A, O>>;
+        return this.createInstance(request);
     }
 
-    public dynamicFold(): FoldedCoronerQuery<AL, FoldQueryRequest<Folds>> {
-        return this as FoldedCoronerQuery<AL, FoldQueryRequest<Folds>>;
-    }
-
-    public group<A extends string>(attribute: A): FoldedCoronerQuery<AL, SetFoldGroup<R, A>> {
+    public group(attribute: string): FoldedCoronerQuery {
         const request = cloneFoldRequest(this.#request);
         if (attribute === '*') {
             request.group = undefined;
@@ -86,24 +68,10 @@ export class FoldedCoronerQueryBuilder<
             request.group = [attribute];
         }
 
-        return this.createInstance(request) as unknown as FoldedCoronerQuery<AL, SetFoldGroup<R, A>>;
+        return this.createInstance(request);
     }
 
-    public order<F extends GetRequestFold<R>, A extends keyof F & string, I extends number>(
-        attribute: A,
-        direction: OrderDirection,
-        index: I
-    ): FoldedCoronerQuery<AL, R>;
-    public order<F extends GetRequestFold<R>, A extends keyof F & string, O extends F[A][number]>(
-        attribute: A,
-        direction: OrderDirection,
-        ...fold: O
-    ): FoldedCoronerQuery<AL, R>;
-    public order(
-        attribute: string,
-        direction: OrderDirection,
-        ...foldOrIndex: [number] | FoldOperator
-    ): FoldedCoronerQuery<AL, R> {
+    public order(attribute: string, direction: OrderDirection, ...foldOrIndex: [number] | FoldOperator): this {
         let index: number;
         if (typeof foldOrIndex[0] === 'number') {
             index = foldOrIndex[0];
@@ -127,7 +95,7 @@ export class FoldedCoronerQueryBuilder<
         return this.createInstance(request);
     }
 
-    public orderByCount(direction: OrderDirection): FoldedCoronerQuery<AL, R> {
+    public orderByCount(direction: OrderDirection): this {
         const request = cloneFoldRequest(this.#request);
 
         const order: CountFoldOrder = {
@@ -150,7 +118,7 @@ export class FoldedCoronerQueryBuilder<
         operator: FoldFilterOperatorInput,
         valueIndexOrValue: number | FoldFilterInput<FoldOperator>,
         value?: unknown
-    ): FoldedCoronerQuery<AL, R> {
+    ): this {
         let index: number;
         if (typeof foldOrIndex === 'number') {
             index = foldOrIndex;
@@ -180,7 +148,7 @@ export class FoldedCoronerQueryBuilder<
         return this.createInstance(request);
     }
 
-    public havingCount<O extends FoldFilterOperatorInput>(operator: O, value: number): FoldedCoronerQuery<AL, R> {
+    public havingCount<O extends FoldFilterOperatorInput>(operator: O, value: number): this {
         const op = this.getFoldFilterOperator(operator);
 
         let request = cloneFoldRequest(this.#request);
@@ -193,7 +161,7 @@ export class FoldedCoronerQueryBuilder<
         return this.createInstance(request);
     }
 
-    public orderByGroup(direction: OrderDirection): FoldedCoronerQuery<AL, R> {
+    public orderByGroup(direction: OrderDirection): this {
         const request = cloneFoldRequest(this.#request);
 
         const order: GroupFoldOrder = {
@@ -214,7 +182,7 @@ export class FoldedCoronerQueryBuilder<
         name: string,
         type: FoldVirtualColumnType,
         params: FoldVirtualColumnTypes[keyof FoldVirtualColumnTypes][1]
-    ): FoldedCoronerQuery<AL, AddVirtualColumn<R, FoldVirtualColumn>> {
+    ): this {
         const request = cloneFoldRequest(this.#request);
 
         const virtualColumn = {
@@ -229,13 +197,10 @@ export class FoldedCoronerQueryBuilder<
             request.virtual_columns = [virtualColumn];
         }
 
-        return this.createInstance(request) as unknown as FoldedCoronerQuery<
-            AL,
-            AddVirtualColumn<R, FoldVirtualColumn>
-        >;
+        return this.createInstance(request);
     }
 
-    private addHaving(request: R, foldFilter: FoldFilter): R {
+    private addHaving(request: FoldQueryRequest, foldFilter: FoldFilter): FoldQueryRequest {
         if (!request.having || request.having.length === 0) {
             request.having = [foldFilter];
         } else {
@@ -252,16 +217,16 @@ export class FoldedCoronerQueryBuilder<
         return request;
     }
 
-    public json(): R {
+    public json(): FoldQueryRequest {
         return this.#request;
     }
 
-    public async post(source?: Partial<QuerySource>): Promise<FoldQueryResponse<R, this>> {
+    public async post(source?: Partial<QuerySource>): Promise<FoldQueryResponse> {
         if (!this.#request.fold && !this.#request.group) {
             throw new Error('Fold or group query expected.');
         }
 
-        const response = await this.#executor.execute<RawFoldQueryResponse<R>>(this.#request, source);
+        const response = await this.#executor.execute<RawFoldQueryResponse>(this.#request, source);
         if (response.error) {
             return {
                 success: false,
@@ -281,13 +246,8 @@ export class FoldedCoronerQueryBuilder<
         };
     }
 
-    protected createInstance(request: R): this {
-        return new FoldedCoronerQueryBuilder<AL, R>(
-            request,
-            this.#attributeList,
-            this.#executor,
-            this.#simpleResponseBuilder
-        ) as this;
+    protected createInstance(request: FoldQueryRequest): this {
+        return new FoldedCoronerQueryBuilder(request, this.#executor, this.#simpleResponseBuilder) as this;
     }
 
     private findAttributeFoldIndex(attribute: string, operator: FoldOperator) {

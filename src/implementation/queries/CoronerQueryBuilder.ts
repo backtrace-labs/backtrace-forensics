@@ -1,86 +1,60 @@
-import { AttributeList } from '../../common/attributes';
-import { IFoldCoronerQueryBuilderFactory } from '../../interfaces/factories/IFoldCoronerQueryBuilderFactory';
-import { ISelectCoronerQueryBuilderFactory } from '../../interfaces/factories/ISelectCoronerQueryBuilderFactory';
-import { CoronerQuery } from '../../queries/common';
-import { AddFold, FoldedCoronerQuery } from '../../queries/fold';
-import { AddSelect, SelectedCoronerQuery } from '../../queries/select';
-import { SelectQueryRequest } from '../../requests';
-import { QueryRequest } from '../../requests/common';
+import { CoronerQuery, QueryRequest } from '../../coroner/common';
 import {
-    FoldOperator,
+    FoldedCoronerQuery,
     FoldQueryRequest,
-    Folds,
-    FoldVirtualColumn,
     FoldVirtualColumnType,
     FoldVirtualColumnTypes,
-} from '../../requests/fold';
+} from '../../coroner/fold';
+import { SelectedCoronerQuery } from '../../coroner/select';
+import { IFoldCoronerQueryBuilderFactory } from '../../interfaces/factories/IFoldCoronerQueryBuilderFactory';
+import { ISelectCoronerQueryBuilderFactory } from '../../interfaces/factories/ISelectCoronerQueryBuilderFactory';
 import { CommonCoronerQueryBuilder } from './CommonCoronerQueryBuilder';
 
-export class CoronerQueryBuilder<AL extends AttributeList, R extends QueryRequest>
-    extends CommonCoronerQueryBuilder<AL>
-    implements CoronerQuery<AL, R>
-{
+export class CoronerQueryBuilder extends CommonCoronerQueryBuilder implements CoronerQuery {
     readonly #request: QueryRequest;
-    readonly #attributeList: AL;
     readonly #foldQueryFactory: IFoldCoronerQueryBuilderFactory;
     readonly #selectQueryFactory: ISelectCoronerQueryBuilderFactory;
 
     constructor(
         request: QueryRequest,
-        attributeList: AL,
         foldQueryFactory: IFoldCoronerQueryBuilderFactory,
         selectQueryFactory: ISelectCoronerQueryBuilderFactory
     ) {
         super(request);
         this.#request = request;
-        this.#attributeList = attributeList;
         this.#foldQueryFactory = foldQueryFactory;
         this.#selectQueryFactory = selectQueryFactory;
     }
 
-    public select(...attributes: string[]): SelectedCoronerQuery<AL, AddSelect<R, string[]>> {
-        const query = this.#selectQueryFactory.create(this.#request, this.#attributeList);
-        return query.select(...attributes) as SelectedCoronerQuery<AL, AddSelect<R, string[]>>;
+    public select(...attributes: string[]): SelectedCoronerQuery {
+        const query = this.#selectQueryFactory.create(this.#request);
+        return query.select(...attributes);
     }
 
-    public dynamicSelect(): SelectedCoronerQuery<AL, SelectQueryRequest<string[]>> {
-        const query = this.#selectQueryFactory.create(this.#request, this.#attributeList);
-        return query.dynamicSelect();
+    public fold(attribute?: string, ...fold: any): FoldedCoronerQuery {
+        if (!attribute) {
+            return this.#foldQueryFactory.create(this.#request as FoldQueryRequest);
+        }
+
+        const query = this.#foldQueryFactory.create(this.#request as FoldQueryRequest);
+        return query.fold(attribute, ...fold);
     }
 
-    public fold(attribute: string, ...fold: any): any {
-        const query = this.#foldQueryFactory.create(this.#request as FoldQueryRequest, this.#attributeList);
-        return query.fold(attribute, ...fold) as unknown as FoldedCoronerQuery<AL, AddFold<R, string, FoldOperator>>;
-    }
-
-    public dynamicFold(): FoldedCoronerQuery<AL, FoldQueryRequest<Folds>> {
-        const query = this.#foldQueryFactory.create(this.#request as FoldQueryRequest, this.#attributeList);
-        return query.dynamicFold();
-    }
-
-    public group(attribute: string): FoldedCoronerQuery<AL, FoldQueryRequest<never, [string], []>> {
-        const query = this.#foldQueryFactory.create(this.#request as FoldQueryRequest, this.#attributeList);
-        return query.group(attribute) as FoldedCoronerQuery<AL, FoldQueryRequest<never, [string], []>>;
+    public group(attribute: string): FoldedCoronerQuery {
+        const query = this.#foldQueryFactory.create(this.#request as FoldQueryRequest);
+        return query.group(attribute);
     }
 
     public virtualColumn(
         name: string,
         type: FoldVirtualColumnType,
         params: FoldVirtualColumnTypes[keyof FoldVirtualColumnTypes][1]
-    ): FoldedCoronerQuery<AL, FoldQueryRequest<never, ['*'], [FoldVirtualColumn]>> {
-        const query = this.#foldQueryFactory.create(this.#request as FoldQueryRequest, this.#attributeList);
-        return query.virtualColumn(name, type, params) as FoldedCoronerQuery<
-            AL,
-            FoldQueryRequest<never, ['*'], [FoldVirtualColumn]>
-        >;
+    ): FoldedCoronerQuery {
+        const query = this.#foldQueryFactory.create(this.#request as FoldQueryRequest);
+        return query.virtualColumn(name, type, params);
     }
 
     protected createInstance(request: QueryRequest): this {
-        return new CoronerQueryBuilder(
-            request,
-            this.#attributeList,
-            this.#foldQueryFactory,
-            this.#selectQueryFactory
-        ) as this;
+        return new CoronerQueryBuilder(request, this.#foldQueryFactory, this.#selectQueryFactory) as this;
     }
 }

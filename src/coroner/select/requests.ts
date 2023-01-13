@@ -1,17 +1,17 @@
-import { OrderDirection, QueryRequest } from './common';
+import { OrderDirection, QueryRequest } from '../common';
 
-export type SelectOrder<A extends string = string> = {
-    name: A;
+export type SelectOrder = {
+    name: string;
     ordering: OrderDirection;
 };
 
-export interface SelectQueryRequest<S extends readonly string[] = readonly string[]> extends QueryRequest {
+export interface SelectQueryRequest extends QueryRequest {
     /**
      * Attributes to select.
      * @example
      * request.select = ['timestamp', 'fingerprint'];
      */
-    select?: S;
+    select?: readonly string[];
 
     /**
      * Attributes to order on.
@@ -25,12 +25,6 @@ export interface SelectQueryRequest<S extends readonly string[] = readonly strin
      * }]
      */
     order?: readonly SelectOrder[];
-}
-
-export type InferSelectQueryRequest<T> = T extends SelectQueryRequest<infer S> ? SelectQueryRequest<S> : never;
-
-export function createSelectRequest<T extends SelectQueryRequest>(request: T): InferSelectQueryRequest<T> {
-    return request as unknown as InferSelectQueryRequest<T>;
 }
 
 export function isSelectRequest(request: QueryRequest): boolean {

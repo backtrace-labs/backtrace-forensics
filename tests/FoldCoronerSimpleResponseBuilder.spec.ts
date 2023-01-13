@@ -1,10 +1,9 @@
 import assert from 'assert';
+import { FoldQueryRequest, RawFoldQueryResponse } from '../src';
 import { FoldCoronerSimpleResponseBuilder } from '../src/implementation/responses/FoldCoronerSimpleResponseBuilder';
-import { createFoldRequest, FoldQueryRequest } from '../src/requests/fold';
-import { RawFoldQueryResponse } from '../src/responses/fold';
 
 describe('FoldCoronerSimpleResponseBuilder', () => {
-    const testRequest = createFoldRequest({
+    const testRequest: FoldQueryRequest = {
         fold: {
             randomInt: [['head'], ['tail'], ['head'], ['distribution', 3], ['distribution', 5]],
             randomString: [['range'], ['tail'], ['max'], ['bin', 3], ['histogram']],
@@ -22,9 +21,9 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
                 _tx: [['at-least', '1']],
             },
         ],
-    } as const);
+    } as const;
 
-    const testGroupRequest = createFoldRequest({
+    const testGroupRequest: FoldQueryRequest = {
         fold: {
             randomInt: [['head'], ['tail'], ['head'], ['distribution', 3], ['distribution', 5]],
             randomString: [['range'], ['tail'], ['max'], ['bin', 3], ['histogram']],
@@ -43,9 +42,9 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
                 _tx: [['at-least', '1']],
             },
         ],
-    } as const);
+    } as const;
 
-    const testResponse: RawFoldQueryResponse<typeof testRequest> = {
+    const testResponse: RawFoldQueryResponse = {
         version: '1.2.0',
         seq: 31,
         encoding: 'rle',
@@ -186,7 +185,7 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
         },
     };
 
-    const testGroupResponse: RawFoldQueryResponse<typeof testGroupRequest> = {
+    const testGroupResponse: RawFoldQueryResponse = {
         version: '1.2.0',
         seq: 1,
         encoding: 'rle',
@@ -1032,7 +1031,7 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
     });
 
     it('should return undefined element from queried elements from first when no elements are present', () => {
-        const response: RawFoldQueryResponse<FoldQueryRequest> = {
+        const response: RawFoldQueryResponse = {
             columns: [['head(a)', 'string']],
             columns_desc: [{ name: 'a', format: 'string', type: 'string', op: 'head' }],
             values: [],
@@ -1048,7 +1047,7 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
         };
 
         const queryable = new FoldCoronerSimpleResponseBuilder();
-        const element = queryable.first(response as RawFoldQueryResponse<FoldQueryRequest>);
+        const element = queryable.first(response as RawFoldQueryResponse);
         expect(element).toEqual(undefined);
     });
 });

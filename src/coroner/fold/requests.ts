@@ -1,3 +1,4 @@
+import { OrderDirection, QueryRequest } from '../common';
 import {
     AttributeType,
     AttributeValueType,
@@ -7,7 +8,6 @@ import {
     UIntType,
     UUIDType,
 } from '../common/attributes';
-import { OrderDirection, QueryRequest } from './common';
 
 export type QuantizeUintFoldVirtualColumn<A extends string = string, BC extends string = string> = {
     name: A;
@@ -82,6 +82,8 @@ export type DictionaryFoldOperator = StringFoldOperator;
 
 export type FoldFilterParamOperator = '==' | '!=' | '<' | '>' | '>=' | '<=';
 
+export type DefaultGroup = '*';
+
 export type FoldOperator<T extends AttributeType = AttributeType> = T extends StringType
     ? StringFoldOperator
     : T extends UIntType
@@ -132,22 +134,15 @@ export type GroupFoldOrder = {
     ordering: OrderDirection;
 };
 
-export type Folds<A extends string = string, O extends readonly FoldOperator[] = readonly FoldOperator[]> = Record<
-    A,
-    O
->;
+export type Folds = Record<string, readonly FoldOperator[]>;
 
-export interface FoldQueryRequest<
-    F extends Folds = Folds,
-    G extends readonly string[] = readonly string[],
-    VC extends readonly FoldVirtualColumn[] = readonly FoldVirtualColumn[]
-> extends QueryRequest {
+export interface FoldQueryRequest extends QueryRequest {
     /**
      * Attribute to group on.
      * @example
      * request.group = ['a'];
      */
-    group?: G;
+    group?: readonly string[];
 
     /**
      * Attributes to fold on.
@@ -157,7 +152,7 @@ export interface FoldQueryRequest<
      *     fingerprint: [['tail']]
      * };
      */
-    fold?: F;
+    fold?: Folds;
 
     /**
      * Attributes to order on.
@@ -186,7 +181,7 @@ export interface FoldQueryRequest<
      *     }
      * }]
      */
-    virtual_columns?: VC;
+    virtual_columns?: readonly FoldVirtualColumn[];
 
     /**
      * Post-aggregation filters.
@@ -198,15 +193,6 @@ export interface FoldQueryRequest<
      * }]
      */
     having?: readonly FoldFilter[];
-}
-
-export type InferFoldQueryRequest<T> = T extends FoldQueryRequest<infer F, infer G> ? FoldQueryRequest<F, G> : never;
-
-export type GetRequestFold<R extends FoldQueryRequest> = R extends FoldQueryRequest<infer F, infer _> ? F : never;
-export type GetRequestGroup<R extends FoldQueryRequest> = R extends FoldQueryRequest<infer _, infer G> ? G : never;
-
-export function createFoldRequest<T extends FoldQueryRequest>(request: T): InferFoldQueryRequest<T> {
-    return request as unknown as InferFoldQueryRequest<T>;
 }
 
 export function isFoldRequest(request: QueryRequest): boolean {

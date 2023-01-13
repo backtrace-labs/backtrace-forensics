@@ -1,5 +1,5 @@
-import { IssueInvariant } from './models/IssueInvariant';
-import { Ticket } from './models/Ticket';
+import { IssueInvariant } from '../../coroner/models/IssueInvariant';
+import { Ticket } from '../../coroner/models/Ticket';
 
 export class ValueConverter {
     public static toLabels(value: unknown): string[] {

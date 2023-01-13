@@ -1,7 +1,6 @@
 import nock from 'nock';
+import { QuerySource, RawCoronerResponse } from '../src';
 import { NodeCoronerQueryMaker } from '../src/implementation/NodeCoronerQueryMaker';
-import { QuerySource } from '../src/models/QuerySource';
-import { RawCoronerResponse } from '../src/responses/common';
 
 describe('NodeCoronerQueryMaker', () => {
     it('should return a response from https server', async () => {

@@ -1,9 +1,12 @@
-import { BacktraceForensics, CommonAttributes } from '../src';
-import { createFoldRequest, FoldQueryRequest } from '../src/requests/fold';
-import { createSelectRequest, SelectQueryRequest } from '../src/requests/select';
-import { RawCoronerResponse } from '../src/responses/common';
-import { FoldQueryResponse, RawFoldQueryResponse } from '../src/responses/fold';
-import { RawSelectQueryResponse, SelectQueryResponse } from '../src/responses/select';
+import BacktraceForensics, {
+    FoldQueryRequest,
+    FoldQueryResponse,
+    RawCoronerResponse,
+    RawFoldQueryResponse,
+    RawSelectQueryResponse,
+    SelectQueryRequest,
+    SelectQueryResponse,
+} from '../src';
 
 // TESTING STUFF
 (async () => {
@@ -20,8 +23,7 @@ import { RawSelectQueryResponse, SelectQueryResponse } from '../src/responses/se
         },
     });
 
-    let dynamicFold = coronerQuery.create().dynamicFold();
-    dynamicFold = dynamicFold.fold('something_user_provdes', 'head');
+    let dynamicFold = coronerQuery.create().fold('something_user_provdes', 'head');
 
     // keep only the last fold of a type, e.g. keep only distribution 5 below
     // @up its not valid, Coroner allows for multiple folds on the same fold type
@@ -40,14 +42,14 @@ import { RawSelectQueryResponse, SelectQueryResponse } from '../src/responses/se
 
     const staticQuery = coronerQuery.create();
     const dynamicQuery = coronerQuery.create();
-    let runtimeDynamicFold = dynamicQuery.dynamicFold();
+    let runtimeDynamicFold = dynamicQuery.fold();
 
     const attrs: (keyof Test)[] = ['timestamp', 'fingerprint', '_deleted'];
     for (const attr of attrs) {
         runtimeDynamicFold = runtimeDynamicFold.fold(attr, 'head');
     }
 
-    runtimeDynamicFold = runtimeDynamicFold.group<string>('timestamp');
+    runtimeDynamicFold = runtimeDynamicFold.group('timestamp');
 
     const staticFold = staticQuery
         .fold('timestamp', 'distribution', 1)
@@ -64,7 +66,7 @@ import { RawSelectQueryResponse, SelectQueryResponse } from '../src/responses/se
         simpleTest?.attributes;
     }
 
-    let runtimeDynamicSelect = dynamicQuery.dynamicSelect();
+    let runtimeDynamicSelect = dynamicQuery.select();
 
     for (const attr of attrs) {
         runtimeDynamicSelect = runtimeDynamicSelect.select(attr);
@@ -80,7 +82,7 @@ import { RawSelectQueryResponse, SelectQueryResponse } from '../src/responses/se
     }
 
     const dynamicSelectQuery = coronerQuery
-        .create({ attributeList: CommonAttributes })
+        .create()
         .filter('fingerprint', 'equal', 'asd')
         .filter('fingerprint', 'equal', 'asd')
         // .filter('b', 'greater-than', 456)
@@ -95,8 +97,6 @@ import { RawSelectQueryResponse, SelectQueryResponse } from '../src/responses/se
     const dynamicSelectResult = await dynamicSelectQuery.post();
     if (dynamicSelectResult.success) {
         const test = dynamicSelectResult.first();
-        test?.values.
-        // dynamicSelectResult.response.values[0][1].
     }
 
     const dynamicFoldQuery = coronerQuery
@@ -133,24 +133,29 @@ import { RawSelectQueryResponse, SelectQueryResponse } from '../src/responses/se
         .fold('a', 'min')
         .fold('a', 'distribution', 3)
         .fold('a', 'distribution', 5)
-        .having('a', ['range'], '==', {from: 123})
+        .having('a', ['range'], '==', { from: 123 })
         .having('a', 4, '==', 1, 123)
+        .post();
+
+    if (havingTest.success) {
+        havingTest.first()?.attributes.a;
+    }
 
     const dynamicHavingTest = await coronerQuery
         .create()
-        .dynamicFold()
+
         .fold('a', 'head')
         .fold('a', 'range')
         .fold('a', 'min')
         .fold('a', 'distribution', 3)
         .fold('a', 'distribution', 5)
-        .having('a', ['distribution', 24], '==', { keys: 123 })
+        .having('a', ['distribution', 24], '==', { keys: 123 });
 
     const staticFold1 = await coronerQuery
-        .create({ attributeList: CommonAttributes})
+        .create()
         .fold('hostname', 'head')
-        .virtualColumn('a', 'quantize_uint', { backing_column: 'callstack', offset: 123, size: 456})
-        .virtualColumn('b', 'truncate_timestamp', {backing_column: 'timestamp', granularity: 'day'})
+        .virtualColumn('a', 'quantize_uint', { backing_column: 'callstack', offset: 123, size: 456 })
+        .virtualColumn('b', 'truncate_timestamp', { backing_column: 'timestamp', granularity: 'day' })
         .fold('a', 'head')
         .fold('a', 'distribution', 3)
         .fold('a', 'distribution', 4)
@@ -178,7 +183,7 @@ import { RawSelectQueryResponse, SelectQueryResponse } from '../src/responses/se
     // // dynamic fold
     const dynamicFold1 = await coronerQuery
         .create()
-        .dynamicFold()
+
         .fold('a', 'head')
         .order('a', 'descending', 'min')
         .post();
@@ -197,8 +202,8 @@ import { RawSelectQueryResponse, SelectQueryResponse } from '../src/responses/se
             firstRow.tryFold('a', 'min'); // will return undefined
             firstRow.tryFold('a', 'distribution', 5); // will return undefined
 
-            firstRow.attributes.a.distribution[0].value
-            firstRow.attributes.whatnot.distribution[0].value.tail; // will fail as a null ref
+            firstRow.attributes.a.distribution![0].value.tail;
+            firstRow.attributes.whatnot.distribution![0].value.tail; // will fail as a null ref
         }
     }
 })();
@@ -212,31 +217,35 @@ type TestObject<A extends Test<string, boolean>[]> = {
 
 const a = {} as TestObject<[['a', true], ['b', false]]>;
 
-const foldReq = createFoldRequest({
+const foldReq: FoldQueryRequest = {
     fold: {
         a: [['head'], ['head'], ['distribution', 3], ['distribution', 5], ['min']],
         b: [['range'], ['head']],
     },
     group: ['a'],
-} as const);
+} as const;
 
-const foldRes = {} as FoldQueryResponse<typeof foldReq>;
+const foldRes = {} as FoldQueryResponse;
 if (foldRes.success) {
     const azzz = foldRes.first()!.tryFold('a', 'distribution', 3);
 }
 
-const selectReq = createSelectRequest({
+const selectReq: SelectQueryRequest = {
     select: ['a', 'b', 'c', 'a'],
-} as const);
+} as const;
 
-const selectResponse = {} as SelectQueryResponse<typeof selectReq>;
+const selectResponse = {} as SelectQueryResponse;
 if (selectResponse.success) {
     const v = selectResponse.first()?.values;
 }
 
-const testFoldResponse: RawCoronerResponse<RawFoldQueryResponse<FoldQueryRequest>> = {
+const testFoldResponse: RawCoronerResponse<RawFoldQueryResponse> = {
     _: {
         tx: 0,
+        universe: 'a',
+        latency: '0ms',
+        project: 'b',
+        user: 'abc',
     },
     error: undefined,
     response: {
@@ -616,7 +625,7 @@ const testFoldResponse: RawCoronerResponse<RawFoldQueryResponse<FoldQueryRequest
     },
 };
 
-const testSelectResponse: RawCoronerResponse<RawSelectQueryResponse<SelectQueryRequest>> = {
+const testSelectResponse: RawCoronerResponse<RawSelectQueryResponse> = {
     _: {
         tx: 0,
     },

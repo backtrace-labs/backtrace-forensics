@@ -1,48 +1,39 @@
 import { inspect } from 'util';
-import { IFoldCoronerSimpleResponseBuilder } from '../../interfaces/responses/IFoldCoronerSimpleResponseBuilder';
-import { FoldOperator, FoldQueryRequest, Folds } from '../../requests/fold';
 import {
     BinQueryColumnValue,
     DistributionQueryColumnValue,
+    FoldOperator,
+    FoldQueryRequest,
     HistogramQueryColumnValue,
     RangeQueryColumnValue,
     RawFoldQueryResponse,
-} from '../../responses/fold';
-import {
     SimpleFold,
     SimpleFoldAttributes,
     SimpleFoldBinValue,
     SimpleFoldBinValues,
     SimpleFoldDistributionValue,
     SimpleFoldDistributionValues,
-    SimpleFoldGroup,
     SimpleFoldHistogramValue,
     SimpleFoldHistogramValues,
     SimpleFoldRangeValue,
     SimpleFoldRow,
     SimpleFoldRows,
     SimpleFoldValue,
-} from '../../responses/simple/fold';
+} from '../../coroner/fold';
+import { IFoldCoronerSimpleResponseBuilder } from '../../interfaces/responses/IFoldCoronerSimpleResponseBuilder';
 
 export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleResponseBuilder {
-    public first<R extends FoldQueryRequest>(
-        response: RawFoldQueryResponse<R>,
-        request?: R
-    ): SimpleFoldRow<R> | undefined {
-        return this.buildRows<R>(response, request, 1).rows[0];
+    public first(response: RawFoldQueryResponse, request?: FoldQueryRequest): SimpleFoldRow | undefined {
+        return this.buildRows(response, request, 1).rows[0];
     }
 
-    public rows<R extends FoldQueryRequest>(response: RawFoldQueryResponse<R>, request?: R): SimpleFoldRows<R> {
-        return this.buildRows<R>(response, request);
+    public rows(response: RawFoldQueryResponse, request?: FoldQueryRequest): SimpleFoldRows {
+        return this.buildRows(response, request);
     }
 
-    private buildRows<R extends FoldQueryRequest>(
-        response: RawFoldQueryResponse<R>,
-        request?: R,
-        limit?: number
-    ): SimpleFoldRows<R> {
+    private buildRows(response: RawFoldQueryResponse, request?: FoldQueryRequest, limit?: number): SimpleFoldRows {
         const keyDescription = response.factors_desc ? response.factors_desc[0] : null;
-        const rows: SimpleFoldRow<FoldQueryRequest>[] = [];
+        const rows: SimpleFoldRow[] = [];
 
         for (let i = 0; i < response.values.length && (limit == null || i < limit); i++) {
             const group = response.values[i];
@@ -50,16 +41,14 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
             const groupColumns = group[1];
             const groupCount = group[2];
 
-            const attributes = {} as SimpleFoldAttributes<Folds, string[]>;
+            const attributes = {} as SimpleFoldAttributes;
 
             if (keyDescription) {
                 const key = keyDescription.name as keyof typeof attributes;
                 if (!attributes[key]) {
-                    (attributes[key] as SimpleFoldGroup<string, string[]>) = {
-                        groupKey,
-                    };
+                    attributes[key] = { groupKey };
                 } else {
-                    (attributes[key] as SimpleFoldGroup<string, string[]>).groupKey = groupKey;
+                    attributes[key].groupKey = groupKey;
                 }
             }
 
@@ -74,7 +63,7 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
                     continue;
                 }
 
-                const key = columnDesc.name as keyof typeof attributes;
+                const key = columnDesc.name;
                 const op = columnDesc.op as FoldOperator[0];
 
                 let attribute = attributes[key];
@@ -84,7 +73,7 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
 
                 const rawFold = request ? this.getRawFold(request, response, key, op, cIndex) : undefined;
 
-                const fold: SimpleFold<FoldOperator[]>[number] = {
+                const fold: SimpleFold = {
                     fold: op,
                     rawFold: rawFold ?? ([op] as any),
                     value: columnValue,
@@ -92,13 +81,13 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
 
                 let attributeFold = attribute[op];
                 if (!attributeFold) {
-                    attribute[op] = [fold] as typeof attributeFold;
+                    attribute[op] = [fold] as any;
                 } else {
                     attribute[op] = [...attributeFold, fold] as any;
                 }
             }
 
-            const row: SimpleFoldRow<FoldQueryRequest> = {
+            const row: SimpleFoldRow = {
                 attributes,
                 count: groupCount,
                 fold(attribute, ...search) {
@@ -108,7 +97,10 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
                     }
                     return result;
                 },
-                tryFold: (attribute: string, ...search: FoldOperator) => {
+                tryFold: <O extends FoldOperator>(
+                    attribute: string,
+                    ...search: O
+                ): SimpleFoldValue<O[0]> | undefined => {
                     const result = this.filterFolds(row, attribute, ...search);
                     if (result.length > 1) {
                         throw new Error(
@@ -117,7 +109,7 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
                         );
                     }
 
-                    return result[0];
+                    return result[0] as SimpleFoldValue<O[0]> | undefined;
                 },
                 group(attribute) {
                     const result = row.tryGroup(attribute);
@@ -153,7 +145,7 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
             rows.push(row);
         }
 
-        const result: SimpleFoldRows<FoldQueryRequest> = {
+        const result: SimpleFoldRows = {
             rows,
             fold(attribute, ...search) {
                 return rows.map((r) => r.fold(attribute, ...search));
@@ -183,10 +175,10 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
             },
         };
 
-        return result as unknown as SimpleFoldRows<R>;
+        return result as unknown as SimpleFoldRows;
     }
 
-    private filterFolds(row: SimpleFoldRow<FoldQueryRequest>, attribute: string, ...search: FoldOperator) {
+    private filterFolds(row: SimpleFoldRow, attribute: string, ...search: FoldOperator): SimpleFoldValue[] {
         const result: SimpleFoldValue[] = [];
         if (!row.attributes[attribute] || !row.attributes[attribute][search[0]]) {
             return result;
@@ -194,6 +186,10 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
 
         const searchKey = search.join(';');
         const folds = row.attributes[attribute][search[0]];
+        if (!folds) {
+            return [];
+        }
+
         for (const fold of folds) {
             const foldKey = fold.rawFold.join(';');
 
@@ -209,38 +205,11 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
         }
 
         return result;
-
-        // const foldValues: Record<string, SimpleFoldValue> = {};
-        // for (const fold of folds) {
-        //     for (let i = 0; i < fold.rawFold.length; i++) {
-        //         // As Coroner doesn't return provided arguments for specific folds,
-        //         // we have to pull these from the request. If the request is not provided though,
-        //         // we have no method of resolving this. So, if the first argument is equal,
-        //         // and the second is undefined, we still return this value.
-        //         const currentFold = fold.rawFold[i];
-        //         if (i > 0 && !currentFold) {
-        //             result.push(fold.value);
-        //             break;
-        //         }
-
-        //         const searchedFold = search[i];
-        //         if (currentFold !== searchedFold) {
-        //             break;
-        //         }
-
-        //         // If we're at the last element, and we got here, this means we found the value
-        //         if (i === fold.rawFold.length - 1) {
-        //             result.push(fold.value);
-        //         }
-        //     }
-        // }
-
-        // return result;
     }
 
-    private getRawFold<R extends FoldQueryRequest>(
-        request: R,
-        response: RawFoldQueryResponse<R>,
+    private getRawFold(
+        request: FoldQueryRequest,
+        response: RawFoldQueryResponse,
         attribute: string,
         operator: FoldOperator[0],
         columnIndex: number
@@ -272,7 +241,7 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
         return undefined;
     }
 
-    private getColumnValue(op: string, columnValue: unknown[]): SimpleFoldValue<FoldOperator[0]> | undefined {
+    private getColumnValue(op: string, columnValue: unknown[]): SimpleFoldValue | undefined {
         if (!columnValue) {
             return undefined;
         }

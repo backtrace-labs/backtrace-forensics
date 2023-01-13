@@ -1,8 +1,5 @@
-import { CommonAttributes } from '../src/common/attributes';
+import { IFoldCoronerQueryBuilderFactory, ISelectCoronerQueryBuilderFactory, QueryRequest } from '../src';
 import { CoronerQueryBuilder } from '../src/implementation/queries/CoronerQueryBuilder';
-import { IFoldCoronerQueryBuilderFactory } from '../src/interfaces/factories/IFoldCoronerQueryBuilderFactory';
-import { ISelectCoronerQueryBuilderFactory } from '../src/interfaces/factories/ISelectCoronerQueryBuilderFactory';
-import { QueryRequest } from '../src/requests/common';
 
 describe('CoronerQueryBuilder', () => {
     const foldQueryableMock = {
@@ -51,7 +48,7 @@ describe('CoronerQueryBuilder', () => {
 
     it('should set limit to passed value', () => {
         const request: QueryRequest = {};
-        const queryable = new CoronerQueryBuilder(request, CommonAttributes, foldFactory, selectFactory);
+        const queryable = new CoronerQueryBuilder(request, foldFactory, selectFactory);
 
         const limit = 1337;
         const newRequest = queryable.limit(limit).json();
@@ -61,7 +58,7 @@ describe('CoronerQueryBuilder', () => {
 
     it('should set offset to passed value', () => {
         const request: QueryRequest = {};
-        const queryable = new CoronerQueryBuilder(request, CommonAttributes, foldFactory, selectFactory);
+        const queryable = new CoronerQueryBuilder(request, foldFactory, selectFactory);
 
         const offset = 1337;
         const newRequest = queryable.offset(offset).json();
@@ -71,7 +68,7 @@ describe('CoronerQueryBuilder', () => {
 
     it('should set filter to passed props when no filter was set', () => {
         const request: QueryRequest = {};
-        const queryable = new CoronerQueryBuilder(request, CommonAttributes, foldFactory, selectFactory);
+        const queryable = new CoronerQueryBuilder(request, foldFactory, selectFactory);
 
         const newRequest = queryable.filter('a', 'at-least', 123).json();
 
@@ -90,7 +87,7 @@ describe('CoronerQueryBuilder', () => {
                 },
             ],
         };
-        const queryable = new CoronerQueryBuilder(request, CommonAttributes, foldFactory, selectFactory);
+        const queryable = new CoronerQueryBuilder(request, foldFactory, selectFactory);
 
         const newRequest = queryable.filter('a', 'at-least', 123).json();
 
@@ -109,7 +106,7 @@ describe('CoronerQueryBuilder', () => {
                 },
             ],
         };
-        const queryable = new CoronerQueryBuilder(request, CommonAttributes, foldFactory, selectFactory);
+        const queryable = new CoronerQueryBuilder(request, foldFactory, selectFactory);
 
         const newRequest = queryable.filter('a', 'at-least', 123).json();
 
@@ -125,7 +122,7 @@ describe('CoronerQueryBuilder', () => {
 
     it('should return an instance of select queryable when selected', () => {
         const request: QueryRequest = {};
-        const queryable = new CoronerQueryBuilder(request, CommonAttributes, foldFactory, selectFactory);
+        const queryable = new CoronerQueryBuilder(request, foldFactory, selectFactory);
 
         const selectQueryable = queryable.select('a');
 
@@ -134,7 +131,7 @@ describe('CoronerQueryBuilder', () => {
 
     it('should call select on select queryable when selected', () => {
         const request: QueryRequest = {};
-        const queryable = new CoronerQueryBuilder(request, CommonAttributes, foldFactory, selectFactory);
+        const queryable = new CoronerQueryBuilder(request, foldFactory, selectFactory);
 
         queryable.select('a');
 
@@ -143,7 +140,7 @@ describe('CoronerQueryBuilder', () => {
 
     it('should return an instance of fold queryable when folded', () => {
         const request: QueryRequest = {};
-        const queryable = new CoronerQueryBuilder(request, CommonAttributes, foldFactory, selectFactory);
+        const queryable = new CoronerQueryBuilder(request, foldFactory, selectFactory);
 
         const foldQueryable = queryable.fold('a', 'head');
 
@@ -152,7 +149,7 @@ describe('CoronerQueryBuilder', () => {
 
     it('should call fold on fold queryable when folded', () => {
         const request: QueryRequest = {};
-        const queryable = new CoronerQueryBuilder(request, CommonAttributes, foldFactory, selectFactory);
+        const queryable = new CoronerQueryBuilder(request, foldFactory, selectFactory);
 
         queryable.fold('a', 'head');
 

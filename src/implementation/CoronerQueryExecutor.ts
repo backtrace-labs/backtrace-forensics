@@ -1,8 +1,7 @@
+import { QueryRequest, RawCoronerResponse, RawQueryResponse } from '../coroner/common';
 import { ICoronerQueryExecutor } from '../interfaces/ICoronerQueryExecutor';
 import { ICoronerQueryMaker } from '../interfaces/ICoronerQueryMaker';
 import { QuerySource } from '../models/QuerySource';
-import { QueryRequest } from '../requests/common';
-import { RawCoronerResponse, RawQueryResponse } from '../responses/common';
 
 export class CoronerQueryExecutor implements ICoronerQueryExecutor {
     readonly #queryMaker: ICoronerQueryMaker;

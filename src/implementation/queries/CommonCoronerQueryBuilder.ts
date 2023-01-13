@@ -1,10 +1,15 @@
-import { AttributeList, AttributeType, AttributeValueType, CommonAttributes } from '../../common/attributes';
-import { CommonCoronerQuery } from '../../queries/common';
-import { FilterOperator, QueryAttributeFilter, QueryFilter, QueryRequest } from '../../requests/common';
+import {
+    CommonCoronerQuery,
+    FilterOperator,
+    QueryAttributeFilter,
+    QueryFilter,
+    QueryRequest,
+} from '../../coroner/common';
+import { AttributeType, AttributeValueType } from '../../coroner/common/attributes';
 import { convertInputValue } from '../helpers/convertInputValue';
 import { cloneRequest } from '../requests/cloneRequest';
 
-export abstract class CommonCoronerQueryBuilder<AL extends AttributeList> implements CommonCoronerQuery<AL> {
+export abstract class CommonCoronerQueryBuilder implements CommonCoronerQuery {
     readonly #request: QueryRequest;
 
     constructor(request: QueryRequest) {
@@ -29,19 +34,17 @@ export abstract class CommonCoronerQueryBuilder<AL extends AttributeList> implem
         return this.createInstance(request);
     }
 
-    public filter<
-        A extends string,
-        V extends A extends keyof CommonAttributes ? CommonAttributes[A][2] : AttributeType,
-    >(attribute: A, operator: FilterOperator<V>, value: AttributeValueType<V>): this;
-    public filter<A extends string>(attribute: A, filters: readonly QueryAttributeFilter[]): this;
-    public filter<A extends string>(filters: QueryFilter<A>): this;
-    public filter<
-        A extends string,
-        V extends A extends keyof CommonAttributes ? CommonAttributes[A][2] : AttributeType,
-    >(
-        attributeOrFilters: A | QueryFilter<A>,
+    public filter<V extends AttributeType>(
+        attribute: string,
+        operator: FilterOperator<V>,
+        value: AttributeValueType<V>
+    ): this;
+    public filter(attribute: string, filters: readonly QueryAttributeFilter[]): this;
+    public filter(filters: QueryFilter): this;
+    public filter<V extends AttributeType>(
+        attributeOrFilters: string | QueryFilter,
         operatorOrFilters?: FilterOperator<V> | readonly QueryAttributeFilter[],
-        value?: AttributeValueType<V>,
+        value?: AttributeValueType<V>
     ): this {
         const request = cloneRequest(this.#request);
         if (typeof attributeOrFilters === 'string') {

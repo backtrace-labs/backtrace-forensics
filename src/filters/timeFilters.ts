@@ -1,6 +1,6 @@
-import { QueryAttributeFilter } from '..';
-import { AttributeValueType, UIntType } from '../../common/attributes';
-import { convertInputValue } from '../../implementation/helpers/convertInputValue';
+import { QueryAttributeFilter } from '../coroner/common';
+import { AttributeValueType, UIntType } from '../coroner/common/attributes';
+import { convertInputValue } from '../implementation/helpers/convertInputValue';
 
 export interface TimeFluentFiltering extends LastTimeFluentFiltering {
     readonly from: FromTimeFluentFiltering;

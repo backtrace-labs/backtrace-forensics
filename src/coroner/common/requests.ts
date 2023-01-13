@@ -1,3 +1,4 @@
+import { cloneRequest } from '../../implementation/requests/cloneRequest';
 import {
     AttributeType,
     AttributeValueType,
@@ -6,9 +7,8 @@ import {
     StringType,
     UIntType,
     UUIDType,
-} from '../common/attributes';
-import { cloneRequest } from '../implementation/requests/cloneRequest';
-import { RawCoronerResponse } from '../responses';
+} from './attributes';
+import { RawCoronerResponse } from './responses';
 
 export type CoronerValueType = string | number | boolean | null;
 

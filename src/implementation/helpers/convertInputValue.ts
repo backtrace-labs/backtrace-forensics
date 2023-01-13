@@ -1,5 +1,5 @@
-import { AttributeValueType } from '../../common/attributes';
-import { CoronerValueType, InputValueType } from '../../requests';
+import { CoronerValueType, InputValueType } from '../../coroner/common';
+import { AttributeValueType } from '../../coroner/common/attributes';
 
 export function convertInputValue(input: InputValueType): AttributeValueType {
     let result: CoronerValueType;
