@@ -1,4 +1,4 @@
-import { CommonCoronerQuery, CoronerQuery } from './query';
+import { CommonCoronerQuery } from './query';
 
 export type QueryColumn = [string, string];
 
@@ -55,6 +55,7 @@ export interface FailedQueryResponse {
 
 export type RawCoronerResponse<R extends RawQueryResponse = RawQueryResponse> = ReturnType<QueryResponse<R>['json']>;
 
-export type QueryResponse<R extends RawQueryResponse = RawQueryResponse, Q extends CoronerQuery = CoronerQuery> =
-    | SuccessfulQueryResponse<R, Q>
-    | FailedQueryResponse;
+export type QueryResponse<
+    R extends RawQueryResponse = RawQueryResponse,
+    Q extends CommonCoronerQuery = CommonCoronerQuery
+> = SuccessfulQueryResponse<R, Q> | FailedQueryResponse;
