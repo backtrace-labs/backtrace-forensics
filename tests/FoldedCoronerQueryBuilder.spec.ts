@@ -667,4 +667,21 @@ describe('FoldedCoronerQueryBuilder', () => {
             ],
         });
     });
+
+    it('should remove all instances of fold on removeFold', () => {
+        const request: FoldQueryRequest = {
+            fold: {
+                a: [['distribution', 5], ['distribution', 3], ['range'], ['distribution', 5]],
+            },
+        };
+
+        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+
+        const newRequest = queryable.removeFold('a', 'distribution', 5).json();
+        expect(newRequest).toMatchObject({
+            fold: {
+                a: [['distribution', 3], ['range']],
+            },
+        });
+    });
 });

@@ -58,6 +58,17 @@ export interface FoldCoronerQuery extends CommonCoronerQuery {
 
 export interface FoldedCoronerQuery extends FoldCoronerQuery {
     /**
+     * Removes all previously added matching folds in request.
+     *
+     * @param attribute Attribute to remove fold from.
+     * @param fold Folds to remove.
+     * @example
+     * // Adds and removes fold
+     * query.fold('a', 'head').removeFold('a', 'head')
+     */
+    removeFold(attribute: string, ...fold: FoldOperator): this;
+
+    /**
      * Adds order on attribute fold with index and direction specified.
      * @param attribute Attribute to order by.
      * @param direction Order direction.

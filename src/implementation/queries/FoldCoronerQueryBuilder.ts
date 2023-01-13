@@ -21,6 +21,7 @@ import {
 import { ICoronerQueryExecutor } from '../../interfaces/ICoronerQueryExecutor';
 import { IFoldCoronerSimpleResponseBuilder } from '../../interfaces/responses/IFoldCoronerSimpleResponseBuilder';
 import { QuerySource } from '../../models/QuerySource';
+import { foldsEqual } from '../helpers/foldsEqual';
 import { cloneFoldRequest } from '../requests/cloneRequest';
 import { CommonCoronerQueryBuilder } from './CommonCoronerQueryBuilder';
 
@@ -56,6 +57,24 @@ export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder impleme
         } else {
             request.fold[attribute] = [fold];
         }
+
+        return this.createInstance(request);
+    }
+
+    public removeFold(attribute: string, ...foldToRemove: FoldOperator): this {
+        const request = cloneFoldRequest(this.#request);
+        if (!request.fold?.[attribute]) {
+            return this.createInstance(request);
+        }
+
+        const newFold: FoldOperator[] = [];
+        for (const fold of request.fold[attribute]) {
+            if (!foldsEqual(fold, foldToRemove)) {
+                newFold.push(fold);
+            }
+        }
+
+        request.fold[attribute] = newFold;
 
         return this.createInstance(request);
     }
