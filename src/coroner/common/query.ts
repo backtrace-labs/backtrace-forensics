@@ -82,7 +82,7 @@ export interface CommonCoronerQuery {
      * // filter with Filters
      * query.filter({ timestamp: Filters.time.from.last.hours(2).to.now() })
      */
-    filter(filters: QueryFilter): this;
+    filter(...filters: QueryFilter[]): this;
 
     /**
      * Sets the table name.
