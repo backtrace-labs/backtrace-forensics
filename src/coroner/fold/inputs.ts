@@ -1,7 +1,7 @@
 import { AttributeValueType } from '../common/attributes';
 import { FoldFilterParamOperator, FoldOperator } from './requests';
 
-export type RangeFoldFilterInput<VT extends AttributeValueType> = {
+export type RangeFoldFilterInput<VT extends AttributeValueType = AttributeValueType> = {
     from?: VT;
     to?: VT;
 };
@@ -11,7 +11,7 @@ export type DistributionFoldFilterInput = {
     tail?: number;
 };
 
-export type UnaryFoldFilterInput<VT extends AttributeValueType> = VT;
+export type UnaryFoldFilterInput<VT extends AttributeValueType = AttributeValueType> = VT;
 
 export type SupportedFoldFilterFolds =
     | 'head'

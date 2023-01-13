@@ -23,7 +23,10 @@ export interface RawQueryResponse {
     readonly columns_desc: QueryColumnDescription[];
 }
 
-export interface SuccessfulQueryResponse<R extends RawQueryResponse, Q extends CommonCoronerQuery> {
+export interface SuccessfulQueryResponse<
+    R extends RawQueryResponse = RawQueryResponse,
+    Q extends CommonCoronerQuery = CommonCoronerQuery
+> {
     success: true;
     json(): {
         response: R;

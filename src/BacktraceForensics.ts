@@ -44,7 +44,7 @@ export interface BacktraceForensicOptions {
     queryMaker?: ICoronerQueryMaker;
 }
 
-export interface CreateQueryOptions<R extends QueryRequest> {
+export interface CreateQueryOptions<R extends QueryRequest = QueryRequest> {
     request?: R;
 }
 

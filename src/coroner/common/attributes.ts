@@ -53,7 +53,7 @@ export type AttributeValueType<T extends AttributeType = AttributeType> =
           : never)
     | null;
 
-export type ValueAttributeType<V extends InputValueType> = V extends number | `${number}.` | Date
+export type ValueAttributeType<V extends InputValueType = InputValueType> = V extends number | `${number}.` | Date
     ? UIntType
     : V extends string
     ? UUIDType | DictionaryType
