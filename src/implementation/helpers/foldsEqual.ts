@@ -13,3 +13,13 @@ export function foldsEqual(a: FoldOperator, b: FoldOperator) {
 
     return true;
 }
+
+export function foldStartsWith(fold: FoldOperator, test: Partial<FoldOperator>) {
+    for (let i = 0; i < test.length; i++) {
+        if (fold[i] !== test[i]) {
+            return false;
+        }
+    }
+
+    return true;
+}

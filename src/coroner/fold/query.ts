@@ -66,7 +66,7 @@ export interface FoldedCoronerQuery extends FoldCoronerQuery {
      * // Adds and removes fold
      * query.fold('a', 'head').removeFold('a', 'head')
      */
-    removeFold(attribute: string, ...fold: FoldOperator): this;
+    removeFold(attribute: string, ...fold: Partial<FoldOperator>): this;
 
     /**
      * Adds order on attribute fold with index and direction specified.

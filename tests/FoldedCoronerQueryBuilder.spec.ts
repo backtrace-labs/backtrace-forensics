@@ -684,4 +684,40 @@ describe('FoldedCoronerQueryBuilder', () => {
             },
         });
     });
+
+    it('should remove all instances of partial fold on removeFold', () => {
+        const request: FoldQueryRequest = {
+            fold: {
+                a: [['distribution', 5], ['distribution', 3], ['range'], ['distribution', 5]],
+            },
+        };
+
+        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+
+        const newRequest = queryable.removeFold('a', 'distribution').json();
+        expect(newRequest).toMatchObject({
+            fold: {
+                a: [['range']],
+            },
+        });
+    });
+
+    it('should remove all folds on attribute on removeFold', () => {
+        const request: FoldQueryRequest = {
+            fold: {
+                a: [['distribution', 5], ['distribution', 3], ['range'], ['distribution', 5]],
+                b: [['distribution', 5], ['distribution', 3], ['range'], ['distribution', 5]],
+            },
+        };
+
+        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+
+        const newRequest = queryable.removeFold('a').json();
+        expect(newRequest).toMatchObject({
+            fold: {
+                b: [['distribution', 5], ['distribution', 3], ['range'], ['distribution', 5]],
+            },
+        });
+        expect(newRequest.fold?.['a']).toBeUndefined();
+    });
 });
