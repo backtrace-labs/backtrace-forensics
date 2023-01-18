@@ -1,6 +1,6 @@
-import { DictionaryType, StringType, UIntType, UUIDType, ValueAttributeType } from '../../common/attributes';
-import { convertInputValue } from '../../implementation/helpers/convertInputValue';
-import { InputValueType, QueryAttributeFilter } from '../common';
+import { InputValueType, QueryAttributeFilter } from '../coroner/common';
+import { DictionaryType, StringType, UIntType, UUIDType, ValueAttributeType } from '../coroner/common/attributes';
+import { convertInputValue } from '../implementation/helpers/convertInputValue';
 
 type RangeSupportedTypes = UIntType | UUIDType | StringType | DictionaryType;
 

@@ -1,4 +1,4 @@
-import BacktraceForensics, { CommonAttributes, Filters } from '../../lib';
+import BacktraceForensics, { Filters } from '../../lib';
 
 // (async () => {
 //     const response = await BacktraceForensics.create({
@@ -35,18 +35,13 @@ import BacktraceForensics, { CommonAttributes, Filters } from '../../lib';
 (async () => {
     // const date = new Date(1660054293000);
 
-    const request = BacktraceForensics.create(
-        {
-            defaultSource: {
-                address: 'https://yolo.sp.backtrace.io',
-                token: 'de0161ac382986a0bfb09a1bfe7e5052c4a53b97178c8b7b11916c4a139f1398',
-                project: 'salex',
-            },
+    const request = BacktraceForensics.create({
+        defaultSource: {
+            address: 'https://yolo.sp.backtrace.io',
+            token: 'de0161ac382986a0bfb09a1bfe7e5052c4a53b97178c8b7b11916c4a139f1398',
+            project: 'salex',
         },
-        {
-            attributeList: CommonAttributes,
-        }
-    )
+    })
         // .limit(2)
         // .offset(20)
         .filter('timestamp', Filters.time.from.last.days(90).to.now())

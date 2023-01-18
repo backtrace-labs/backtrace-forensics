@@ -1,9 +1,9 @@
-import { AttributeList, AttributeType, AttributeValueType } from '../common/attributes';
-import { FilterOperator, QueryAttributeFilter, QueryFilter, QueryRequest } from '../requests/common';
-import { FoldCoronerQuery } from './fold';
-import { SelectCoronerQuery } from './select';
+import { FoldCoronerQuery } from '../fold';
+import { SelectCoronerQuery } from '../select';
+import { AttributeType, AttributeValueType } from './attributes';
+import { FilterOperator, QueryAttributeFilter, QueryFilter, QueryRequest } from './requests';
 
-export interface CommonCoronerQuery<AL extends AttributeList = AttributeList, R extends QueryRequest = QueryRequest> {
+export interface CommonCoronerQuery {
     /**
      * Sets limit of rows in response.
      *
@@ -50,16 +50,7 @@ export interface CommonCoronerQuery<AL extends AttributeList = AttributeList, R 
      *      .filter('timestamp', 'at-least', 1660000000)
      *      .filter('timestamp', 'at-most', 1660747935)
      */
-    filter<A extends keyof AL, V extends AL[A][2]>(
-        attribute: A,
-        operator: FilterOperator<V>,
-        value: AttributeValueType<V>
-    ): this;
-    filter<A extends string, V extends A extends keyof AL ? AL[A][2] : AttributeType>(
-        attribute: A,
-        operator: FilterOperator<V>,
-        value: AttributeValueType<V>
-    ): this;
+    filter<V extends AttributeType>(attribute: string, operator: FilterOperator<V>, value: AttributeValueType<V>): this;
 
     /**
      * Adds filters to request.
@@ -75,11 +66,7 @@ export interface CommonCoronerQuery<AL extends AttributeList = AttributeList, R 
      * // filter with Filters
      * query.filter('timestamp', Filters.time.from.last.hours(2).to.now())
      */
-    filter<A extends keyof AL, V extends AL[A][2]>(attribute: A, filters: readonly QueryAttributeFilter<V>[]): this;
-    filter<A extends string, V extends A extends keyof AL ? AL[A][2] : AttributeType>(
-        attribute: A,
-        filters: readonly QueryAttributeFilter<V>[]
-    ): this;
+    filter(attribute: string, filters: readonly QueryAttributeFilter[]): this;
 
     /**
      * Adds filters to request.
@@ -95,8 +82,7 @@ export interface CommonCoronerQuery<AL extends AttributeList = AttributeList, R 
      * // filter with Filters
      * query.filter({ timestamp: Filters.time.from.last.hours(2).to.now() })
      */
-    filter<A extends keyof AL & string>(filters: QueryFilter<A>): this;
-    filter<A extends string>(filters: QueryFilter<A>): this;
+    filter(...filters: QueryFilter[]): this;
 
     /**
      * Sets the table name.
@@ -116,6 +102,4 @@ export interface CommonCoronerQuery<AL extends AttributeList = AttributeList, R 
     json(): QueryRequest;
 }
 
-export type CoronerQuery<AL extends AttributeList, R extends QueryRequest> = CommonCoronerQuery<AL, R> &
-    SelectCoronerQuery<AL> &
-    FoldCoronerQuery<AL>;
+export type CoronerQuery = CommonCoronerQuery & SelectCoronerQuery & FoldCoronerQuery;

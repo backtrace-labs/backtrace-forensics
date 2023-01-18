@@ -1,23 +1,18 @@
+import { CoronerValueType } from '../../coroner/common';
+import { RawSelectQueryResponse, SimpleSelectRow, SimpleSelectRows } from '../../coroner/select';
 import { ISelectCoronerSimpleResponseBuilder } from '../../interfaces/responses/ISelectCoronerSimpleResponseBuilder';
-import { CoronerValueType } from '../../requests';
-import { SelectQueryRequest } from '../../requests/select';
-import { RawSelectQueryResponse } from '../../responses/select';
-import { SimpleSelectRow, SimpleSelectRows } from '../../responses/simple/select';
 
 export class SelectCoronerSimpleResponseBuilder implements ISelectCoronerSimpleResponseBuilder {
-    public first<R extends SelectQueryRequest>(response: RawSelectQueryResponse<R>): SimpleSelectRow<R> | undefined {
-        return this.buildRows<R>(response, 1).rows[0];
+    public first(response: RawSelectQueryResponse): SimpleSelectRow | undefined {
+        return this.buildRows(response, 1).rows[0];
     }
 
-    public rows<R extends SelectQueryRequest>(response: RawSelectQueryResponse<R>): SimpleSelectRows<R> {
-        return this.buildRows<R>(response);
+    public rows(response: RawSelectQueryResponse): SimpleSelectRows {
+        return this.buildRows(response);
     }
 
-    private buildRows<R extends SelectQueryRequest>(
-        response: RawSelectQueryResponse<R>,
-        limit?: number
-    ): SimpleSelectRows<R> {
-        const rows: SimpleSelectRow<R>[] = [];
+    private buildRows(response: RawSelectQueryResponse, limit?: number): SimpleSelectRows {
+        const rows: SimpleSelectRow[] = [];
         for (let cIndex = 0; cIndex < response.columns_desc.length; cIndex++) {
             const columnDesc = response.columns_desc[cIndex];
             const columnValues = response.values[cIndex];
@@ -31,7 +26,7 @@ export class SelectCoronerSimpleResponseBuilder implements ISelectCoronerSimpleR
                 const columnCount = columnValues[i][1] as number;
 
                 for (let j = 0; j < columnCount; j++, rIndex++) {
-                    const row: SimpleSelectRow<R> =
+                    const row: SimpleSelectRow =
                         rows[rIndex] ??
                         (rows[rIndex] = {
                             values: {} as never,
@@ -57,7 +52,7 @@ export class SelectCoronerSimpleResponseBuilder implements ISelectCoronerSimpleR
             }
         }
 
-        const result: SimpleSelectRows<R> = {
+        const result: SimpleSelectRows = {
             rows,
             select(attribute: string) {
                 return rows.map((r) => r.select(attribute));

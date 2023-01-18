@@ -2,14 +2,12 @@ import { stdin as input, stdout as output } from 'process';
 import readline from 'readline';
 import {
     BacktraceForensics,
-    CommonAttributes,
-    createAttributeList,
-    extendAttributeList,
     Filters,
+    FoldedCoronerQuery,
+    FoldOperator,
     QuerySource,
+    SelectedCoronerQuery,
 } from '../../lib';
-import { FoldedCoronerQuery, SelectedCoronerQuery } from '../../lib/queries';
-import { FoldOperator } from '../../lib/requests/fold';
 
 const rl = readline.createInterface({ input, output });
 
@@ -33,7 +31,7 @@ async function question(msg: string) {
     });
 }
 
-async function displayDetails(query: FoldedCoronerQuery<any, any> | SelectedCoronerQuery<any, any>) {
+async function displayDetails(query: FoldedCoronerQuery | SelectedCoronerQuery) {
     const request = query.json();
     console.log('Request: ', JSON.stringify(request, null, '\t'));
 
@@ -49,10 +47,7 @@ async function displayDetails(query: FoldedCoronerQuery<any, any> | SelectedCoro
 async function staticSelect() {
     const fp = await question('enter fingerprint: ');
 
-    const customAttributeList = createAttributeList([['fingerprint', 'bytes', 'uint32']] as const);
-    const attributeList = extendAttributeList(CommonAttributes, customAttributeList);
-
-    const query = BacktraceForensics.create({ defaultSource: source }, { attributeList: CommonAttributes })
+    const query = BacktraceForensics.create({ defaultSource: source })
         .filter('fingerprint', 'equal', fp)
         .filter('timestamp', Filters.time.last.day())
         // .fold('callstack', 'bin')
@@ -71,7 +66,7 @@ async function select() {
     const query = BacktraceForensics.create({ defaultSource: source });
     const fp = await question('enter fingerprint: ');
 
-    let selectQuery = query.filter('fingerprint', 'equal', fp).dynamicSelect();
+    let selectQuery = query.filter('fingerprint', 'equal', fp).select();
 
     const keysStr = await question('enter comma-delimited keys to select on: ');
     const keys = keysStr.split(',');
@@ -95,7 +90,7 @@ async function fold() {
     const keysStr = await question('enter comma-delimited keys to fold on: ');
     const opStr = [await question('enter operator: ')] as FoldOperator;
 
-    let query = BacktraceForensics.create({ defaultSource: source }).dynamicFold().group(groupStr);
+    let query = BacktraceForensics.create({ defaultSource: source }).group(groupStr);
 
     for (const key of keysStr.split(',')) {
         query = query.fold(key, ...opStr);

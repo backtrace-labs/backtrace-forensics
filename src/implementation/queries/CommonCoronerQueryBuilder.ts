@@ -1,10 +1,15 @@
-import { AttributeList, AttributeType, AttributeValueType, CommonAttributes } from '../../common/attributes';
-import { CommonCoronerQuery } from '../../queries/common';
-import { FilterOperator, QueryAttributeFilter, QueryFilter, QueryRequest } from '../../requests/common';
+import {
+    CommonCoronerQuery,
+    FilterOperator,
+    QueryAttributeFilter,
+    QueryFilter,
+    QueryRequest,
+} from '../../coroner/common';
+import { AttributeType, AttributeValueType } from '../../coroner/common/attributes';
 import { convertInputValue } from '../helpers/convertInputValue';
 import { cloneRequest } from '../requests/cloneRequest';
 
-export abstract class CommonCoronerQueryBuilder<AL extends AttributeList> implements CommonCoronerQuery<AL> {
+export abstract class CommonCoronerQueryBuilder implements CommonCoronerQuery {
     readonly #request: QueryRequest;
 
     constructor(request: QueryRequest) {
@@ -29,20 +34,18 @@ export abstract class CommonCoronerQueryBuilder<AL extends AttributeList> implem
         return this.createInstance(request);
     }
 
-    public filter<
-        A extends string,
-        V extends A extends keyof CommonAttributes ? CommonAttributes[A][2] : AttributeType,
-    >(attribute: A, operator: FilterOperator<V>, value: AttributeValueType<V>): this;
-    public filter<A extends string>(attribute: A, filters: readonly QueryAttributeFilter[]): this;
-    public filter<A extends string>(filters: QueryFilter<A>): this;
-    public filter<
-        A extends string,
-        V extends A extends keyof CommonAttributes ? CommonAttributes[A][2] : AttributeType,
-    >(
-        attributeOrFilters: A | QueryFilter<A>,
-        operatorOrFilters?: FilterOperator<V> | readonly QueryAttributeFilter[],
-        value?: AttributeValueType<V>,
-    ): this {
+    public filter<V extends AttributeType>(
+        attribute: string,
+        operator: FilterOperator<V>,
+        value: AttributeValueType<V>
+    ): this;
+    public filter(attribute: string, filters: readonly QueryAttributeFilter[]): this;
+    public filter(...filters: QueryFilter[]): this;
+    public filter<V extends AttributeType>(...params: unknown[]): this {
+        const attributeOrFilters = params[0] as string | QueryFilter;
+        const operatorOrFilters = params[1] as FilterOperator<V> | readonly QueryAttributeFilter[];
+        const value = params[2] as AttributeValueType<V> | undefined;
+
         const request = cloneRequest(this.#request);
         if (typeof attributeOrFilters === 'string') {
             const attribute = attributeOrFilters;
@@ -68,10 +71,14 @@ export abstract class CommonCoronerQueryBuilder<AL extends AttributeList> implem
                 }
             }
         } else {
+            const filters = params as QueryFilter[];
             let instance = this;
-            for (const key in attributeOrFilters) {
-                instance = instance.filter(key, attributeOrFilters[key]);
+            for (const filter of filters) {
+                for (const key in attributeOrFilters) {
+                    instance = instance.filter(key, attributeOrFilters[key]);
+                }
             }
+
             return instance;
         }
 

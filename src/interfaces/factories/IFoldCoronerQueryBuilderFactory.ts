@@ -1,10 +1,5 @@
-import { AttributeList } from '../../common/attributes';
-import { FoldedCoronerQuery } from '../../queries/fold';
-import { FoldQueryRequest } from '../../requests/fold';
+import { FoldedCoronerQuery, FoldQueryRequest } from '../../coroner/fold';
 
 export interface IFoldCoronerQueryBuilderFactory {
-    create<AL extends AttributeList, R extends FoldQueryRequest>(
-        request: R,
-        attributeList: AL
-    ): FoldedCoronerQuery<AL, R>;
+    create(request: FoldQueryRequest): FoldedCoronerQuery;
 }

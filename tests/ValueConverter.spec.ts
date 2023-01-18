@@ -1,4 +1,4 @@
-import { ValueConverter } from '../lib';
+import { ValueConverter } from '../src';
 
 describe('ValueConverter', () => {
     describe('toLabels', () => {
@@ -70,21 +70,21 @@ describe('ValueConverter', () => {
         it('should throw an error when "frame" is not an array', () => {
             const input = '{ "frame": 123 }';
             expect(() => ValueConverter.toCallstack(input)).toThrowError(
-                'Invalid JSON, expected "frame" to be an array.',
+                'Invalid JSON, expected "frame" to be an array.'
             );
         });
 
         it('should throw an error when "frame" is an array of non-strings', () => {
             const input = '{ "frame": [123, 456] }';
             expect(() => ValueConverter.toCallstack(input)).toThrowError(
-                'Invalid JSON, expected all "frame" elements to be of string type.',
+                'Invalid JSON, expected all "frame" elements to be of string type.'
             );
         });
 
         it('should throw an error when "frame" array has a non-string value', () => {
             const input = '{ "frame": ["abc", 456] }';
             expect(() => ValueConverter.toCallstack(input)).toThrowError(
-                'Invalid JSON, expected all "frame" elements to be of string type.',
+                'Invalid JSON, expected all "frame" elements to be of string type.'
             );
         });
 

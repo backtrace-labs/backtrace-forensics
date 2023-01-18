@@ -1,8 +1,5 @@
-import { CommonAttributes } from '../src/common/attributes';
+import { ICoronerQueryExecutor, ISelectCoronerSimpleResponseBuilder, SelectQueryRequest } from '../src';
 import { SelectedCoronerQueryBuilder } from '../src/implementation/queries/SelectCoronerQueryBuilder';
-import { ICoronerQueryExecutor } from '../src/interfaces/ICoronerQueryExecutor';
-import { ISelectCoronerSimpleResponseBuilder } from '../src/interfaces/responses/ISelectCoronerSimpleResponseBuilder';
-import { SelectQueryRequest } from '../src/requests/select';
 
 describe('SelectedCoronerQueryBuilder', () => {
     const executorMock: ICoronerQueryExecutor = {
@@ -20,7 +17,7 @@ describe('SelectedCoronerQueryBuilder', () => {
 
     it('should set select keys to passed keys when initial keys are empty', () => {
         const request: SelectQueryRequest = {};
-        const queryable = new SelectedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
+        const queryable = new SelectedCoronerQueryBuilder(request, executorMock, builderMock);
         const expectedKeys = ['a', 'b', 'c'];
 
         const newRequest = queryable.select('a').select('b').select('c').json();
@@ -32,7 +29,7 @@ describe('SelectedCoronerQueryBuilder', () => {
         const request: SelectQueryRequest = {
             select: ['a'],
         };
-        const queryable = new SelectedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
+        const queryable = new SelectedCoronerQueryBuilder(request, executorMock, builderMock);
         const expectedKeys = ['a', 'b', 'c'];
 
         const newRequest = queryable.select('b').select('c').json();
@@ -42,7 +39,7 @@ describe('SelectedCoronerQueryBuilder', () => {
 
     it('should add order for a attribute when initial order is empty', () => {
         const request: SelectQueryRequest = {};
-        const queryable = new SelectedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
+        const queryable = new SelectedCoronerQueryBuilder(request, executorMock, builderMock);
 
         const newRequest = queryable.order('a', 'descending').json();
 
@@ -63,7 +60,7 @@ describe('SelectedCoronerQueryBuilder', () => {
                 },
             ],
         };
-        const queryable = new SelectedCoronerQueryBuilder(request, CommonAttributes, executorMock, builderMock);
+        const queryable = new SelectedCoronerQueryBuilder(request, executorMock, builderMock);
 
         const newRequest = queryable.order('a', 'descending').json();
 

@@ -1,10 +1,9 @@
 import assert from 'assert';
+import { RawSelectQueryResponse, SelectQueryRequest } from '../src';
 import { SelectCoronerSimpleResponseBuilder } from '../src/implementation/responses/SelectCoronerSimpleResponseBuilder';
-import { createSelectRequest, SelectQueryRequest } from '../src/requests';
-import { RawSelectQueryResponse } from '../src/responses/select';
 
 describe('SelectCoronerSimpleResponseBuilder', () => {
-    const testRequest = createSelectRequest({
+    const testRequest: SelectQueryRequest = {
         select: ['fingerprint', 'randomInt'],
         offset: 0,
         limit: 20,
@@ -13,9 +12,9 @@ describe('SelectCoronerSimpleResponseBuilder', () => {
                 _tx: [['at-least', '1']],
             },
         ],
-    } as const);
+    } as const;
 
-    const testResponse: RawSelectQueryResponse<typeof testRequest> = {
+    const testResponse: RawSelectQueryResponse = {
         version: '1.2.0',
         seq: 2,
         encoding: 'rle',
@@ -131,7 +130,7 @@ describe('SelectCoronerSimpleResponseBuilder', () => {
     });
 
     it('should return undefined element from queried elements from first when no elements are present', async () => {
-        const response: RawSelectQueryResponse<SelectQueryRequest> = {
+        const response: RawSelectQueryResponse = {
             columns: [
                 ['fingerprint', 'sha256'],
                 ['randomInt', 'none'],

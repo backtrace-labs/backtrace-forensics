@@ -1,9 +1,8 @@
 import http from 'http';
 import https from 'https';
+import { QueryRequest, RawCoronerResponse, RawQueryResponse } from '../coroner/common';
 import { ICoronerQueryMaker } from '../interfaces/ICoronerQueryMaker';
 import { QuerySource } from '../models/QuerySource';
-import { QueryRequest } from '../requests/common';
-import { RawCoronerResponse, RawQueryResponse } from '../responses/common';
 
 export class NodeCoronerQueryMaker implements ICoronerQueryMaker {
     public async query<R extends RawQueryResponse>(
