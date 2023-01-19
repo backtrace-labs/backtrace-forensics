@@ -52,7 +52,7 @@ export interface FoldCoronerQuery extends CommonCoronerQuery {
     virtualColumn<A extends string, T extends FoldVirtualColumnType, BC extends string>(
         name: A,
         type: T,
-        params: BackingColumnFoldVirtualColumnTypes<A, BC>[T][1]
+        params: BackingColumnFoldVirtualColumnTypes<A, BC>[T][1],
     ): FoldedCoronerQuery;
 }
 
@@ -133,7 +133,7 @@ export interface FoldedCoronerQuery extends FoldCoronerQuery {
         attribute: string,
         fold: FF,
         operator: FoldFilterOperatorInput,
-        value: FoldFilterInput<FF>
+        value: FoldFilterInput<FF>,
     ): this;
 
     /**
@@ -158,7 +158,7 @@ export interface FoldedCoronerQuery extends FoldCoronerQuery {
         index: number,
         operator: FoldFilterOperatorInput,
         valueIndex: number,
-        value: AttributeValueType
+        value: AttributeValueType,
     ): this;
 
     /**
@@ -183,8 +183,18 @@ export interface FoldedCoronerQuery extends FoldCoronerQuery {
         fold: FF,
         operator: FoldFilterOperatorInput,
         valueIndex: FoldFilterValueIndex<FF>,
-        value: FoldFilterInput<FF>
+        value: FoldFilterInput<FF>,
     ): this;
+
+    /**
+     * Adds a post-aggregation filter on count.
+     * @param operator Operator to use.
+     * @param value Value to filter by.
+     * @example
+     * // Filters on 'count'
+     * query.havingCount('greater-than', 10)
+     */
+    havingCount<O extends FoldFilterOperatorInput>(operator: O, value: number): this;
 
     /**
      * Adds order on group with direction specified.
