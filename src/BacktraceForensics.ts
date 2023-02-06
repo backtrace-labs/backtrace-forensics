@@ -14,7 +14,7 @@ import { ICoronerQueryExecutor } from './interfaces/ICoronerQueryExecutor';
 import { ICoronerQueryMaker } from './interfaces/ICoronerQueryMaker';
 import { QuerySource } from './models/QuerySource';
 
-export interface BacktraceForensicOptions {
+export interface BacktraceForensicsOptions {
     /**
      * Data from this source will be used as defaults for API calls.
      *
@@ -49,14 +49,14 @@ export interface CreateQueryOptions<R extends QueryRequest = QueryRequest> {
 }
 
 export class BacktraceForensics {
-    public readonly options: BacktraceForensicOptions;
+    public readonly options: BacktraceForensicsOptions;
 
     readonly #executor: ICoronerQueryExecutor;
     readonly #queryFactory: CoronerQueryBuilderFactory;
     readonly #foldFactory: IFoldCoronerQueryBuilderFactory;
     readonly #selectFactory: ISelectCoronerQueryBuilderFactory;
 
-    constructor(options?: Partial<BacktraceForensicOptions>) {
+    constructor(options?: Partial<BacktraceForensicsOptions>) {
         this.options = this.getDefaultOptions(options);
 
         this.#executor = new CoronerQueryExecutor(
@@ -106,25 +106,25 @@ export class BacktraceForensics {
      * const query = BacktraceForensics.create().filter(...).fold(...);
      */
     public static create<R extends QueryRequest>(
-        options?: Partial<BacktraceForensicOptions>,
+        options?: Partial<BacktraceForensicsOptions>,
         createOptions?: CreateQueryOptions<R>
     ): CoronerQuery;
     public static create<R extends SelectQueryRequest>(
-        options?: Partial<BacktraceForensicOptions>,
+        options?: Partial<BacktraceForensicsOptions>,
         createOptions?: CreateQueryOptions<R>
     ): SelectedCoronerQuery;
     public static create<R extends FoldQueryRequest>(
-        options?: Partial<BacktraceForensicOptions>,
+        options?: Partial<BacktraceForensicsOptions>,
         createOptions?: CreateQueryOptions<R>
     ): FoldedCoronerQuery;
     public static create(
-        options?: Partial<BacktraceForensicOptions>,
+        options?: Partial<BacktraceForensicsOptions>,
         createOptions?: CreateQueryOptions<QueryRequest>
     ): CoronerQuery | SelectCoronerQuery | FoldCoronerQuery {
         return new BacktraceForensics(options).create(createOptions);
     }
 
-    private getDefaultOptions(options?: BacktraceForensicOptions) {
+    private getDefaultOptions(options?: BacktraceForensicsOptions) {
         return Object.assign({}, {}, options);
     }
 }
