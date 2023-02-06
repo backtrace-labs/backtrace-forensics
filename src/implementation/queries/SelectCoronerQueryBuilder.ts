@@ -22,7 +22,7 @@ export class SelectedCoronerQueryBuilder extends CommonCoronerQueryBuilder imple
         executor: ICoronerQueryExecutor,
         builder: ISelectCoronerSimpleResponseBuilder
     ) {
-        super(request);
+        super(request, executor);
         this.#request = request;
         this.#executor = executor;
         this.#simpleResponseBuilder = builder;
@@ -60,10 +60,6 @@ export class SelectedCoronerQueryBuilder extends CommonCoronerQueryBuilder imple
     }
 
     public async post(source?: Partial<QuerySource>): Promise<SelectQueryResponse> {
-        if (!this.#request.select) {
-            throw new Error('Select query expected.');
-        }
-
         const response = await this.#executor.execute<RawSelectQueryResponse>(this.#request, source);
         if (response.error) {
             return {

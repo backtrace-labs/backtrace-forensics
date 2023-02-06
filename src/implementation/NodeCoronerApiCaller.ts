@@ -1,16 +1,11 @@
 import http from 'http';
 import https from 'https';
-import { QueryRequest, RawCoronerResponse, RawQueryResponse } from '../coroner/common';
-import { ICoronerQueryMaker } from '../interfaces/ICoronerQueryMaker';
+import { ICoronerApiCaller } from '../interfaces/ICoronerApiCaller';
 import { QuerySource } from '../models/QuerySource';
 
-export class NodeCoronerQueryMaker implements ICoronerQueryMaker {
-    public async query<R extends RawQueryResponse>(
-        source: Partial<QuerySource>,
-        request: QueryRequest
-    ): Promise<RawCoronerResponse<R>> {
-        const data = JSON.stringify(request);
-        let { address, token, project, location } = source;
+export class NodeCoronerApiCaller implements ICoronerApiCaller {
+    public async post<R>(url: URL, source: Partial<QuerySource>, body?: string): Promise<R> {
+        let { address, token, location } = source;
         if (!address) {
             throw new Error('Coroner address is not available.');
         }
@@ -19,25 +14,26 @@ export class NodeCoronerQueryMaker implements ICoronerQueryMaker {
             throw new Error('Coroner token is not available.');
         }
 
-        if (!project) {
-            throw new Error('Coroner project is not available.');
-        }
-
-        const url = new URL(address);
         const protocol = url.protocol.startsWith('https') ? https : http;
 
-        return new Promise<RawCoronerResponse<R>>((resolve, reject) => {
+        return new Promise<R>((resolve, reject) => {
+            const headers: http.OutgoingHttpHeaders = {
+                'Content-Type': 'application/json',
+                'X-Coroner-Location': location ?? address,
+                'X-Coroner-Token': token,
+            };
+
+            if (body) {
+                headers['Content-Length'] = body.length;
+            }
+
             const req = protocol.request(
                 {
                     hostname: url.hostname,
-                    path: `/api/query?project=${project}`,
+                    port: url.port,
+                    path: url.pathname + url.search,
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Content-Length': data.length,
-                        'X-Coroner-Location': location ?? address,
-                        'X-Coroner-Token': token,
-                    },
+                    headers,
                 },
                 (res) => {
                     switch (res.statusCode) {
@@ -47,12 +43,12 @@ export class NodeCoronerQueryMaker implements ICoronerQueryMaker {
                         case 301:
                         case 302:
                             if (res.headers.location) {
-                                return this.query<R>(
+                                return this.post<R>(
+                                    new URL(res.headers.location),
                                     {
                                         ...source,
-                                        address: res.headers.location,
                                     },
-                                    request
+                                    body
                                 )
                                     .then(resolve)
                                     .catch(reject);
@@ -61,8 +57,17 @@ export class NodeCoronerQueryMaker implements ICoronerQueryMaker {
                             reject(new Error(`Invalid coroner status code: ${res.statusCode}.`));
                     }
 
-                    res.on('data', (d: string) => {
-                        resolve(JSON.parse(d));
+                    let result: Buffer | undefined;
+                    res.on('data', (data: Buffer) => {
+                        result = result ? Buffer.concat([result, data]) : data;
+                    });
+
+                    res.on('close', () => {
+                        if (!result) {
+                            return reject(new Error('No response has been returned.'));
+                        }
+
+                        resolve(JSON.parse(result.toString('utf-8')));
                     });
                 }
             );
@@ -71,7 +76,10 @@ export class NodeCoronerQueryMaker implements ICoronerQueryMaker {
                 reject(error);
             });
 
-            req.write(data);
+            if (body) {
+                req.write(body);
+            }
+
             req.end();
         });
     }

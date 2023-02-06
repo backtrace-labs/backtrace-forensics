@@ -1,8 +1,8 @@
 import nock from 'nock';
 import { QuerySource, RawCoronerResponse } from '../src';
-import { NodeCoronerQueryMaker } from '../src/implementation/NodeCoronerQueryMaker';
+import { NodeCoronerApiCaller } from '../src/implementation/NodeCoronerApiCaller';
 
-describe('NodeCoronerQueryMaker', () => {
+describe('NodeCoronerApiCaller', () => {
     it('should return a response from https server', async () => {
         const source: QuerySource = {
             address: 'https://sample.sp.backtrace.io',
@@ -15,10 +15,13 @@ describe('NodeCoronerQueryMaker', () => {
             response: undefined,
         };
 
-        const scope = nock(source.address).post(`/api/query?project=${source.project}`).reply(200, expectedResponse);
+        const url = new URL(`/api/query?project=${source.project}`, source.address);
+        const scope = nock(url.origin)
+            .post(url.pathname + url.search)
+            .reply(200, expectedResponse);
 
-        const maker = new NodeCoronerQueryMaker();
-        const response = await maker.query(source, {});
+        const maker = new NodeCoronerApiCaller();
+        const response = await maker.post(url, source, '{}');
 
         expect(response).toEqual(expectedResponse);
         scope.done();
@@ -36,10 +39,13 @@ describe('NodeCoronerQueryMaker', () => {
             response: undefined,
         };
 
-        const scope = nock(source.address).post(`/api/query?project=${source.project}`).reply(200, expectedResponse);
+        const url = new URL(`/api/query?project=${source.project}`, source.address);
+        const scope = nock(url.origin)
+            .post(url.pathname + url.search)
+            .reply(200, expectedResponse);
 
-        const maker = new NodeCoronerQueryMaker();
-        const response = await maker.query(source, {});
+        const maker = new NodeCoronerApiCaller();
+        const response = await maker.post(url, source, '{}');
 
         expect(response).toEqual(expectedResponse);
         scope.done();
@@ -62,18 +68,21 @@ describe('NodeCoronerQueryMaker', () => {
             response: undefined,
         };
 
-        const httpScope = nock(httpSource.address)
-            .post(`/api/query?project=${httpSource.project}`)
+        const httpUrl = new URL(`/api/query?project=${httpSource.project}`, httpSource.address);
+        const httpsUrl = new URL(`/api/query?project=${httpsSource.project}`, httpsSource.address);
+
+        const httpScope = nock(httpUrl.origin)
+            .post(httpUrl.pathname + httpUrl.search)
             .reply(301, undefined, {
-                location: httpsSource.address,
+                location: httpsUrl.href,
             });
 
-        const httpsScope = nock(httpsSource.address)
-            .post(`/api/query?project=${httpsSource.project}`)
+        const httpsScope = nock(httpsUrl.origin)
+            .post(httpsUrl.pathname + httpsUrl.search)
             .reply(200, expectedResponse);
 
-        const maker = new NodeCoronerQueryMaker();
-        const response = await maker.query(httpSource, {});
+        const maker = new NodeCoronerApiCaller();
+        const response = await maker.post(httpUrl, httpSource, '{}');
 
         expect(response).toEqual(expectedResponse);
         httpScope.done();
@@ -92,16 +101,17 @@ describe('NodeCoronerQueryMaker', () => {
             response: undefined,
         };
 
-        const scope = nock(source.address, {
+        const url = new URL(`/api/query?project=${source.project}`, source.address);
+        const scope = nock(url.origin, {
             reqheaders: {
                 'X-Coroner-Token': source.token,
             },
         })
-            .post(`/api/query?project=${source.project}`)
+            .post(url.pathname + url.search)
             .reply(200, expectedResponse);
 
-        const maker = new NodeCoronerQueryMaker();
-        const response = await maker.query(source, {});
+        const maker = new NodeCoronerApiCaller();
+        const response = await maker.post(url, source, '{}');
 
         expect(response).toEqual(expectedResponse);
         scope.done();
@@ -119,16 +129,17 @@ describe('NodeCoronerQueryMaker', () => {
             response: undefined,
         };
 
-        const scope = nock(source.address, {
+        const url = new URL(`/api/query?project=${source.project}`, source.address);
+        const scope = nock(url.origin, {
             reqheaders: {
                 'X-Coroner-Location': source.address,
             },
         })
-            .post(`/api/query?project=${source.project}`)
+            .post(url.pathname + url.search)
             .reply(200, expectedResponse);
 
-        const maker = new NodeCoronerQueryMaker();
-        const response = await maker.query(source, {});
+        const maker = new NodeCoronerApiCaller();
+        const response = await maker.post(url, source, '{}');
 
         expect(response).toEqual(expectedResponse);
         scope.done();
@@ -147,16 +158,17 @@ describe('NodeCoronerQueryMaker', () => {
             response: undefined,
         };
 
-        const scope = nock(source.address, {
+        const url = new URL(`/api/query?project=${source.project}`, source.address);
+        const scope = nock(url.origin, {
             reqheaders: {
                 'X-Coroner-Location': source.location!,
             },
         })
-            .post(`/api/query?project=${source.project}`)
+            .post(url.pathname + url.search)
             .reply(200, expectedResponse);
 
-        const maker = new NodeCoronerQueryMaker();
-        const response = await maker.query(source, {});
+        const maker = new NodeCoronerApiCaller();
+        const response = await maker.post(url, source, '{}');
 
         expect(response).toEqual(expectedResponse);
         scope.done();
@@ -169,10 +181,13 @@ describe('NodeCoronerQueryMaker', () => {
             token: 'token',
         };
 
-        const scope = nock(source.address).post(`/api/query?project=${source.project}`).reply(500);
+        const url = new URL(`/api/query?project=${source.project}`, source.address);
+        const scope = nock(url.origin)
+            .post(url.pathname + url.search)
+            .reply(500);
 
-        const maker = new NodeCoronerQueryMaker();
-        await expect(maker.query(source, {})).rejects.toThrow(/Invalid coroner status code/);
+        const maker = new NodeCoronerApiCaller();
+        await expect(maker.post(url, source, '{}')).rejects.toThrow(/Invalid coroner status code/);
         scope.done();
     });
 });

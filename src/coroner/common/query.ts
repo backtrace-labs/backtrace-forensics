@@ -1,7 +1,9 @@
+import { QuerySource } from '../../models';
 import { FoldCoronerQuery } from '../fold';
 import { SelectCoronerQuery } from '../select';
 import { AttributeType, AttributeValueType } from './attributes';
 import { FilterOperator, QueryAttributeFilter, QueryFilter, QueryRequest } from './requests';
+import { QueryResponse } from './responses';
 
 export interface CommonCoronerQuery {
     /**
@@ -100,6 +102,17 @@ export interface CommonCoronerQuery {
      * Returns the built request.
      */
     json(): QueryRequest;
+
+    /**
+     * Makes a POST call to Coroner with the built request.
+     * @param source Where to make the request. If not specified, will supply data from default source.
+     * @example
+     * const response = await query.post();
+     * if (!response.error) {
+     *     // use the response
+     * }
+     */
+    post(source?: Partial<QuerySource>): Promise<QueryResponse>;
 }
 
 export type CoronerQuery = CommonCoronerQuery & SelectCoronerQuery & FoldCoronerQuery;

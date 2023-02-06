@@ -2,10 +2,13 @@
     "name": "backtrace-forensics",
     "version": "0.2.0",
     "description": "Simplifies making and parsing queries to and from Coroner.",
-    "main": "lib/index.js",
+    "source": "./src/index.ts",
+    "main": "./lib/backtrace-forensics.js",
+    "browser": "./lib/backtrace-forensics.web.js",
     "types": "./lib/index.d.ts",
     "scripts": {
-        "build": "tsc",
+        "build": "webpack",
+        "watch": "webpack --watch",
         "test": "NODE_ENV=test jest"
     },
     "author": "Backtrace <team@backtrace.io>",
@@ -13,10 +16,14 @@
     "devDependencies": {
         "@types/jest": "^28.1.7",
         "@types/node": "^18.7.6",
+        "ifdef-loader": "^2.3.2",
         "jest": "^28.1.3",
         "nock": "^13.2.9",
         "ts-jest": "^28.0.8",
-        "typescript": "^4.7.4"
+        "ts-loader": "^9.4.2",
+        "typescript": "^4.7.4",
+        "webpack": "^5.75.0",
+        "webpack-cli": "^5.0.1"
     },
     "workspaces": [
         "backtrace-forensics-sample"

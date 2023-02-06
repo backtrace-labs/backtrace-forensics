@@ -6,22 +6,26 @@ import {
     FoldVirtualColumnTypes,
 } from '../../coroner/fold';
 import { SelectedCoronerQuery } from '../../coroner/select';
+import { ICoronerQueryExecutor } from '../../interfaces';
 import { IFoldCoronerQueryBuilderFactory } from '../../interfaces/factories/IFoldCoronerQueryBuilderFactory';
 import { ISelectCoronerQueryBuilderFactory } from '../../interfaces/factories/ISelectCoronerQueryBuilderFactory';
 import { CommonCoronerQueryBuilder } from './CommonCoronerQueryBuilder';
 
 export class CoronerQueryBuilder extends CommonCoronerQueryBuilder implements CoronerQuery {
     readonly #request: QueryRequest;
+    readonly #executor: ICoronerQueryExecutor;
     readonly #foldQueryFactory: IFoldCoronerQueryBuilderFactory;
     readonly #selectQueryFactory: ISelectCoronerQueryBuilderFactory;
 
     constructor(
         request: QueryRequest,
+        executor: ICoronerQueryExecutor,
         foldQueryFactory: IFoldCoronerQueryBuilderFactory,
         selectQueryFactory: ISelectCoronerQueryBuilderFactory
     ) {
-        super(request);
+        super(request, executor);
         this.#request = request;
+        this.#executor = executor;
         this.#foldQueryFactory = foldQueryFactory;
         this.#selectQueryFactory = selectQueryFactory;
     }
@@ -55,6 +59,11 @@ export class CoronerQueryBuilder extends CommonCoronerQueryBuilder implements Co
     }
 
     protected createInstance(request: QueryRequest): this {
-        return new CoronerQueryBuilder(request, this.#foldQueryFactory, this.#selectQueryFactory) as this;
+        return new CoronerQueryBuilder(
+            request,
+            this.#executor,
+            this.#foldQueryFactory,
+            this.#selectQueryFactory
+        ) as this;
     }
 }

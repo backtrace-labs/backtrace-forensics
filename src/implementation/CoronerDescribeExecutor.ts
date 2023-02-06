@@ -1,9 +1,9 @@
-import { QueryRequest, RawCoronerResponse, RawQueryResponse } from '../coroner/common';
+import { DescribeResponse } from '../coroner/common';
 import { ICoronerApiCallerFactory } from '../interfaces/factories/ICoronerQueryMakerFactory';
-import { ICoronerQueryExecutor } from '../interfaces/ICoronerQueryExecutor';
+import { ICoronerDescribeExecutor } from '../interfaces/ICoronerDescribeExecutor';
 import { QuerySource } from '../models/QuerySource';
 
-export class CoronerQueryExecutor implements ICoronerQueryExecutor {
+export class CoronerDescribeExecutor implements ICoronerDescribeExecutor {
     readonly #queryMakerFactory: ICoronerApiCallerFactory;
     readonly #defaultSource: Partial<QuerySource>;
 
@@ -12,21 +12,18 @@ export class CoronerQueryExecutor implements ICoronerQueryExecutor {
         this.#defaultSource = defaultSource ?? {};
     }
 
-    public async execute<R extends RawQueryResponse>(
-        request: QueryRequest,
-        source?: Partial<QuerySource>
-    ): Promise<RawCoronerResponse<R>> {
+    public async execute(source?: Partial<QuerySource>): Promise<DescribeResponse> {
         let { address, token, project, location } = Object.assign({}, this.#defaultSource, source);
         if (!project) {
             throw new Error('Coroner project is not available.');
         }
 
         const queryMaker = await this.#queryMakerFactory.create();
-        const url = new URL(`/api/query?project=${project}`, address);
-        return await queryMaker.post<RawCoronerResponse<R>>(
+        const url = new URL(`/api/query?action=describe&project=${project}`, address);
+        return await queryMaker.post<DescribeResponse>(
             url,
             { address, token, project, location },
-            JSON.stringify(request)
+            '{"action": "describe"}'
         );
     }
 }

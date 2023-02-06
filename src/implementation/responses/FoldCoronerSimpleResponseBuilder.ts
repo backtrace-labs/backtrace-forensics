@@ -93,7 +93,7 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
                 fold(attribute, ...search) {
                     const result = row.tryFold(attribute, ...search);
                     if (result === undefined) {
-                        throw new Error(`Attribute "${attribute}" or fold ${inspect(search)} does not exist.`);
+                        throw new Error(`Attribute "${attribute}" or fold ${JSON.stringify(search)} does not exist.`);
                     }
                     return result;
                 },

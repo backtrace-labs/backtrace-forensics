@@ -1,17 +1,19 @@
 import { CoronerQuery, defaultRequest, QueryRequest } from './coroner/common';
 import { FoldCoronerQuery, FoldedCoronerQuery, FoldQueryRequest, isFoldRequest } from './coroner/fold';
 import { isSelectRequest, SelectCoronerQuery, SelectedCoronerQuery, SelectQueryRequest } from './coroner/select';
+import { CoronerDescribeExecutor } from './implementation/CoronerDescribeExecutor';
 import { CoronerQueryExecutor } from './implementation/CoronerQueryExecutor';
 import { CoronerQueryBuilderFactory } from './implementation/factories/CoronerQueryBuilderFactory';
 import { FoldCoronerQueryBuilderFactory } from './implementation/factories/FoldCoronerQueryBuilderFactory';
+import { PlatformCoronerApiCallerFactory } from './implementation/factories/PlatformCoronerApiCallerFactory';
 import { SelectCoronerQueryBuilderFactory } from './implementation/factories/SelectCoronerQueryBuilderFactory';
-import { NodeCoronerQueryMaker } from './implementation/NodeCoronerQueryMaker';
 import { FoldCoronerSimpleResponseBuilder } from './implementation/responses/FoldCoronerSimpleResponseBuilder';
 import { SelectCoronerSimpleResponseBuilder } from './implementation/responses/SelectCoronerSimpleResponseBuilder';
+import { ICoronerApiCallerFactory } from './interfaces/factories/ICoronerQueryMakerFactory';
 import { IFoldCoronerQueryBuilderFactory } from './interfaces/factories/IFoldCoronerQueryBuilderFactory';
 import { ISelectCoronerQueryBuilderFactory } from './interfaces/factories/ISelectCoronerQueryBuilderFactory';
+import { ICoronerDescribeExecutor } from './interfaces/ICoronerDescribeExecutor';
 import { ICoronerQueryExecutor } from './interfaces/ICoronerQueryExecutor';
-import { ICoronerQueryMaker } from './interfaces/ICoronerQueryMaker';
 import { QuerySource } from './models/QuerySource';
 
 export interface BacktraceForensicsOptions {
@@ -31,9 +33,9 @@ export interface BacktraceForensicsOptions {
     defaultSource?: Partial<QuerySource>;
 
     /**
-     * Use this to override the default query maker for API calls.
+     * Use this to override the default query maker factory for API calls.
      *
-     * Must implement `ICoronerQueryMaker`.
+     * Return type of factory `create` function must implement `ICoronerQueryMaker`.
      * @example
      * options.queryMaker = {
      *     query: (source, request) => {
@@ -41,7 +43,7 @@ export interface BacktraceForensicsOptions {
      *     }
      * }
      */
-    queryMaker?: ICoronerQueryMaker;
+    queryMakerFactory?: ICoronerApiCallerFactory;
 }
 
 export interface CreateQueryOptions<R extends QueryRequest = QueryRequest> {
@@ -51,7 +53,8 @@ export interface CreateQueryOptions<R extends QueryRequest = QueryRequest> {
 export class BacktraceForensics {
     public readonly options: BacktraceForensicsOptions;
 
-    readonly #executor: ICoronerQueryExecutor;
+    readonly #queryExecutor: ICoronerQueryExecutor;
+    readonly #describeExecutor: ICoronerDescribeExecutor;
     readonly #queryFactory: CoronerQueryBuilderFactory;
     readonly #foldFactory: IFoldCoronerQueryBuilderFactory;
     readonly #selectFactory: ISelectCoronerQueryBuilderFactory;
@@ -59,16 +62,27 @@ export class BacktraceForensics {
     constructor(options?: Partial<BacktraceForensicsOptions>) {
         this.options = this.getDefaultOptions(options);
 
-        this.#executor = new CoronerQueryExecutor(
-            this.options.queryMaker ?? new NodeCoronerQueryMaker(),
-            this.options.defaultSource
+        const queryMakerFactory = this.options.queryMakerFactory ?? new PlatformCoronerApiCallerFactory();
+
+        this.#queryExecutor = new CoronerQueryExecutor(queryMakerFactory, this.options.defaultSource);
+
+        this.#describeExecutor = new CoronerDescribeExecutor(queryMakerFactory, this.options.defaultSource);
+
+        this.#foldFactory = new FoldCoronerQueryBuilderFactory(
+            this.#queryExecutor,
+            new FoldCoronerSimpleResponseBuilder()
         );
-        this.#foldFactory = new FoldCoronerQueryBuilderFactory(this.#executor, new FoldCoronerSimpleResponseBuilder());
+
         this.#selectFactory = new SelectCoronerQueryBuilderFactory(
-            this.#executor,
+            this.#queryExecutor,
             new SelectCoronerSimpleResponseBuilder()
         );
-        this.#queryFactory = new CoronerQueryBuilderFactory(this.#foldFactory, this.#selectFactory);
+
+        this.#queryFactory = new CoronerQueryBuilderFactory(
+            this.#queryExecutor,
+            this.#foldFactory,
+            this.#selectFactory
+        );
     }
 
     /**
@@ -98,6 +112,10 @@ export class BacktraceForensics {
         return this.#queryFactory.create(defaultRequest);
     }
 
+    public describe(source?: Partial<QuerySource>) {
+        return this.#describeExecutor.execute(source);
+    }
+
     /**
      * Creates a new query.
      * @param request Request to use with the query. If not provided, will create an empty request.
@@ -122,6 +140,10 @@ export class BacktraceForensics {
         createOptions?: CreateQueryOptions<QueryRequest>
     ): CoronerQuery | SelectCoronerQuery | FoldCoronerQuery {
         return new BacktraceForensics(options).create(createOptions);
+    }
+
+    public static describe(source?: Partial<QuerySource>, options?: Partial<BacktraceForensicsOptions>) {
+        return new BacktraceForensics(options).describe(source);
     }
 
     private getDefaultOptions(options?: BacktraceForensicsOptions) {

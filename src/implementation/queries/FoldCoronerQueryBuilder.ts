@@ -35,7 +35,7 @@ export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder impleme
         executor: ICoronerQueryExecutor,
         builder: IFoldCoronerSimpleResponseBuilder
     ) {
-        super(request);
+        super(request, executor);
         this.#request = request;
         this.#executor = executor;
         this.#simpleResponseBuilder = builder;
@@ -245,10 +245,6 @@ export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder impleme
     }
 
     public async post(source?: Partial<QuerySource>): Promise<FoldQueryResponse> {
-        if (!this.#request.fold && !this.#request.group) {
-            throw new Error('Fold or group query expected.');
-        }
-
         const response = await this.#executor.execute<RawFoldQueryResponse>(this.#request, source);
         if (response.error) {
             return {
@@ -290,7 +286,7 @@ export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder impleme
         });
 
         if (index === -1) {
-            throw new Error(`Attribute ${attribute} is not folded on ${format(operator)}.`);
+            throw new Error(`Attribute ${attribute} is not folded on ${JSON.stringify(operator)}.`);
         }
 
         return index;

@@ -1,19 +1,26 @@
 import {
     CommonCoronerQuery,
     FilterOperator,
+    nextPage,
     QueryAttributeFilter,
     QueryFilter,
     QueryRequest,
+    QueryResponse,
+    RawQueryResponse,
 } from '../../coroner/common';
 import { AttributeType, AttributeValueType } from '../../coroner/common/attributes';
+import { ICoronerQueryExecutor } from '../../interfaces';
+import { QuerySource } from '../../models';
 import { convertInputValue } from '../helpers/convertInputValue';
 import { cloneRequest } from '../requests/cloneRequest';
 
 export abstract class CommonCoronerQueryBuilder implements CommonCoronerQuery {
     readonly #request: QueryRequest;
+    readonly #executor: ICoronerQueryExecutor;
 
-    constructor(request: QueryRequest) {
+    constructor(request: QueryRequest, executor: ICoronerQueryExecutor) {
         this.#request = request;
+        this.#executor = executor;
     }
 
     public limit(count: number | null | undefined): this {
@@ -95,6 +102,27 @@ export abstract class CommonCoronerQueryBuilder implements CommonCoronerQuery {
 
     public json(): QueryRequest {
         return this.#request;
+    }
+
+    public async post(
+        source?: Partial<QuerySource> | undefined
+    ): Promise<QueryResponse<RawQueryResponse, CommonCoronerQuery>> {
+        const response = await this.#executor.execute<RawQueryResponse>(this.#request, source);
+        if (response.error) {
+            return {
+                success: false,
+                json: () => response,
+            };
+        }
+
+        return {
+            success: true,
+            json: () => response,
+            nextPage: () => {
+                const request = nextPage(this.#request, response);
+                return this.createInstance(request);
+            },
+        };
     }
 
     protected abstract createInstance(request: QueryRequest): this;

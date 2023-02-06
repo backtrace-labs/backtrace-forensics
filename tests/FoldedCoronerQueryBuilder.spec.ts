@@ -261,13 +261,6 @@ describe('FoldedCoronerQueryBuilder', () => {
         ]);
     });
 
-    it('should throw on post when fold or group was not made', async () => {
-        const request: FoldQueryRequest = {};
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
-
-        await expect(queryable.post()).rejects.toThrow('Fold or group query expected.');
-    });
-
     it('should add post-aggregation range filter by fold when initial having is empty', async () => {
         const request: FoldQueryRequest = {
             fold: {

@@ -13,7 +13,7 @@ export interface FoldCoronerQuery extends CommonCoronerQuery {
      * @example
      * const foldQuery = query.fold();
      */
-    fold(): FoldCoronerQuery;
+    fold(): FoldedCoronerQuery;
 
     /**
      * Adds provided fold to the request.
