@@ -68,11 +68,14 @@ export class SelectedCoronerQueryBuilder extends CommonCoronerQueryBuilder imple
             };
         }
 
+        const total = response._.runtime.filter.rows;
+
         return {
             success: true,
+            total,
             json: () => response,
-            first: () => this.#simpleResponseBuilder.first(response.response),
-            all: () => this.#simpleResponseBuilder.rows(response.response),
+            first: () => this.#simpleResponseBuilder.first(response),
+            all: () => this.#simpleResponseBuilder.rows(response),
             nextPage: () => {
                 const request = nextPage(this.#request, response);
                 return this.createInstance(request);

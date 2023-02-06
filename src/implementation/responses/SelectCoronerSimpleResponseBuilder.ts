@@ -1,18 +1,23 @@
-import { CoronerValueType } from '../../coroner/common';
+import { CoronerValueType, SuccessfulRawCoronerResponse } from '../../coroner/common';
 import { RawSelectQueryResponse, SimpleSelectRow, SimpleSelectRows } from '../../coroner/select';
 import { ISelectCoronerSimpleResponseBuilder } from '../../interfaces/responses/ISelectCoronerSimpleResponseBuilder';
 
 export class SelectCoronerSimpleResponseBuilder implements ISelectCoronerSimpleResponseBuilder {
-    public first(response: RawSelectQueryResponse): SimpleSelectRow | undefined {
+    public first(response: SuccessfulRawCoronerResponse<RawSelectQueryResponse>): SimpleSelectRow | undefined {
         return this.buildRows(response, 1).rows[0];
     }
 
-    public rows(response: RawSelectQueryResponse): SimpleSelectRows {
+    public rows(response: SuccessfulRawCoronerResponse<RawSelectQueryResponse>): SimpleSelectRows {
         return this.buildRows(response);
     }
 
-    private buildRows(response: RawSelectQueryResponse, limit?: number): SimpleSelectRows {
+    private buildRows(
+        rawResponse: SuccessfulRawCoronerResponse<RawSelectQueryResponse>,
+        limit?: number
+    ): SimpleSelectRows {
+        const response = rawResponse.response;
         const rows: SimpleSelectRow[] = [];
+        const total = rawResponse._.runtime.filter.rows;
         for (let cIndex = 0; cIndex < response.columns_desc.length; cIndex++) {
             const columnDesc = response.columns_desc[cIndex];
             const columnValues = response.values[cIndex];
@@ -54,6 +59,7 @@ export class SelectCoronerSimpleResponseBuilder implements ISelectCoronerSimpleR
 
         const result: SimpleSelectRows = {
             rows,
+            total,
             select(attribute: string) {
                 return rows.map((r) => r.select(attribute));
             },

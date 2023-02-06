@@ -1,6 +1,7 @@
+import { SuccessfulRawCoronerResponse } from '../../coroner';
 import { RawSelectQueryResponse, SimpleSelectRow, SimpleSelectRows } from '../../coroner/select';
 
 export interface ISelectCoronerSimpleResponseBuilder {
-    first(response: RawSelectQueryResponse): SimpleSelectRow | undefined;
-    rows(response: RawSelectQueryResponse): SimpleSelectRows;
+    first(response: SuccessfulRawCoronerResponse<RawSelectQueryResponse>): SimpleSelectRow | undefined;
+    rows(response: SuccessfulRawCoronerResponse<RawSelectQueryResponse>): SimpleSelectRows;
 }

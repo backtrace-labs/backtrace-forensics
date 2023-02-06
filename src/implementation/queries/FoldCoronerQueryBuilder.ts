@@ -1,4 +1,3 @@
-import { format } from 'util';
 import { nextPage, OrderDirection } from '../../coroner/common';
 import { AttributeValueType } from '../../coroner/common/attributes';
 import {
@@ -253,8 +252,11 @@ export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder impleme
             };
         }
 
+        const total = response.response.cardinalities?.pagination.groups ?? 0;
+
         return {
             success: true,
+            total,
             json: () => response,
             first: () => this.#simpleResponseBuilder.first(response.response, this.#request),
             all: () => this.#simpleResponseBuilder.rows(response.response, this.#request),

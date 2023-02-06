@@ -19,6 +19,7 @@ export interface RawSelectQueryResponse extends RawQueryResponse {
 
 export interface SuccessfulSelectQueryResponse
     extends SuccessfulQueryResponse<RawSelectQueryResponse, SelectedCoronerQuery> {
+    readonly total: number;
     all(): SimpleSelectRows;
     first(): SimpleSelectRow | undefined;
 }

@@ -1,4 +1,3 @@
-import { inspect } from 'util';
 import {
     BinQueryColumnValue,
     DistributionQueryColumnValue,
@@ -34,6 +33,7 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
     private buildRows(response: RawFoldQueryResponse, request?: FoldQueryRequest, limit?: number): SimpleFoldRows {
         const keyDescription = response.factors_desc ? response.factors_desc[0] : null;
         const rows: SimpleFoldRow[] = [];
+        const total = response.cardinalities?.pagination.groups ?? 0;
 
         for (let i = 0; i < response.values.length && (limit == null || i < limit); i++) {
             const group = response.values[i];
@@ -147,6 +147,7 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
 
         const result: SimpleFoldRows = {
             rows,
+            total,
             fold(attribute, ...search) {
                 return rows.map((r) => r.fold(attribute, ...search));
             },

@@ -62,12 +62,13 @@ export type FoldQueryColumnValue<F extends FoldOperator = FoldOperator> = F exte
 export type FoldQueryRowValue = [CoronerValueType, FoldQueryColumnValue[], number];
 
 export interface RawFoldQueryResponse extends RawQueryResponse {
-    readonly cardinalities: QueryCardinalities;
+    readonly cardinalities?: QueryCardinalities;
     readonly factors_desc?: QueryFactorDescription[];
     readonly values: FoldQueryRowValue[];
 }
 
 export interface SuccessfulFoldQueryResponse extends SuccessfulQueryResponse<RawFoldQueryResponse, FoldedCoronerQuery> {
+    readonly total: number;
     all(): SimpleFoldRows;
     first(): SimpleFoldRow | undefined;
 }

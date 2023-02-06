@@ -76,8 +76,8 @@ export interface SimpleFoldAttributes {
 }
 
 export interface SimpleFoldRow {
-    attributes: SimpleFoldAttributes;
-    count: number;
+    readonly attributes: SimpleFoldAttributes;
+    readonly count: number;
 
     fold<O extends FoldOperator>(attribute: string, ...fold: O): SimpleFoldValue<O[0]>;
     tryFold<O extends FoldOperator>(attribute: string, ...fold: O): SimpleFoldValue<O[0]> | undefined;
@@ -87,7 +87,8 @@ export interface SimpleFoldRow {
 }
 
 export interface SimpleFoldRows {
-    rows: SimpleFoldRow[];
+    readonly total: number;
+    readonly rows: SimpleFoldRow[];
 
     fold<O extends FoldOperator>(attribute: string, ...fold: O): SimpleFoldValue<O[0]>[];
     tryFold<O extends FoldOperator>(attribute: string, ...fold: O): SimpleFoldValue<O[0]>[] | undefined;
