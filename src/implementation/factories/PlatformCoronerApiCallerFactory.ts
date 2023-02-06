@@ -5,11 +5,9 @@ export class PlatformCoronerApiCallerFactory implements ICoronerApiCallerFactory
     public async create() {
         let result: ICoronerApiCaller;
 
-        /// #if TARGET=="node"
+        /// #if TARGET == "node"
         result = new (await import('../NodeCoronerApiCaller')).NodeCoronerApiCaller();
-        /// #endif
-
-        /// #if TARGET="web"
+        /// #elif TARGET == "web"
         result = new (await import('../FetchCoronerApiCaller')).FetchCoronerApiCaller();
         /// #endif
 

@@ -15,7 +15,7 @@ function getModuleRules(env) {
 const base = {
     mode: process.env.NODE_ENV ?? 'development',
     entry: './src/index.ts',
-    devtool: 'eval-source-map',
+    devtool: 'source-map',
     resolve: {
         extensions: ['.ts', '.js'],
     },
@@ -28,6 +28,7 @@ module.exports = [
         output: {
             filename: 'backtrace-forensics.js',
             path: path.resolve(__dirname, 'lib'),
+            libraryTarget: 'commonjs2',
         },
         module: getModuleRules({ TARGET: 'node' }),
     },
