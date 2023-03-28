@@ -2,7 +2,7 @@ import { ICoronerApiCaller } from '../interfaces/ICoronerApiCaller';
 import { QuerySource } from '../models/QuerySource';
 
 export class FetchCoronerApiCaller implements ICoronerApiCaller {
-    public async post<R>(url: URL, source: Partial<QuerySource>, body?: string): Promise<R> {
+    public async post<R>(resource: string, source: Partial<QuerySource>, body?: string): Promise<R> {
         let { address, token, location } = source;
         if (!address) {
             throw new Error('Coroner address is not available.');
@@ -22,6 +22,7 @@ export class FetchCoronerApiCaller implements ICoronerApiCaller {
             headers['Content-Length'] = body.length.toString();
         }
 
+        const url = new URL(resource, address);
         const response = await fetch(url.href, {
             method: 'post',
             body,

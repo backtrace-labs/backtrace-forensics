@@ -14,19 +14,18 @@ export class CoronerQueryExecutor implements ICoronerQueryExecutor {
 
     public async execute<R extends RawQueryResponse>(
         request: QueryRequest,
-        source?: Partial<QuerySource>
+        source?: Partial<QuerySource>,
     ): Promise<RawCoronerResponse<R>> {
-        let { address, token, project, location } = Object.assign({}, this.#defaultSource, source);
+        const { address, token, project, location } = Object.assign({}, this.#defaultSource, source);
         if (!project) {
             throw new Error('Coroner project is not available.');
         }
 
         const queryMaker = await this.#queryMakerFactory.create();
-        const url = new URL(`/api/query?project=${project}`, address);
         return await queryMaker.post<RawCoronerResponse<R>>(
-            url,
+            `/api/query?project=${project}`,
             { address, token, project, location },
-            JSON.stringify(request)
+            JSON.stringify(request),
         );
     }
 }

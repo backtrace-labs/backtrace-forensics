@@ -4,7 +4,7 @@ import { ICoronerApiCaller } from '../interfaces/ICoronerApiCaller';
 import { QuerySource } from '../models/QuerySource';
 
 export class NodeCoronerApiCaller implements ICoronerApiCaller {
-    public async post<R>(url: URL, source: Partial<QuerySource>, body?: string): Promise<R> {
+    public async post<R>(resource: string, source: Partial<QuerySource>, body?: string): Promise<R> {
         let { address, token, location } = source;
         if (!address) {
             throw new Error('Coroner address is not available.');
@@ -14,6 +14,7 @@ export class NodeCoronerApiCaller implements ICoronerApiCaller {
             throw new Error('Coroner token is not available.');
         }
 
+        const url = new URL(resource, address);
         const protocol = url.protocol.startsWith('https') ? https : http;
 
         return new Promise<R>((resolve, reject) => {
@@ -44,11 +45,12 @@ export class NodeCoronerApiCaller implements ICoronerApiCaller {
                         case 302:
                             if (res.headers.location) {
                                 return this.post<R>(
-                                    new URL(res.headers.location),
+                                    resource,
                                     {
                                         ...source,
+                                        address: res.headers.location,
                                     },
-                                    body
+                                    body,
                                 )
                                     .then(resolve)
                                     .catch(reject);
@@ -69,7 +71,7 @@ export class NodeCoronerApiCaller implements ICoronerApiCaller {
 
                         resolve(JSON.parse(result.toString('utf-8')));
                     });
-                }
+                },
             );
 
             req.on('error', (error) => {

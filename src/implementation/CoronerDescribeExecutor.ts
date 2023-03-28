@@ -19,11 +19,10 @@ export class CoronerDescribeExecutor implements ICoronerDescribeExecutor {
         }
 
         const queryMaker = await this.#queryMakerFactory.create();
-        const url = new URL(`/api/query?action=describe&project=${project}`, address);
         return await queryMaker.post<DescribeResponse>(
-            url,
+            `/api/query?action=describe&project=${project}`,
             { address, token, project, location },
-            '{"action": "describe"}'
+            '{"action": "describe"}',
         );
     }
 }
