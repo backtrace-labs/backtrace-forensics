@@ -3,6 +3,10 @@ import { Ticket } from '../../coroner/models/Ticket';
 
 export class ValueConverter {
     public static toLabels(value: unknown): string[] {
+        if (!value) {
+            return [];
+        }
+
         if (typeof value !== 'string') {
             throw new TypeError('Invalid value type, expected string.');
         }
@@ -11,6 +15,10 @@ export class ValueConverter {
     }
 
     public static toCallstack(value: unknown): string[] {
+        if (!value) {
+            return [];
+        }
+
         if (typeof value !== 'string') {
             throw new TypeError('Invalid value type, expected string.');
         }
@@ -33,6 +41,10 @@ export class ValueConverter {
     }
 
     public static toTickets(value: unknown): Ticket[] {
+        if (!value) {
+            return [];
+        }
+
         if (typeof value !== 'string') {
             throw new TypeError('Invalid value type, expected string.');
         }
@@ -45,6 +57,10 @@ export class ValueConverter {
     }
 
     public static toIssueInvariants(value: unknown): IssueInvariant[] {
+        if (!value) {
+            return [];
+        }
+
         if (typeof value !== 'string') {
             throw new TypeError('Invalid value type, expected string.');
         }
