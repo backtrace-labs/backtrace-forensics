@@ -1,11 +1,14 @@
 {
-    "name": "backtrace-forensics",
+    "name": "@backtrace/forensics",
     "version": "0.2.2",
     "description": "Simplifies making and parsing queries to and from Coroner.",
     "source": "./src/index.ts",
     "main": "./lib/backtrace-forensics.js",
     "browser": "./lib/backtrace-forensics.web.js",
     "types": "./lib/index.d.ts",
+    "files": [
+        "lib"
+    ],
     "scripts": {
         "build": "webpack",
         "watch": "webpack --watch",
