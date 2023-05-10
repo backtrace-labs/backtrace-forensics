@@ -14,6 +14,7 @@ import { IFoldCoronerQueryBuilderFactory } from './interfaces/factories/IFoldCor
 import { ISelectCoronerQueryBuilderFactory } from './interfaces/factories/ISelectCoronerQueryBuilderFactory';
 import { ICoronerDescribeExecutor } from './interfaces/ICoronerDescribeExecutor';
 import { ICoronerQueryExecutor } from './interfaces/ICoronerQueryExecutor';
+import { DescribeSource } from './models/DescribeSource';
 import { QuerySource } from './models/QuerySource';
 
 export interface BacktraceForensicsOptions {
@@ -70,18 +71,18 @@ export class BacktraceForensics {
 
         this.#foldFactory = new FoldCoronerQueryBuilderFactory(
             this.#queryExecutor,
-            new FoldCoronerSimpleResponseBuilder()
+            new FoldCoronerSimpleResponseBuilder(),
         );
 
         this.#selectFactory = new SelectCoronerQueryBuilderFactory(
             this.#queryExecutor,
-            new SelectCoronerSimpleResponseBuilder()
+            new SelectCoronerSimpleResponseBuilder(),
         );
 
         this.#queryFactory = new CoronerQueryBuilderFactory(
             this.#queryExecutor,
             this.#foldFactory,
-            this.#selectFactory
+            this.#selectFactory,
         );
     }
 
@@ -112,7 +113,7 @@ export class BacktraceForensics {
         return this.#queryFactory.create(defaultRequest);
     }
 
-    public describe(source?: Partial<QuerySource>) {
+    public describe(source?: Partial<DescribeSource>) {
         return this.#describeExecutor.execute(source);
     }
 
@@ -125,24 +126,24 @@ export class BacktraceForensics {
      */
     public static create<R extends QueryRequest>(
         options?: Partial<BacktraceForensicsOptions>,
-        createOptions?: CreateQueryOptions<R>
+        createOptions?: CreateQueryOptions<R>,
     ): CoronerQuery;
     public static create<R extends SelectQueryRequest>(
         options?: Partial<BacktraceForensicsOptions>,
-        createOptions?: CreateQueryOptions<R>
+        createOptions?: CreateQueryOptions<R>,
     ): SelectedCoronerQuery;
     public static create<R extends FoldQueryRequest>(
         options?: Partial<BacktraceForensicsOptions>,
-        createOptions?: CreateQueryOptions<R>
+        createOptions?: CreateQueryOptions<R>,
     ): FoldedCoronerQuery;
     public static create(
         options?: Partial<BacktraceForensicsOptions>,
-        createOptions?: CreateQueryOptions<QueryRequest>
+        createOptions?: CreateQueryOptions<QueryRequest>,
     ): CoronerQuery | SelectCoronerQuery | FoldCoronerQuery {
         return new BacktraceForensics(options).create(createOptions);
     }
 
-    public static describe(source?: Partial<QuerySource>, options?: Partial<BacktraceForensicsOptions>) {
+    public static describe(source?: Partial<DescribeSource>, options?: Partial<BacktraceForensicsOptions>) {
         return new BacktraceForensics(options).describe(source);
     }
 
