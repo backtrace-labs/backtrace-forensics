@@ -29,6 +29,6 @@
         "webpack-cli": "^5.0.1"
     },
     "workspaces": [
-        "backtrace-forensics-sample"
+        "samples/backtrace-forensics-sample"
     ]
 }

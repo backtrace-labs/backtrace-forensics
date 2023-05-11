@@ -1,13 +1,13 @@
-import { stdin as input, stdout as output } from 'process';
-import readline from 'readline';
 import {
     BacktraceForensics,
     Filters,
-    FoldedCoronerQuery,
     FoldOperator,
+    FoldedCoronerQuery,
     QuerySource,
     SelectedCoronerQuery,
-} from '../../lib';
+} from 'backtrace-forensics';
+import { stdin as input, stdout as output } from 'process';
+import readline from 'readline';
 
 const rl = readline.createInterface({ input, output });
 

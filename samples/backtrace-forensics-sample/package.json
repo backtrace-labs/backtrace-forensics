@@ -4,7 +4,7 @@
     "description": "",
     "main": "index.js",
     "dependencies": {
-        "backtrace-forensics": "file:../"
+        "backtrace-forensics": "file:../../"
     },
     "devDependencies": {},
     "scripts": {

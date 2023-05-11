@@ -1,4 +1,4 @@
-import BacktraceForensics, { Filters } from '../../lib';
+import BacktraceForensics, { Filters } from 'backtrace-forensics';
 
 // (async () => {
 //     const response = await BacktraceForensics.create({
