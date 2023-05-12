@@ -115,4 +115,4 @@ export interface CommonCoronerQuery {
     post(source?: Partial<QuerySource>): Promise<QueryResponse>;
 }
 
-export type CoronerQuery = CommonCoronerQuery & SelectCoronerQuery & FoldCoronerQuery;
+export interface CoronerQuery extends CommonCoronerQuery, SelectCoronerQuery, FoldCoronerQuery {}

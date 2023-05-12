@@ -151,8 +151,8 @@ These functions are available always, regardless of folding or selecting.
 
 -   `filter(string, QueryAttributeFilter[])`
 
-    Adds filters to request.
-    You can use this requests with `Filters` helper. See [Fluent filters](#fluent-filters) for more info.
+    Adds filters to request. You can use this requests with `Filters` helper. See [Fluent filters](#fluent-filters) for
+    more info.
 
     Request mutation: `request.filter[attribute] += filters`
 
@@ -241,7 +241,8 @@ const request = query.filter('a', 'equal', 'xyz').limit(20).select('b', 'c').jso
 
 ## Getting the response
 
-To get the response, you must select or fold at least once. After that, you can use the async `post` function, to receive the raw response from Coroner.
+To get the response, you must select or fold at least once. After that, you can use the async `post` function, to
+receive the raw response from Coroner.
 
 Check for `error` before trying to access the actual response.
 
@@ -270,7 +271,8 @@ const coronerResponse = await query.post({
 
 ## Simple responses
 
-To simplify reading the data from the response, there are two methods in every successful response: `toArray` and `first`. These will return a simplified key-value data structure representing the data received from Coroner.
+To simplify reading the data from the response, there are two methods in every successful response: `toArray` and
+`first`. These will return a simplified key-value data structure representing the data received from Coroner.
 
 The responses will be different for selecting and folding, respectively.
 
@@ -447,7 +449,7 @@ const query = BacktraceForensics.create(
     {},
     {
         attributeList: CommonAttributes,
-    }
+    },
 );
 ```
 
@@ -487,7 +489,8 @@ The attributes passed as second parameter will overwrite those passed as first p
 
 By default, the query maker is using `http`/`https` modules in Node, and `XMLHttpRequest` in browser.
 
-If you want to use your own implementation for making the query, provide an implementation of `ICoronerQueryMaker` to the `BacktraceForensics` options.
+If you want to use your own implementation for making the query, provide an implementation of `ICoronerQueryMaker` to
+the `BacktraceForensics` options.
 
 A Typescript class implementation of a query maker using `axios` may look like this:
 
@@ -498,7 +501,7 @@ import { ICoronerQueryMaker } from 'backtrace-forensics';
 class AxiosCoronerQueryMaker implements ICoronerQueryMaker {
     public async query<R extends QueryResponse>(
         source: QuerySource,
-        request: QueryRequest
+        request: QueryRequest,
     ): Promise<CoronerResponse<R>> {
         const response = await axios.post<CoronerResponse<R>>('/api/query', request, {
             baseUrl: source.address,
@@ -512,6 +515,71 @@ class AxiosCoronerQueryMaker implements ICoronerQueryMaker {
         return response.data;
     }
 }
+```
+
+# Writing extensions
+
+As of version 0.3.0, `backtrace-forensics` supports writing extensions to its query functions.
+
+To extend any of the queries, use one of the following functions:
+
+-   `extendCoronerQuery` - use with `CommonCoronerQuery` interface
+-   `extendSelectCoronerQuery` - use with `SelectCoronerQuery` interface
+-   `extendSelectedCoronerQuery` - use with `SelectedCoronerQuery` interface
+-   `extendFoldCoronerQuery` - use with `FoldCoronerQuery` interface
+-   `extendFoldedCoronerQuery` - use with `FoldedCoronerQuery` interface
+
+Be sure to add typings for Typescript.
+
+You can check out sample plugins in the `samples` folder. The usage of these plugins is in the main sample in
+`extensions.ts`.
+
+## Adding methods
+
+To add a method to a query, let's say fold queries:
+
+```typescript
+// plugin.ts
+
+extendFoldCoronerQuery({
+    addHeadAndTailFolds(attribute: string) {
+        return this.fold(attribute, 'head').fold(attribute, 'tail');
+    },
+});
+
+extendFoldedCoronerQuery({
+    addHourlyQuantizedColumn(attribute: string, name: string) {
+        return this.virtualColumn(name, 'quantized_uint', {
+            backing_column: attribute,
+            size: 3600,
+            offset: 86400,
+        });
+    },
+});
+
+declare module 'backtrace-forensics' {
+    interface FoldCoronerQuery {
+        // For not folded queries, be sure to return FoldedCoronerQuery to continue folding
+        addHeadAndTailFolds(attribute: string): FoldedCoronerQuery;
+    }
+
+    interface FoldedCoronerQuery {
+        // For already-folded queries, return FoldedCoronerQuery, or just this
+        addHourlyQuantizedColumn(attribute: string, name: string): this;
+    }
+}
+```
+
+Now, as long as you have this module imported, you can use this method:
+
+```typescript
+import './plugin';
+
+BacktraceForensics.create()
+    .filter('a', 'equals', 'b')
+    .addHeadAndTailFolds('a')
+    .fold('c', 'unique')
+    .addHourlyQuantizedColumn('x', 'timestamp');
 ```
 
 # Contact

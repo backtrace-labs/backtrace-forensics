@@ -1,17 +1,17 @@
 {
-    "name": "backtrace-forensics-sample",
+    "name": "backtrace-forensics-plugin-sample",
     "version": "1.0.0",
-    "description": "",
-    "main": "index.js",
-    "dependencies": {
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts",
+    "peerDependencies": {
         "backtrace-forensics": "file:../../"
     },
     "devDependencies": {},
     "scripts": {
-        "start": "node dist/index.js",
         "build": "tsc",
         "watch": "tsc --watch"
     },
     "author": "Backtrace <team@backtrace.io>",
-    "license": "LicenseRef-LICENSE"
+    "license": "LicenseRef-LICENSE",
+    "description": ""
 }
