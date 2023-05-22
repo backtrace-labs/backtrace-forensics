@@ -4,7 +4,7 @@ import { ICoronerApiCaller } from '../interfaces/ICoronerApiCaller';
 import { QuerySource } from '../models/QuerySource';
 
 export class NodeCoronerApiCaller implements ICoronerApiCaller {
-    public async post<R>(resource: string, source: Partial<QuerySource>, body?: string): Promise<R> {
+    public async post<R>(resource: string | URL, source: Partial<QuerySource>, body?: string): Promise<R> {
         let { address, token, location } = source;
         if (!address) {
             throw new Error('Coroner address is not available.');

@@ -1,5 +1,5 @@
 export interface VersionIssueInvariant {
-    type: 'version_gt';
+    type: 'version_gt' | 'version_ge';
     field: string;
     version: string;
 }

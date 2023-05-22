@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { RawSelectQueryResponse, SelectQueryRequest } from '../src';
+import { RawSelectQueryResponse, SelectQueryRequest, SuccessfulRawCoronerResponse } from '../src';
 import { SelectCoronerSimpleResponseBuilder } from '../src/implementation/responses/SelectCoronerSimpleResponseBuilder';
 
 describe('SelectCoronerSimpleResponseBuilder', () => {
@@ -13,40 +13,58 @@ describe('SelectCoronerSimpleResponseBuilder', () => {
             },
         ],
     } as const;
+    const emptyStats = {
+        latency: '0',
+        project: 'test',
+        tx: 123,
+        universe: 'test',
+        user: 'test',
+    };
 
-    const testResponse: RawSelectQueryResponse = {
-        version: '1.2.0',
-        seq: 2,
-        encoding: 'rle',
-        columns: [
-            ['fingerprint', 'sha256'],
-            ['randomInt', 'none'],
-        ],
-        columns_desc: [
-            {
-                name: 'fingerprint',
-                format: 'sha256',
-                type: 'dictionary',
-            },
-            {
-                name: 'randomInt',
-                format: 'none',
-                type: 'uint32',
-            },
-        ],
-        pagination: {
-            limit: 20,
-            offset: 0,
-        },
-        objects: [['*', [[1, 19]]]],
-        values: [
-            [
-                '*',
-                ['407c0e05304c264fb48a4f74003e8fd608ad69507608197e86bdd544ae4fad4f', 1],
-                ['f9be5fab68692b9792f33335798a01e89a7e0b9a42ee75548b4517de9e5da3a0', 4],
+    const testResponse: SuccessfulRawCoronerResponse<RawSelectQueryResponse> = {
+        response: {
+            version: '1.2.0',
+            seq: 2,
+            encoding: 'rle',
+            columns: [
+                ['fingerprint', 'sha256'],
+                ['randomInt', 'none'],
             ],
-            ['*', [1765517764, 1], [16395388, 1], [2554929328, 1], [4108795268, 1], [651545726, 1]],
-        ],
+            columns_desc: [
+                {
+                    name: 'fingerprint',
+                    format: 'sha256',
+                    type: 'dictionary',
+                },
+                {
+                    name: 'randomInt',
+                    format: 'none',
+                    type: 'uint32',
+                },
+            ],
+            pagination: {
+                limit: 20,
+                offset: 0,
+            },
+            objects: [['*', [[1, 19]]]],
+            values: [
+                [
+                    '*',
+                    ['407c0e05304c264fb48a4f74003e8fd608ad69507608197e86bdd544ae4fad4f', 1],
+                    ['f9be5fab68692b9792f33335798a01e89a7e0b9a42ee75548b4517de9e5da3a0', 4],
+                ],
+                ['*', [1765517764, 1], [16395388, 1], [2554929328, 1], [4108795268, 1], [651545726, 1]],
+            ],
+        },
+        error: undefined,
+        _: {
+            ...emptyStats,
+            runtime: {
+                filter: {
+                    rows: 2,
+                },
+            },
+        },
     };
 
     it('should return first element from queried elements from first when elements are present', async () => {
@@ -148,7 +166,18 @@ describe('SelectCoronerSimpleResponseBuilder', () => {
         };
 
         const builder = new SelectCoronerSimpleResponseBuilder();
-        const element = builder.first(response);
+        const element = builder.first({
+            response,
+            error: undefined,
+            _: {
+                ...emptyStats,
+                runtime: {
+                    filter: {
+                        rows: 0,
+                    },
+                },
+            },
+        });
         expect(element).toEqual(undefined);
     });
 });
