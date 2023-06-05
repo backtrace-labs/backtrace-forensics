@@ -8,15 +8,14 @@ export class FetchCoronerApiCaller implements ICoronerApiCaller {
             throw new Error('Coroner address is not available.');
         }
 
-        if (!token) {
-            throw new Error('Coroner token is not available.');
-        }
-
         const headers: HeadersInit = {
             'Content-Type': 'application/json',
             'X-Coroner-Location': location ?? address,
-            'X-Coroner-Token': token,
         };
+
+        if (token) {
+            headers['X-Coroner-Token'] = token;
+        }
 
         if (body) {
             headers['Content-Length'] = body.length.toString();

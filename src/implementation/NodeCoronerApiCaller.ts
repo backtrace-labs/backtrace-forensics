@@ -10,10 +10,6 @@ export class NodeCoronerApiCaller implements ICoronerApiCaller {
             throw new Error('Coroner address is not available.');
         }
 
-        if (!token) {
-            throw new Error('Coroner token is not available.');
-        }
-
         const url = new URL(resource, address);
         const protocol = url.protocol.startsWith('https') ? https : http;
 
@@ -21,8 +17,11 @@ export class NodeCoronerApiCaller implements ICoronerApiCaller {
             const headers: http.OutgoingHttpHeaders = {
                 'Content-Type': 'application/json',
                 'X-Coroner-Location': location ?? address,
-                'X-Coroner-Token': token,
             };
+
+            if (token) {
+                headers['X-Coroner-Token'] = token;
+            }
 
             if (body) {
                 headers['Content-Length'] = body.length;
