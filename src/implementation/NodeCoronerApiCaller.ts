@@ -1,37 +1,28 @@
 import http from 'http';
 import https from 'https';
 import { ICoronerApiCaller } from '../interfaces/ICoronerApiCaller';
-import { QuerySource } from '../models/QuerySource';
 
 export class NodeCoronerApiCaller implements ICoronerApiCaller {
-    public async post<R>(resource: string | URL, source: Partial<QuerySource>, body?: string): Promise<R> {
-        let { address, token, location } = source;
-        if (!address) {
-            throw new Error('Coroner address is not available.');
-        }
-
-        const url = new URL(resource, address);
-        const protocol = url.protocol.startsWith('https') ? https : http;
+    public async post<R>(url: string | URL, body?: string, customHeaders?: Record<string, string>): Promise<R> {
+        const urlObj = url instanceof URL ? url : new URL(url);
+        const protocol = urlObj.protocol.startsWith('https') ? https : http;
 
         return new Promise<R>((resolve, reject) => {
             const headers: http.OutgoingHttpHeaders = {
                 'Content-Type': 'application/json',
-                'X-Coroner-Location': location ?? address,
             };
-
-            if (token) {
-                headers['X-Coroner-Token'] = token;
-            }
 
             if (body) {
                 headers['Content-Length'] = body.length;
             }
 
+            Object.assign(headers, customHeaders);
+
             const req = protocol.request(
                 {
-                    hostname: url.hostname,
-                    port: url.port,
-                    path: url.pathname + url.search,
+                    hostname: urlObj.hostname,
+                    port: urlObj.port,
+                    path: urlObj.pathname + urlObj.search,
                     method: 'POST',
                     headers,
                 },
@@ -43,16 +34,7 @@ export class NodeCoronerApiCaller implements ICoronerApiCaller {
                         case 301:
                         case 302:
                             if (res.headers.location) {
-                                return this.post<R>(
-                                    resource,
-                                    {
-                                        ...source,
-                                        address: res.headers.location,
-                                    },
-                                    body,
-                                )
-                                    .then(resolve)
-                                    .catch(reject);
+                                return this.post<R>(url, body, customHeaders).then(resolve).catch(reject);
                             }
                         default:
                             reject(new Error(`Invalid coroner status code: ${res.statusCode}.`));

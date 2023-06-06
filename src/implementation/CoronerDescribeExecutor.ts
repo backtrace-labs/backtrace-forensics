@@ -3,6 +3,7 @@ import { ICoronerApiCallerFactory } from '../interfaces/factories/ICoronerQueryM
 import { ICoronerDescribeExecutor } from '../interfaces/ICoronerDescribeExecutor';
 import { DescribeSource } from '../models/DescribeSource';
 import { QuerySource } from '../models/QuerySource';
+import { createRequestData } from './helpers/createRequestData';
 
 export class CoronerDescribeExecutor implements ICoronerDescribeExecutor {
     readonly #queryMakerFactory: ICoronerApiCallerFactory;
@@ -14,23 +15,13 @@ export class CoronerDescribeExecutor implements ICoronerDescribeExecutor {
     }
 
     public async execute(source?: Partial<DescribeSource>): Promise<DescribeResponse> {
-        let { address, token, project, location, table } = Object.assign({}, this.#defaultSource, source);
-        if (!project) {
+        const querySource = Object.assign({}, this.#defaultSource, source);
+        if (!querySource.project) {
             throw new Error('Coroner project is not available.');
         }
 
-        const qs = new URLSearchParams();
-        qs.set('action', 'describe');
-        qs.set('project', project);
-        if (table) {
-            qs.set('table', table);
-        }
-
+        const { url, headers } = createRequestData(querySource, '/api/query?action=describe');
         const queryMaker = await this.#queryMakerFactory.create();
-        return await queryMaker.post<DescribeResponse>(
-            `/api/query?${qs.toString()}`,
-            { address, token, project, location },
-            '{"action": "describe"}',
-        );
+        return await queryMaker.post<DescribeResponse>(url, '{"action": "describe"}', headers);
     }
 }

@@ -21,9 +21,26 @@ export interface QuerySource {
     token: string;
 
     /**
-     * Project to use. Will be used as a `project` param in `/api/query` call.
+     * Project to use. Will be used as a `project` param.
      * @example
      * source.project = 'coroner';
      */
     project: string;
+
+    /**
+     * Universe to use. Will be used as a `universe` param.
+     * @example
+     * source.universe = 'backtrace';
+     */
+    universe?: string;
+
+    /**
+     * Additional headers to use.
+     */
+    headers?: Record<string, string>;
+
+    /**
+     * Additional params to use.
+     */
+    params?: Record<string, string | string[]>;
 }

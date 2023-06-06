@@ -21,7 +21,7 @@ describe('NodeCoronerApiCaller', () => {
             .reply(200, expectedResponse);
 
         const maker = new NodeCoronerApiCaller();
-        const response = await maker.post(url, source, '{}');
+        const response = await maker.post(url, '{}');
 
         expect(response).toEqual(expectedResponse);
         scope.done();
@@ -45,7 +45,7 @@ describe('NodeCoronerApiCaller', () => {
             .reply(200, expectedResponse);
 
         const maker = new NodeCoronerApiCaller();
-        const response = await maker.post(url, source, '{}');
+        const response = await maker.post(url, '{}');
 
         expect(response).toEqual(expectedResponse);
         scope.done();
@@ -82,42 +82,14 @@ describe('NodeCoronerApiCaller', () => {
             .reply(200, expectedResponse);
 
         const maker = new NodeCoronerApiCaller();
-        const response = await maker.post(httpUrl, httpSource, '{}');
+        const response = await maker.post(httpUrl, '{}');
 
         expect(response).toEqual(expectedResponse);
         httpScope.done();
         httpsScope.done();
     });
 
-    it('should pass coroner token header', async () => {
-        const source: QuerySource = {
-            address: 'https://sample.sp.backtrace.io',
-            project: 'project',
-            token: 'token',
-        };
-
-        const expectedResponse: Partial<RawCoronerResponse<never>> = {
-            error: undefined,
-            response: undefined,
-        };
-
-        const url = new URL(`/api/query?project=${source.project}`, source.address);
-        const scope = nock(url.origin, {
-            reqheaders: {
-                'X-Coroner-Token': source.token,
-            },
-        })
-            .post(url.pathname + url.search)
-            .reply(200, expectedResponse);
-
-        const maker = new NodeCoronerApiCaller();
-        const response = await maker.post(url, source, '{}');
-
-        expect(response).toEqual(expectedResponse);
-        scope.done();
-    });
-
-    it('should pass coroner location header from address', async () => {
+    it('should pass provided headers', async () => {
         const source: QuerySource = {
             address: 'https://sample.sp.backtrace.io',
             project: 'project',
@@ -133,42 +105,17 @@ describe('NodeCoronerApiCaller', () => {
         const scope = nock(url.origin, {
             reqheaders: {
                 'X-Coroner-Location': source.address,
+                'X-Coroner-Token': source.token,
             },
         })
             .post(url.pathname + url.search)
             .reply(200, expectedResponse);
 
         const maker = new NodeCoronerApiCaller();
-        const response = await maker.post(url, source, '{}');
-
-        expect(response).toEqual(expectedResponse);
-        scope.done();
-    });
-
-    it('should pass coroner location header from location if specified', async () => {
-        const source: QuerySource = {
-            address: 'https://sample.sp.backtrace.io',
-            project: 'project',
-            token: 'token',
-            location: 'https://yolo.sp.backtrace.io',
-        };
-
-        const expectedResponse: Partial<RawCoronerResponse<never>> = {
-            error: undefined,
-            response: undefined,
-        };
-
-        const url = new URL(`/api/query?project=${source.project}`, source.address);
-        const scope = nock(url.origin, {
-            reqheaders: {
-                'X-Coroner-Location': source.location!,
-            },
-        })
-            .post(url.pathname + url.search)
-            .reply(200, expectedResponse);
-
-        const maker = new NodeCoronerApiCaller();
-        const response = await maker.post(url, source, '{}');
+        const response = await maker.post(url, '{}', {
+            'X-Coroner-Location': source.address,
+            'X-Coroner-Token': source.token,
+        });
 
         expect(response).toEqual(expectedResponse);
         scope.done();
@@ -187,7 +134,7 @@ describe('NodeCoronerApiCaller', () => {
             .reply(500);
 
         const maker = new NodeCoronerApiCaller();
-        await expect(maker.post(url, source, '{}')).rejects.toThrow(/Invalid coroner status code/);
+        await expect(maker.post(url, '{}')).rejects.toThrow(/Invalid coroner status code/);
         scope.done();
     });
 });
