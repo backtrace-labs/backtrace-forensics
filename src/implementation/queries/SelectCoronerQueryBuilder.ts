@@ -5,6 +5,8 @@ import {
     SelectOrder,
     SelectQueryRequest,
     SelectQueryResponse,
+    SimpleSelectRow,
+    SimpleSelectRows,
 } from '../../coroner/select';
 import { ICoronerQueryExecutor } from '../../interfaces/ICoronerQueryExecutor';
 import { ISelectCoronerSimpleResponseBuilder } from '../../interfaces/responses/ISelectCoronerSimpleResponseBuilder';
@@ -20,7 +22,7 @@ export class SelectedCoronerQueryBuilder extends CommonCoronerQueryBuilder imple
     constructor(
         request: SelectQueryRequest,
         executor: ICoronerQueryExecutor,
-        builder: ISelectCoronerSimpleResponseBuilder
+        builder: ISelectCoronerSimpleResponseBuilder,
     ) {
         super(request, executor);
         this.#request = request;
@@ -70,12 +72,16 @@ export class SelectedCoronerQueryBuilder extends CommonCoronerQueryBuilder imple
 
         const total = response._.runtime.filter.rows;
 
+        let cachedFirst: SimpleSelectRow | undefined | null = null;
+        let cachedAll: SimpleSelectRows | null = null;
+
         return {
             success: true,
             total,
             json: () => response,
-            first: () => this.#simpleResponseBuilder.first(response),
-            all: () => this.#simpleResponseBuilder.rows(response),
+            first: () =>
+                cachedFirst !== null ? cachedFirst : (cachedFirst = this.#simpleResponseBuilder.first(response)),
+            all: () => cachedAll ?? (cachedAll = this.#simpleResponseBuilder.rows(response)),
             nextPage: () => {
                 const request = nextPage(this.#request, response);
                 return this.createInstance(request);

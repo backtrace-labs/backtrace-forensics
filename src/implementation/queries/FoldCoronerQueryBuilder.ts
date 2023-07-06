@@ -16,6 +16,8 @@ import {
     FoldVirtualColumnTypes,
     GroupFoldOrder,
     RawFoldQueryResponse,
+    SimpleFoldRow,
+    SimpleFoldRows,
 } from '../../coroner/fold';
 import { ICoronerQueryExecutor } from '../../interfaces/ICoronerQueryExecutor';
 import { IFoldCoronerSimpleResponseBuilder } from '../../interfaces/responses/IFoldCoronerSimpleResponseBuilder';
@@ -32,7 +34,7 @@ export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder impleme
     constructor(
         request: FoldQueryRequest,
         executor: ICoronerQueryExecutor,
-        builder: IFoldCoronerSimpleResponseBuilder
+        builder: IFoldCoronerSimpleResponseBuilder,
     ) {
         super(request, executor);
         this.#request = request;
@@ -139,7 +141,7 @@ export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder impleme
         foldOrIndex: number | FoldOperator,
         operator: FoldFilterOperatorInput,
         valueIndexOrValue: number | FoldFilterInput<FoldOperator>,
-        value?: unknown
+        value?: unknown,
     ): this {
         let index: number;
         if (typeof foldOrIndex === 'number') {
@@ -203,7 +205,7 @@ export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder impleme
     public virtualColumn(
         name: string,
         type: FoldVirtualColumnType,
-        params: FoldVirtualColumnTypes[keyof FoldVirtualColumnTypes][1]
+        params: FoldVirtualColumnTypes[keyof FoldVirtualColumnTypes][1],
     ): this {
         const request = cloneFoldRequest(this.#request);
 
@@ -254,12 +256,18 @@ export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder impleme
 
         const total = response.response.cardinalities?.pagination.groups ?? 0;
 
+        let cachedFirst: SimpleFoldRow | undefined | null = null;
+        let cachedAll: SimpleFoldRows | null = null;
+
         return {
             success: true,
             total,
             json: () => response,
-            first: () => this.#simpleResponseBuilder.first(response.response, this.#request),
-            all: () => this.#simpleResponseBuilder.rows(response.response, this.#request),
+            first: () =>
+                cachedFirst !== null
+                    ? cachedFirst
+                    : (cachedFirst = this.#simpleResponseBuilder.first(response.response, this.#request)),
+            all: () => cachedAll ?? (cachedAll = this.#simpleResponseBuilder.rows(response.response, this.#request)),
             nextPage: () => {
                 const request = nextPage(this.#request, response);
                 return this.createInstance(request);
