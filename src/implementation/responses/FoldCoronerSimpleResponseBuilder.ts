@@ -20,6 +20,8 @@ import {
     SimpleFoldValue,
 } from '../../coroner/fold';
 import { IFoldCoronerSimpleResponseBuilder } from '../../interfaces/responses/IFoldCoronerSimpleResponseBuilder';
+import { SimpleFoldRowsObj } from './SImpleFoldRowsObj';
+import { SimpleFoldRowObj } from './SimpleFoldRowObj';
 
 export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleResponseBuilder {
     public first(response: RawFoldQueryResponse, request?: FoldQueryRequest): SimpleFoldRow | undefined {
@@ -87,125 +89,10 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
                 }
             }
 
-            const row: SimpleFoldRow = {
-                attributes,
-                count: groupCount,
-                fold(attribute, ...search) {
-                    const result = row.tryFold(attribute, ...search);
-                    if (result === undefined) {
-                        throw new Error(`Attribute "${attribute}" or fold ${JSON.stringify(search)} does not exist.`);
-                    }
-                    return result;
-                },
-                tryFold: <O extends FoldOperator>(
-                    attribute: string,
-                    ...search: O
-                ): SimpleFoldValue<O[0]> | undefined => {
-                    const result = this.filterFolds(row, attribute, ...search);
-                    if (result.length > 1) {
-                        throw new Error(
-                            'Ambiguous results found. This can happen when there are two columns with the same fold operator. ' +
-                                'Try providing the built request to the simple response builder.'
-                        );
-                    }
-
-                    return result[0] as SimpleFoldValue<O[0]> | undefined;
-                },
-                group(attribute) {
-                    const result = row.tryGroup(attribute);
-                    if (result === undefined) {
-                        throw new Error(`Attribute "${attribute}" does not exist or wasn't grouped on.`);
-                    }
-                    return result;
-                },
-                tryGroup(attribute?: string) {
-                    if (attribute === '*') {
-                        attribute = undefined;
-                    }
-
-                    for (const key in row.attributes) {
-                        if (attribute != null && key !== attribute) {
-                            continue;
-                        }
-
-                        const attributeValues = row.attributes[key];
-                        if ('groupKey' in attributeValues) {
-                            return attributeValues.groupKey;
-                        }
-                    }
-
-                    if (!attribute) {
-                        return '*';
-                    }
-
-                    return undefined;
-                },
-            };
-
-            rows.push(row);
+            rows.push(new SimpleFoldRowObj(attributes, groupCount));
         }
 
-        const result: SimpleFoldRows = {
-            rows,
-            total,
-            fold(attribute, ...search) {
-                return rows.map((r) => r.fold(attribute, ...search));
-            },
-            tryFold(attribute: string, ...search: FoldOperator) {
-                const result = rows.map((r) => r.tryFold(attribute, ...search));
-                if (result.some((r) => r === undefined)) {
-                    // all overloads accept undefined as return param, but TS fails for some reason
-                    return undefined as any;
-                }
-                return result;
-            },
-            group(attribute) {
-                const group = result.tryGroup(attribute);
-                if (!group) {
-                    throw new Error(`Attribute "${attribute}" does not exist or wasn't grouped on.`);
-                }
-                return group;
-            },
-            tryGroup(attribute?: string) {
-                const result = rows.map((r) => r.tryGroup(attribute));
-                if (result.some((r) => r === undefined)) {
-                    // all overloads accept undefined as return param, but TS fails for some reason
-                    return undefined as any;
-                }
-                return result;
-            },
-        };
-
-        return result as unknown as SimpleFoldRows;
-    }
-
-    private filterFolds(row: SimpleFoldRow, attribute: string, ...search: FoldOperator): SimpleFoldValue[] {
-        const result: SimpleFoldValue[] = [];
-        if (!row.attributes[attribute] || !row.attributes[attribute][search[0]]) {
-            return result;
-        }
-
-        const searchKey = search.join(';');
-        const folds = row.attributes[attribute][search[0]];
-        if (!folds) {
-            return [];
-        }
-
-        for (const fold of folds) {
-            const foldKey = fold.rawFold.join(';');
-
-            // Exact match, return the value
-            if (searchKey === foldKey) {
-                return [fold.value];
-            }
-
-            // Partial match, add and continue
-            if (searchKey.startsWith(foldKey)) {
-                result.push(fold.value);
-            }
-        }
-
-        return result;
+        return new SimpleFoldRowsObj(rows, total);
     }
 
     private getRawFold(
@@ -213,7 +100,7 @@ export class FoldCoronerSimpleResponseBuilder implements IFoldCoronerSimpleRespo
         response: RawFoldQueryResponse,
         attribute: string,
         operator: FoldOperator[0],
-        columnIndex: number
+        columnIndex: number,
     ) {
         const folds = request.fold && request.fold[attribute];
         if (!folds) {
