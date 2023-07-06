@@ -54,7 +54,7 @@ export type StringFilterOperator =
 
 export type QueryAttributeFilter<T extends AttributeType = AttributeType> = readonly [
     FilterOperator<T>,
-    AttributeValueType<T>
+    AttributeValueType<T>,
 ];
 
 export type QueryFilter<A extends string = string> = {
@@ -105,7 +105,6 @@ export interface QueryRequest {
 
 export const defaultRequest: QueryRequest = {
     offset: 0,
-    limit: 20,
 };
 
 export function nextPage<R extends QueryRequest>(request: R, response: RawCoronerResponse<any>): R {
