@@ -29,6 +29,7 @@ export class NodeCoronerApiCaller implements ICoronerApiCaller {
                 (res) => {
                     switch (res.statusCode) {
                         case 200:
+                        case 400:
                         case 403: // we want to return the error from data
                             break;
                         case 301:
