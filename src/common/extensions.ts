@@ -9,18 +9,18 @@ import { CoronerQueryBuilder } from '../implementation/queries/CoronerQueryBuild
 import { FoldedCoronerQueryBuilder } from '../implementation/queries/FoldCoronerQueryBuilder';
 import { SelectedCoronerQueryBuilder } from '../implementation/queries/SelectCoronerQueryBuilder';
 
+export type Extension<T> = { [K: string]: (...args: any[]) => any } & ThisType<T>;
+
 /**
  * Extends default `SelectedCoronerQuery` query builder with provided arguments.
  *
  * Use this to add functionality to already selected queries.
  */
-export function extendSelectedCoronerQuery<M extends { [K in keyof M]: (...args: any[]) => any }>(
-    obj: M & ThisType<SelectedCoronerQuery>,
-) {
+export function extendSelectedCoronerQuery(extension: Extension<SelectedCoronerQuery>) {
     type KeyType = keyof (typeof SelectedCoronerQueryBuilder)['prototype'];
 
-    for (const key in obj) {
-        SelectedCoronerQueryBuilder.prototype[key as KeyType] = obj[key];
+    for (const key in extension) {
+        SelectedCoronerQueryBuilder.prototype[key as KeyType] = extension[key];
     }
 }
 
@@ -29,13 +29,11 @@ export function extendSelectedCoronerQuery<M extends { [K in keyof M]: (...args:
  *
  * Use this to add functionality to already folded queries.
  */
-export function extendFoldedCoronerQuery<M extends { [K in keyof M]: (...args: any[]) => any }>(
-    obj: M & ThisType<FoldedCoronerQuery>,
-) {
+export function extendFoldedCoronerQuery(extension: Extension<FoldedCoronerQuery>) {
     type KeyType = keyof (typeof FoldedCoronerQueryBuilder)['prototype'];
 
-    for (const key in obj) {
-        FoldedCoronerQueryBuilder.prototype[key as KeyType] = obj[key];
+    for (const key in extension) {
+        FoldedCoronerQueryBuilder.prototype[key as KeyType] = extension[key];
     }
 }
 
@@ -44,17 +42,15 @@ export function extendFoldedCoronerQuery<M extends { [K in keyof M]: (...args: a
  *
  * Use this to add functionality to all queries.
  */
-export function extendCoronerQuery<M extends { [K in keyof M]: (...args: any[]) => any }>(
-    obj: M & ThisType<CoronerQuery>,
-) {
+export function extendCoronerQuery(extension: Extension<CoronerQuery>) {
     type KeyType = keyof (typeof CoronerQueryBuilder)['prototype'];
 
-    for (const key in obj) {
-        CoronerQueryBuilder.prototype[key as KeyType] = obj[key];
+    for (const key in extension) {
+        CoronerQueryBuilder.prototype[key as KeyType] = extension[key];
     }
 
-    extendSelectedCoronerQuery(obj);
-    extendFoldedCoronerQuery(obj);
+    extendSelectedCoronerQuery(extension);
+    extendFoldedCoronerQuery(extension);
 }
 
 /**
@@ -62,10 +58,8 @@ export function extendCoronerQuery<M extends { [K in keyof M]: (...args: any[]) 
  *
  * Use this to add functionality to base and selected queries.
  */
-export function extendSelectCoronerQuery<M extends { [K in keyof M]: (...args: any[]) => any }>(
-    obj: M & ThisType<SelectCoronerQuery>,
-) {
-    extendCoronerQuery(obj);
+export function extendSelectCoronerQuery(extension: Extension<SelectCoronerQuery>) {
+    extendCoronerQuery(extension);
 }
 
 /**
@@ -73,8 +67,6 @@ export function extendSelectCoronerQuery<M extends { [K in keyof M]: (...args: a
  *
  * Use this to add functionality to base and fold queries.
  */
-export function extendFoldCoronerQuery<M extends { [K in keyof M]: (...args: any[]) => any }>(
-    obj: M & ThisType<FoldCoronerQuery>,
-) {
-    extendCoronerQuery(obj);
+export function extendFoldCoronerQuery(extension: Extension<FoldCoronerQuery>) {
+    extendCoronerQuery(extension);
 }
