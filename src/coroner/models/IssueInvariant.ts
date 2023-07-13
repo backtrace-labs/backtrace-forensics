@@ -6,7 +6,7 @@ export interface VersionIssueInvariant {
 
 export interface TimestampIssueInvariant {
     type: 'timestamp_gt';
-    timestamp: string;
+    timestamp: number;
 }
 
 export interface AndIssueInvariant {
