@@ -5,7 +5,7 @@ import {
     FoldedCoronerQuery,
     QuerySource,
     SelectedCoronerQuery,
-} from 'backtrace-forensics';
+} from '@backtrace/forensics';
 import { stdin as input, stdout as output } from 'process';
 import readline from 'readline';
 

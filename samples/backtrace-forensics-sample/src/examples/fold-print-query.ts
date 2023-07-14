@@ -1,4 +1,4 @@
-import { Filters } from 'backtrace-forensics';
+import { Filters } from '@backtrace/forensics';
 import { instance } from './instance';
 
 const query = instance

@@ -4,12 +4,12 @@ import {
     extendCoronerQuery,
     extendFoldCoronerQuery,
     extendSelectCoronerQuery,
-} from 'backtrace-forensics';
+} from '@backtrace/forensics';
 
 // Need to define types for extensions
 // Required only in Typescript, Javascript can omit this
 // This can be in any file in the project, Typescript needs just to see it
-declare module 'backtrace-forensics' {
+declare module '@backtrace/forensics' {
     interface SelectCoronerQuery {
         // You can add your own documentation and it will be visible on the types
         /**

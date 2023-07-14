@@ -1,4 +1,4 @@
-import BacktraceForensics from 'backtrace-forensics';
+import BacktraceForensics from '@backtrace/forensics';
 import 'backtrace-forensics-plugin-sample'; // Imports plugin methods
 import 'backtrace-forensics-plugin-sample-2'; // Imports plugin methods
 
