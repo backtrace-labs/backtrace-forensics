@@ -21,6 +21,11 @@ export class CoronerDescribeExecutor implements ICoronerDescribeExecutor {
         }
 
         const { url, headers } = createRequestData(querySource, '/api/query?action=describe');
+
+        if (querySource.table) {
+            url.searchParams.set('table', querySource.table);
+        }
+
         const queryMaker = await this.#queryMakerFactory.create();
         return await queryMaker.post<DescribeResponse>(url, '{"action": "describe"}', headers);
     }
