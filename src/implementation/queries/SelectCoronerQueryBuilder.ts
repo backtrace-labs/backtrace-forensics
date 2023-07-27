@@ -17,16 +17,19 @@ import { CommonCoronerQueryBuilder } from './CommonCoronerQueryBuilder';
 export class SelectedCoronerQueryBuilder extends CommonCoronerQueryBuilder implements SelectedCoronerQuery {
     readonly #request: SelectQueryRequest;
     readonly #executor: ICoronerQueryExecutor;
+    readonly #buildSelf: (request: SelectQueryRequest) => SelectedCoronerQueryBuilder;
     readonly #simpleResponseBuilder: ISelectCoronerSimpleResponseBuilder;
 
     constructor(
         request: SelectQueryRequest,
         executor: ICoronerQueryExecutor,
+        buildSelf: (request: SelectQueryRequest) => SelectedCoronerQueryBuilder,
         builder: ISelectCoronerSimpleResponseBuilder,
     ) {
         super(request, executor);
         this.#request = request;
         this.#executor = executor;
+        this.#buildSelf = buildSelf;
         this.#simpleResponseBuilder = builder;
     }
 
@@ -90,6 +93,6 @@ export class SelectedCoronerQueryBuilder extends CommonCoronerQueryBuilder imple
     }
 
     protected createInstance(request: SelectQueryRequest): this {
-        return new SelectedCoronerQueryBuilder(request, this.#executor, this.#simpleResponseBuilder) as this;
+        return this.#buildSelf(request) as this;
     }
 }

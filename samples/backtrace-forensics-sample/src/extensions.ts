@@ -1,8 +1,9 @@
 import BacktraceForensics from '@backtrace/forensics';
 import 'backtrace-forensics-plugin-sample'; // Imports plugin methods
+import { samplePlugin } from 'backtrace-forensics-plugin-sample';
 import 'backtrace-forensics-plugin-sample-2'; // Imports plugin methods
 
-const selectQuery = BacktraceForensics.create()
+const selectQuery = BacktraceForensics.create({ plugins: [samplePlugin] })
     .filterAbcNotEmpty() // A plugin method imported from 'backtrace-forensics-plugin-sample-2'
     .selectKeys({ a: 123 }) // A plugin method imported from 'backtrace-forensics-plugin-sample'
     .select()
@@ -11,7 +12,7 @@ const selectQuery = BacktraceForensics.create()
 
 console.log(JSON.stringify(selectQuery, null, '\t'));
 
-const foldQuery = BacktraceForensics.create()
+const foldQuery = BacktraceForensics.create({ plugins: [samplePlugin] })
     .foldAbcHead() // A plugin method imported from 'backtrace-forensics-plugin-sample-2'
     .havingAbcHead('equal', 'test') // A plugin method imported from 'backtrace-forensics-plugin-sample-2'
     .filterAbcNotEmpty() // A plugin method imported from 'backtrace-forensics-plugin-sample-2'

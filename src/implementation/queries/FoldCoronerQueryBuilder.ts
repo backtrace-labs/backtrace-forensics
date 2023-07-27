@@ -29,16 +29,19 @@ import { CommonCoronerQueryBuilder } from './CommonCoronerQueryBuilder';
 export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder implements FoldedCoronerQuery {
     readonly #request: FoldQueryRequest;
     readonly #executor: ICoronerQueryExecutor;
+    readonly #buildSelf: (request: FoldQueryRequest) => FoldedCoronerQueryBuilder;
     readonly #simpleResponseBuilder: IFoldCoronerSimpleResponseBuilder;
 
     constructor(
         request: FoldQueryRequest,
         executor: ICoronerQueryExecutor,
+        buildSelf: (request: FoldQueryRequest) => FoldedCoronerQueryBuilder,
         builder: IFoldCoronerSimpleResponseBuilder,
     ) {
         super(request, executor);
         this.#request = request;
         this.#executor = executor;
+        this.#buildSelf = buildSelf;
         this.#simpleResponseBuilder = builder;
     }
 
@@ -276,7 +279,7 @@ export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder impleme
     }
 
     protected createInstance(request: FoldQueryRequest): this {
-        return new FoldedCoronerQueryBuilder(request, this.#executor, this.#simpleResponseBuilder) as this;
+        return this.#buildSelf(request) as this;
     }
 
     private findAttributeFoldIndex(attribute: string, operator: FoldOperator) {

@@ -1,3 +1,4 @@
+import { Plugins } from './common/plugin';
 import { CoronerQuery, defaultRequest, QueryRequest } from './coroner/common';
 import { FoldCoronerQuery, FoldedCoronerQuery, FoldQueryRequest, isFoldRequest } from './coroner/fold';
 import { isSelectRequest, SelectCoronerQuery, SelectedCoronerQuery, SelectQueryRequest } from './coroner/select';
@@ -31,7 +32,7 @@ export interface BacktraceForensicsOptions {
      * // Will use `address` and `token` from defaults
      * query.post({ project: 'coroner' });
      */
-    defaultSource?: Partial<QuerySource>;
+    readonly defaultSource?: Partial<QuerySource>;
 
     /**
      * Use this to override the default query maker factory for API calls.
@@ -44,7 +45,15 @@ export interface BacktraceForensicsOptions {
      *     }
      * }
      */
-    queryMakerFactory?: ICoronerApiCallerFactory;
+    readonly queryMakerFactory?: ICoronerApiCallerFactory;
+
+    /**
+     * Plugins to use with this instance of Forensics.
+     *
+     * @example
+     * options.plugins = [issuePlugin, otherPlugin];
+     */
+    readonly plugins?: Plugins.BacktraceForensicsPlugin[];
 }
 
 export interface CreateQueryOptions<R extends QueryRequest = QueryRequest> {
@@ -63,26 +72,58 @@ export class BacktraceForensics {
     constructor(options?: Partial<BacktraceForensicsOptions>) {
         this.options = this.getDefaultOptions(options);
 
-        const queryMakerFactory = this.options.queryMakerFactory ?? new PlatformCoronerApiCallerFactory();
+        const apiCallerFactory = this.options.queryMakerFactory ?? new PlatformCoronerApiCallerFactory();
 
-        this.#queryExecutor = new CoronerQueryExecutor(queryMakerFactory, this.options.defaultSource);
+        this.#queryExecutor = new CoronerQueryExecutor(apiCallerFactory, this.options.defaultSource);
 
-        this.#describeExecutor = new CoronerDescribeExecutor(queryMakerFactory, this.options.defaultSource);
+        this.#describeExecutor = new CoronerDescribeExecutor(apiCallerFactory, this.options.defaultSource);
+
+        const pluginContext: Plugins.PluginContext = {
+            options: this.options,
+            apiCallerFactory,
+        };
+
+        const foldedPlugins = this.options.plugins
+            ?.flatMap((p) => [
+                ...(p.queryExtensions ?? []),
+                ...(p.foldQueryExtensions ?? []),
+                ...(p.foldedQueryExtensions ?? []),
+            ])
+            .map((ext) => ext(pluginContext));
 
         this.#foldFactory = new FoldCoronerQueryBuilderFactory(
             this.#queryExecutor,
             new FoldCoronerSimpleResponseBuilder(),
+            foldedPlugins,
         );
+
+        const selectedPlugins = this.options.plugins
+            ?.flatMap((p) => [
+                ...(p.queryExtensions ?? []),
+                ...(p.selectQueryExtensions ?? []),
+                ...(p.selectedQueryExtensions ?? []),
+            ])
+            .map((ext) => ext(pluginContext));
 
         this.#selectFactory = new SelectCoronerQueryBuilderFactory(
             this.#queryExecutor,
             new SelectCoronerSimpleResponseBuilder(),
+            selectedPlugins,
         );
+
+        const basePlugins = this.options.plugins
+            ?.flatMap((p) => [
+                ...(p.queryExtensions ?? []),
+                ...(p.foldQueryExtensions ?? []),
+                ...(p.selectQueryExtensions ?? []),
+            ])
+            .map((ext) => ext(pluginContext));
 
         this.#queryFactory = new CoronerQueryBuilderFactory(
             this.#queryExecutor,
             this.#foldFactory,
             this.#selectFactory,
+            basePlugins,
         );
     }
 

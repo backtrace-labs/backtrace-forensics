@@ -1,10 +1,4 @@
-import {
-    FoldedCoronerQuery,
-    SelectedCoronerQuery,
-    extendCoronerQuery,
-    extendFoldCoronerQuery,
-    extendSelectCoronerQuery,
-} from '@backtrace/forensics';
+import { FoldedCoronerQuery, Plugins, SelectedCoronerQuery } from '@backtrace/forensics';
 
 // Need to define types for extensions
 // Required only in Typescript, Javascript can omit this
@@ -37,30 +31,30 @@ declare module '@backtrace/forensics' {
     }
 }
 
-extendSelectCoronerQuery({
-    selectKeys(obj: object) {
-        let query = this;
-        for (const key in obj) {
-            query = query.select(key);
-        }
-        return query;
-    },
-});
+export const samplePlugin = Plugins.createPlugin(
+    Plugins.addSelectQueryExtension(() => ({
+        selectKeys(obj: object) {
+            let query = this;
+            for (const key in obj) {
+                query = query.select(key);
+            }
+            return query;
+        },
+    })),
+    Plugins.addFoldQueryExtension(() => ({
+        foldHead(...attrs: string[]) {
+            let query = this;
+            for (const attr of attrs) {
+                query = query.fold(attr, 'head');
+            }
+            return query;
+        },
+    })),
+    Plugins.addQueryExtension(() => ({
+        async verifyAttributes() {
+            // Make an API call
 
-extendFoldCoronerQuery({
-    foldHead(...attrs: string[]) {
-        let query = this;
-        for (const attr of attrs) {
-            query = query.fold(attr, 'head');
-        }
-        return query;
-    },
-});
-
-extendCoronerQuery({
-    async verifyAttributes() {
-        // Make an API call
-
-        return true;
-    },
-});
+            return true;
+        },
+    })),
+);
