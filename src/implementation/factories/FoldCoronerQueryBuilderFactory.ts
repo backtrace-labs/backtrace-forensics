@@ -1,5 +1,10 @@
 import { Extension, Plugins } from '../../common';
-import { FoldedCoronerQuery, FoldQueryRequest } from '../../coroner/fold';
+import {
+    FailedFoldQueryResponse,
+    FoldedCoronerQuery,
+    FoldQueryRequest,
+    SuccessfulFoldQueryResponse,
+} from '../../coroner/fold';
 import { IFoldCoronerQueryBuilderFactory } from '../../interfaces/factories/IFoldCoronerQueryBuilderFactory';
 import { ICoronerQueryExecutor } from '../../interfaces/ICoronerQueryExecutor';
 import { IFoldCoronerSimpleResponseBuilder } from '../../interfaces/responses/IFoldCoronerSimpleResponseBuilder';
@@ -8,24 +13,37 @@ import { FoldedCoronerQueryBuilder } from '../queries/FoldCoronerQueryBuilder';
 export class FoldCoronerQueryBuilderFactory implements IFoldCoronerQueryBuilderFactory {
     readonly #executor: ICoronerQueryExecutor;
     readonly #simpleResponseBuilder: IFoldCoronerSimpleResponseBuilder;
-    readonly #extensions?: Extension<FoldedCoronerQueryBuilder>[];
+    readonly #queryBuilderExtensions?: Extension<FoldedCoronerQueryBuilder>[];
+    readonly #failedResponseExtensions?: Extension<FailedFoldQueryResponse>[];
+    readonly #successfulFoldResponseExtensions?: Extension<SuccessfulFoldQueryResponse>[];
 
     constructor(
         executor: ICoronerQueryExecutor,
         builder: IFoldCoronerSimpleResponseBuilder,
-        extensions?: Extension<FoldedCoronerQueryBuilder>[],
+        queryBuilderExtensions?: Extension<FoldedCoronerQueryBuilder>[],
+        failedResponseExtensions?: Extension<FailedFoldQueryResponse>[],
+        successfulFoldResponseExtensions?: Extension<SuccessfulFoldQueryResponse>[],
     ) {
         this.#executor = executor;
         this.#simpleResponseBuilder = builder;
-        this.#extensions = extensions;
+        this.#queryBuilderExtensions = queryBuilderExtensions;
+        this.#failedResponseExtensions = failedResponseExtensions;
+        this.#successfulFoldResponseExtensions = successfulFoldResponseExtensions;
     }
 
     public create(request: FoldQueryRequest): FoldedCoronerQuery {
         const buildSelf = (req: FoldQueryRequest): FoldedCoronerQueryBuilder => {
-            const builder = new FoldedCoronerQueryBuilder(req, this.#executor, buildSelf, this.#simpleResponseBuilder);
+            const builder = new FoldedCoronerQueryBuilder(
+                req,
+                this.#executor,
+                buildSelf,
+                this.#simpleResponseBuilder,
+                this.#failedResponseExtensions,
+                this.#successfulFoldResponseExtensions,
+            );
 
-            if (this.#extensions) {
-                return Plugins.extend(builder, this.#extensions);
+            if (this.#queryBuilderExtensions) {
+                return Plugins.extend(builder, this.#queryBuilderExtensions);
             }
             return builder;
         };

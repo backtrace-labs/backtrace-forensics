@@ -1,5 +1,10 @@
 import { Extension, Plugins } from '../../common';
-import { SelectCoronerQuery, SelectQueryRequest } from '../../coroner/select';
+import {
+    FailedSelectQueryResponse,
+    SelectCoronerQuery,
+    SelectQueryRequest,
+    SuccessfulSelectQueryResponse,
+} from '../../coroner/select';
 import { ISelectCoronerQueryBuilderFactory } from '../../interfaces/factories/ISelectCoronerQueryBuilderFactory';
 import { ICoronerQueryExecutor } from '../../interfaces/ICoronerQueryExecutor';
 import { ISelectCoronerSimpleResponseBuilder } from '../../interfaces/responses/ISelectCoronerSimpleResponseBuilder';
@@ -8,16 +13,22 @@ import { SelectedCoronerQueryBuilder } from '../queries/SelectCoronerQueryBuilde
 export class SelectCoronerQueryBuilderFactory implements ISelectCoronerQueryBuilderFactory {
     readonly #executor: ICoronerQueryExecutor;
     readonly #simpleResponseBuilder: ISelectCoronerSimpleResponseBuilder;
-    readonly #extensions?: Extension<SelectedCoronerQueryBuilder>[];
+    readonly #queryBuilderExtensions?: Extension<SelectedCoronerQueryBuilder>[];
+    readonly #failedResponseExtensions?: Extension<FailedSelectQueryResponse>[];
+    readonly #successfulSelectResponseExtensions?: Extension<SuccessfulSelectQueryResponse>[];
 
     constructor(
         executor: ICoronerQueryExecutor,
         builder: ISelectCoronerSimpleResponseBuilder,
-        extensions?: Extension<SelectedCoronerQueryBuilder>[],
+        queryBuilderExtensions?: Extension<SelectedCoronerQueryBuilder>[],
+        failedResponseExtensions?: Extension<FailedSelectQueryResponse>[],
+        successfulSelectResponseExtensions?: Extension<SuccessfulSelectQueryResponse>[],
     ) {
         this.#executor = executor;
         this.#simpleResponseBuilder = builder;
-        this.#extensions = extensions;
+        this.#queryBuilderExtensions = queryBuilderExtensions;
+        this.#failedResponseExtensions = failedResponseExtensions;
+        this.#successfulSelectResponseExtensions = successfulSelectResponseExtensions;
     }
 
     public create(request: SelectQueryRequest): SelectCoronerQuery {
@@ -27,10 +38,12 @@ export class SelectCoronerQueryBuilderFactory implements ISelectCoronerQueryBuil
                 this.#executor,
                 buildSelf,
                 this.#simpleResponseBuilder,
+                this.#failedResponseExtensions,
+                this.#successfulSelectResponseExtensions,
             );
 
-            if (this.#extensions) {
-                return Plugins.extend(builder, this.#extensions);
+            if (this.#queryBuilderExtensions) {
+                return Plugins.extend(builder, this.#queryBuilderExtensions);
             }
             return builder;
         };

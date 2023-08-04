@@ -1,5 +1,5 @@
 import { Extension, Plugins } from '../../common';
-import { QueryRequest } from '../../coroner/common';
+import { FailedQueryResponse, QueryRequest, SuccessfulQueryResponse } from '../../coroner/common';
 import { ICoronerQueryExecutor } from '../../interfaces';
 import { IFoldCoronerQueryBuilderFactory } from '../../interfaces/factories/IFoldCoronerQueryBuilderFactory';
 import { ISelectCoronerQueryBuilderFactory } from '../../interfaces/factories/ISelectCoronerQueryBuilderFactory';
@@ -10,17 +10,23 @@ export class CoronerQueryBuilderFactory {
     readonly #foldQueryFactory: IFoldCoronerQueryBuilderFactory;
     readonly #selectQueryFactory: ISelectCoronerQueryBuilderFactory;
     readonly #extensions?: Extension<CoronerQueryBuilder>[];
+    readonly #failedResponseExtensions?: Extension<FailedQueryResponse>[];
+    readonly #successfulResponseExtensions?: Extension<SuccessfulQueryResponse>[];
 
     constructor(
         executor: ICoronerQueryExecutor,
         foldQueryFactory: IFoldCoronerQueryBuilderFactory,
         selectQueryFactory: ISelectCoronerQueryBuilderFactory,
         extensions?: Extension<CoronerQueryBuilder>[],
+        failedResponseExtensions?: Extension<FailedQueryResponse>[],
+        successfulResponseExtensions?: Extension<SuccessfulQueryResponse>[],
     ) {
         this.#executor = executor;
         this.#foldQueryFactory = foldQueryFactory;
         this.#selectQueryFactory = selectQueryFactory;
         this.#extensions = extensions;
+        this.#failedResponseExtensions = failedResponseExtensions;
+        this.#successfulResponseExtensions = successfulResponseExtensions;
     }
 
     public create(request: QueryRequest) {
@@ -31,6 +37,8 @@ export class CoronerQueryBuilderFactory {
                 buildSelf,
                 this.#foldQueryFactory,
                 this.#selectQueryFactory,
+                this.#failedResponseExtensions,
+                this.#successfulResponseExtensions,
             );
 
             if (this.#extensions) {

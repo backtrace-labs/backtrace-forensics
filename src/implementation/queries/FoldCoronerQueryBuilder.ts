@@ -1,8 +1,9 @@
-import { nextPage, OrderDirection } from '../../coroner/common';
+import { Extension, Plugins } from '../../common';
+import { OrderDirection, nextPage } from '../../coroner/common';
 import { AttributeValueType } from '../../coroner/common/attributes';
 import {
     CountFoldOrder,
-    FoldedCoronerQuery,
+    FailedFoldQueryResponse,
     FoldFilter,
     FoldFilterInput,
     FoldFilterOperatorInput,
@@ -14,10 +15,12 @@ import {
     FoldVirtualColumn,
     FoldVirtualColumnType,
     FoldVirtualColumnTypes,
+    FoldedCoronerQuery,
     GroupFoldOrder,
     RawFoldQueryResponse,
     SimpleFoldRow,
     SimpleFoldRows,
+    SuccessfulFoldQueryResponse,
 } from '../../coroner/fold';
 import { ICoronerQueryExecutor } from '../../interfaces/ICoronerQueryExecutor';
 import { IFoldCoronerSimpleResponseBuilder } from '../../interfaces/responses/IFoldCoronerSimpleResponseBuilder';
@@ -31,18 +34,25 @@ export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder impleme
     readonly #executor: ICoronerQueryExecutor;
     readonly #buildSelf: (request: FoldQueryRequest) => FoldedCoronerQueryBuilder;
     readonly #simpleResponseBuilder: IFoldCoronerSimpleResponseBuilder;
+    readonly #failedResponseExtensions: Extension<FailedFoldQueryResponse>[];
+    readonly #successfulFoldResponseExtensions: Extension<SuccessfulFoldQueryResponse>[];
 
     constructor(
         request: FoldQueryRequest,
         executor: ICoronerQueryExecutor,
         buildSelf: (request: FoldQueryRequest) => FoldedCoronerQueryBuilder,
         builder: IFoldCoronerSimpleResponseBuilder,
+        failedResponseExtensions?: Extension<FailedFoldQueryResponse>[],
+        successfulFoldResponseExtensions?: Extension<SuccessfulFoldQueryResponse>[],
     ) {
-        super(request, executor);
+        super(request);
         this.#request = request;
         this.#executor = executor;
         this.#buildSelf = buildSelf;
         this.#simpleResponseBuilder = builder;
+
+        this.#failedResponseExtensions = failedResponseExtensions ?? [];
+        this.#successfulFoldResponseExtensions = successfulFoldResponseExtensions ?? [];
     }
 
     public fold(attribute?: string, ...fold: FoldOperator): this {
@@ -251,10 +261,13 @@ export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder impleme
     public async post(source?: Partial<QuerySource>): Promise<FoldQueryResponse> {
         const response = await this.#executor.execute<RawFoldQueryResponse>(this.#request, source);
         if (response.error) {
-            return {
+            const queryResponse: FailedFoldQueryResponse = {
                 success: false,
+                query: this,
                 json: () => response,
             };
+            Plugins.extend(queryResponse, this.#failedResponseExtensions);
+            return queryResponse;
         }
 
         const total = response.response.cardinalities?.pagination.groups ?? 0;
@@ -262,9 +275,10 @@ export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder impleme
         let cachedFirst: SimpleFoldRow | undefined | null = null;
         let cachedAll: SimpleFoldRows | null = null;
 
-        return {
+        const queryResponse: SuccessfulFoldQueryResponse = {
             success: true,
             total,
+            query: this,
             json: () => response,
             first: () =>
                 cachedFirst !== null
@@ -276,6 +290,8 @@ export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder impleme
                 return this.createInstance(request);
             },
         };
+        Plugins.extend(queryResponse, this.#successfulFoldResponseExtensions);
+        return queryResponse;
     }
 
     protected createInstance(request: FoldQueryRequest): this {

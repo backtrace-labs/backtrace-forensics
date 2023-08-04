@@ -73,4 +73,6 @@ export interface SuccessfulFoldQueryResponse extends SuccessfulQueryResponse<Raw
     first(): SimpleFoldRow | undefined;
 }
 
-export type FoldQueryResponse = SuccessfulFoldQueryResponse | FailedQueryResponse;
+export type FailedFoldQueryResponse = FailedQueryResponse<FoldedCoronerQuery>;
+
+export type FoldQueryResponse = SuccessfulFoldQueryResponse | FailedFoldQueryResponse;

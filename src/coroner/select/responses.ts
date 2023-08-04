@@ -24,4 +24,6 @@ export interface SuccessfulSelectQueryResponse
     first(): SimpleSelectRow | undefined;
 }
 
-export type SelectQueryResponse = SuccessfulSelectQueryResponse | FailedQueryResponse;
+export type FailedSelectQueryResponse = FailedQueryResponse<SelectedCoronerQuery>;
+
+export type SelectQueryResponse = SuccessfulSelectQueryResponse | FailedSelectQueryResponse;

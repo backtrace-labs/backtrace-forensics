@@ -50,13 +50,15 @@ export interface SuccessfulQueryResponse<
     R extends RawQueryResponse = RawQueryResponse,
     Q extends CommonCoronerQuery = CommonCoronerQuery
 > {
-    success: true;
+    readonly success: true;
+    readonly query: Q;
     json(): SuccessfulRawCoronerResponse<R>;
     nextPage(): Q;
 }
 
-export interface FailedQueryResponse {
-    success: false;
+export interface FailedQueryResponse<Q extends CommonCoronerQuery = CommonCoronerQuery> {
+    readonly success: false;
+    readonly query: Q;
     json(): FailedRawCoronerResponse;
 }
 

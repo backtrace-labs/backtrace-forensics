@@ -1,12 +1,15 @@
-import { nextPage, OrderDirection } from '../../coroner/common';
+import { Extension, Plugins } from '../../common';
+import { OrderDirection, nextPage } from '../../coroner/common';
 import {
+    FailedSelectQueryResponse,
     RawSelectQueryResponse,
-    SelectedCoronerQuery,
     SelectOrder,
     SelectQueryRequest,
     SelectQueryResponse,
+    SelectedCoronerQuery,
     SimpleSelectRow,
     SimpleSelectRows,
+    SuccessfulSelectQueryResponse,
 } from '../../coroner/select';
 import { ICoronerQueryExecutor } from '../../interfaces/ICoronerQueryExecutor';
 import { ISelectCoronerSimpleResponseBuilder } from '../../interfaces/responses/ISelectCoronerSimpleResponseBuilder';
@@ -19,18 +22,24 @@ export class SelectedCoronerQueryBuilder extends CommonCoronerQueryBuilder imple
     readonly #executor: ICoronerQueryExecutor;
     readonly #buildSelf: (request: SelectQueryRequest) => SelectedCoronerQueryBuilder;
     readonly #simpleResponseBuilder: ISelectCoronerSimpleResponseBuilder;
+    readonly #failedResponseExtensions: Extension<FailedSelectQueryResponse>[];
+    readonly #successfulSelectResponseExtensions: Extension<SuccessfulSelectQueryResponse>[];
 
     constructor(
         request: SelectQueryRequest,
         executor: ICoronerQueryExecutor,
         buildSelf: (request: SelectQueryRequest) => SelectedCoronerQueryBuilder,
         builder: ISelectCoronerSimpleResponseBuilder,
+        failedResponseExtensions?: Extension<FailedSelectQueryResponse>[],
+        successfulSelectResponseExtensions?: Extension<SuccessfulSelectQueryResponse>[],
     ) {
-        super(request, executor);
+        super(request);
         this.#request = request;
         this.#executor = executor;
         this.#buildSelf = buildSelf;
         this.#simpleResponseBuilder = builder;
+        this.#failedResponseExtensions = failedResponseExtensions ?? [];
+        this.#successfulSelectResponseExtensions = successfulSelectResponseExtensions ?? [];
     }
 
     public select(...attributes: string[]): SelectedCoronerQuery {
@@ -67,10 +76,13 @@ export class SelectedCoronerQueryBuilder extends CommonCoronerQueryBuilder imple
     public async post(source?: Partial<QuerySource>): Promise<SelectQueryResponse> {
         const response = await this.#executor.execute<RawSelectQueryResponse>(this.#request, source);
         if (response.error) {
-            return {
+            const queryResponse: FailedSelectQueryResponse = {
                 success: false,
+                query: this,
                 json: () => response,
             };
+            Plugins.extend(queryResponse, this.#failedResponseExtensions);
+            return queryResponse;
         }
 
         const total = response._.runtime.filter.rows;
@@ -78,8 +90,9 @@ export class SelectedCoronerQueryBuilder extends CommonCoronerQueryBuilder imple
         let cachedFirst: SimpleSelectRow | undefined | null = null;
         let cachedAll: SimpleSelectRows | null = null;
 
-        return {
+        const queryResponse: SuccessfulSelectQueryResponse = {
             success: true,
+            query: this,
             total,
             json: () => response,
             first: () =>
@@ -90,6 +103,8 @@ export class SelectedCoronerQueryBuilder extends CommonCoronerQueryBuilder imple
                 return this.createInstance(request);
             },
         };
+        Plugins.extend(queryResponse, this.#successfulSelectResponseExtensions);
+        return queryResponse;
     }
 
     protected createInstance(request: SelectQueryRequest): this {

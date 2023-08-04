@@ -1,4 +1,14 @@
-import { CoronerQuery, QueryRequest } from '../../coroner/common';
+import { Extension, Plugins } from '../../common';
+import {
+    CommonCoronerQuery,
+    CoronerQuery,
+    FailedQueryResponse,
+    QueryRequest,
+    QueryResponse,
+    RawQueryResponse,
+    SuccessfulQueryResponse,
+    nextPage,
+} from '../../coroner/common';
 import {
     FoldQueryRequest,
     FoldVirtualColumnType,
@@ -9,13 +19,17 @@ import { SelectedCoronerQuery } from '../../coroner/select';
 import { ICoronerQueryExecutor } from '../../interfaces';
 import { IFoldCoronerQueryBuilderFactory } from '../../interfaces/factories/IFoldCoronerQueryBuilderFactory';
 import { ISelectCoronerQueryBuilderFactory } from '../../interfaces/factories/ISelectCoronerQueryBuilderFactory';
+import { QuerySource } from '../../models';
 import { CommonCoronerQueryBuilder } from './CommonCoronerQueryBuilder';
 
 export class CoronerQueryBuilder extends CommonCoronerQueryBuilder implements CoronerQuery {
     readonly #request: QueryRequest;
     readonly #buildSelf: (request: QueryRequest) => CoronerQueryBuilder;
+    readonly #executor: ICoronerQueryExecutor;
     readonly #foldQueryFactory: IFoldCoronerQueryBuilderFactory;
     readonly #selectQueryFactory: ISelectCoronerQueryBuilderFactory;
+    readonly #failedResponseExtensions: Extension<FailedQueryResponse>[];
+    readonly #successfulResponseExtensions: Extension<SuccessfulQueryResponse>[];
 
     constructor(
         request: QueryRequest,
@@ -23,12 +37,17 @@ export class CoronerQueryBuilder extends CommonCoronerQueryBuilder implements Co
         buildSelf: (request: QueryRequest) => CoronerQueryBuilder,
         foldQueryFactory: IFoldCoronerQueryBuilderFactory,
         selectQueryFactory: ISelectCoronerQueryBuilderFactory,
+        failedResponseExtensions?: Extension<FailedQueryResponse>[],
+        successfulResponseExtensions?: Extension<SuccessfulQueryResponse>[],
     ) {
-        super(request, executor);
+        super(request);
+        this.#executor = executor;
         this.#request = request;
         this.#buildSelf = buildSelf;
         this.#foldQueryFactory = foldQueryFactory;
         this.#selectQueryFactory = selectQueryFactory;
+        this.#failedResponseExtensions = failedResponseExtensions ?? [];
+        this.#successfulResponseExtensions = successfulResponseExtensions ?? [];
     }
 
     public select(...attributes: string[]): SelectedCoronerQuery {
@@ -57,6 +76,33 @@ export class CoronerQueryBuilder extends CommonCoronerQueryBuilder implements Co
     ): FoldedCoronerQuery {
         const query = this.#foldQueryFactory.create(this.#request as FoldQueryRequest);
         return query.virtualColumn(name, type, params);
+    }
+
+    public async post(
+        source?: Partial<QuerySource> | undefined,
+    ): Promise<QueryResponse<RawQueryResponse, CommonCoronerQuery>> {
+        const response = await this.#executor.execute<RawQueryResponse>(this.#request, source);
+        if (response.error) {
+            const queryResponse: FailedQueryResponse = {
+                success: false,
+                query: this,
+                json: () => response,
+            };
+            Plugins.extend(queryResponse, this.#failedResponseExtensions);
+            return queryResponse;
+        }
+
+        const queryResponse: SuccessfulQueryResponse = {
+            success: true,
+            query: this,
+            json: () => response,
+            nextPage: () => {
+                const request = nextPage(this.#request, response);
+                return this.createInstance(request);
+            },
+        };
+        Plugins.extend(queryResponse, this.#successfulResponseExtensions);
+        return queryResponse;
     }
 
     protected createInstance(request: QueryRequest): this {

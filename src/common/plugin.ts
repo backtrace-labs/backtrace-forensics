@@ -1,10 +1,18 @@
 import { BacktraceForensicsOptions } from '../BacktraceForensics';
 import {
     CoronerQuery,
+    FailedFoldQueryResponse,
+    FailedQueryResponse,
+    FailedSelectQueryResponse,
     FoldCoronerQuery,
+    FoldQueryResponse,
     FoldedCoronerQuery,
+    QueryResponse,
     SelectCoronerQuery,
+    SelectQueryResponse,
     SelectedCoronerQuery,
+    SuccessfulFoldQueryResponse,
+    SuccessfulQueryResponse,
 } from '../coroner';
 import { ICoronerApiCallerFactory } from '../interfaces';
 import { Extension } from './extensions';
@@ -26,6 +34,18 @@ export namespace Plugins {
 
         readonly selectQueryExtensions?: readonly PluginExtension<SelectCoronerQuery>[];
         readonly selectedQueryExtensions?: readonly PluginExtension<SelectedCoronerQuery>[];
+
+        readonly responseExtensions?: readonly PluginExtension<QueryResponse>[];
+        readonly failedResponseExtensions?: readonly PluginExtension<FailedQueryResponse>[];
+        readonly successfulResponseExtensions?: readonly PluginExtension<SuccessfulQueryResponse>[];
+
+        readonly foldResponseExtensions?: readonly PluginExtension<FoldQueryResponse>[];
+        readonly failedFoldResponseExtensions?: readonly PluginExtension<FailedFoldQueryResponse>[];
+        readonly successfulFoldResponseExtensions?: readonly PluginExtension<SuccessfulFoldQueryResponse>[];
+
+        readonly selectResponseExtensions?: readonly PluginExtension<SelectQueryResponse>[];
+        readonly failedSelectResponseExtensions?: readonly PluginExtension<FailedSelectQueryResponse>[];
+        readonly successfulSelectResponseExtensions?: readonly PluginExtension<SuccessfulQueryResponse>[];
     }
 
     function pluginExtensionAdder<P extends keyof BacktraceForensicsPlugin>(prop: P) {
@@ -41,10 +61,24 @@ export namespace Plugins {
     }
 
     export const addQueryExtension = pluginExtensionAdder('queryExtensions');
+
     export const addFoldQueryExtension = pluginExtensionAdder('foldQueryExtensions');
     export const addFoldedQueryExtension = pluginExtensionAdder('foldedQueryExtensions');
+
     export const addSelectQueryExtension = pluginExtensionAdder('selectQueryExtensions');
     export const addSelectedQueryExtension = pluginExtensionAdder('selectedQueryExtensions');
+
+    export const addResponseExtension = pluginExtensionAdder('responseExtensions');
+    export const addFailedResponseExtension = pluginExtensionAdder('failedResponseExtensions');
+    export const addSuccessfulResponseExtension = pluginExtensionAdder('successfulResponseExtensions');
+
+    export const addFoldResponseExtension = pluginExtensionAdder('foldResponseExtensions');
+    export const addFailedFoldResponseExtension = pluginExtensionAdder('failedFoldResponseExtensions');
+    export const addSuccessfulFoldResponseExtension = pluginExtensionAdder('successfulFoldResponseExtensions');
+
+    export const addSelectResponseExtension = pluginExtensionAdder('selectResponseExtensions');
+    export const addFailedSelectResponseExtension = pluginExtensionAdder('failedSelectResponseExtensions');
+    export const addSuccessfulSelectResponseExtension = pluginExtensionAdder('successfulSelectResponseExtensions');
 
     export function createPlugin(...extensions: PluginBuilder[]) {
         return extensions.reduce((plugin, extend) => extend(plugin), {} as BacktraceForensicsPlugin);

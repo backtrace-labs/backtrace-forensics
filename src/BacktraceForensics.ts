@@ -83,7 +83,7 @@ export class BacktraceForensics {
             apiCallerFactory,
         };
 
-        const foldedPlugins = this.options.plugins
+        const foldedQueryBuilderExtensions = this.options.plugins
             ?.flatMap((p) => [
                 ...(p.queryExtensions ?? []),
                 ...(p.foldQueryExtensions ?? []),
@@ -91,13 +91,33 @@ export class BacktraceForensics {
             ])
             .map((ext) => ext(pluginContext));
 
+        const failedFoldResponseExtensions = this.options.plugins
+            ?.flatMap((p) => [
+                ...(p.responseExtensions ?? []),
+                ...(p.failedResponseExtensions ?? []),
+                ...(p.foldQueryExtensions ?? []),
+                ...(p.failedFoldResponseExtensions ?? []),
+            ])
+            .map((ext) => ext(pluginContext));
+
+        const successfulFoldResponseExtensions = this.options.plugins
+            ?.flatMap((p) => [
+                ...(p.responseExtensions ?? []),
+                ...(p.successfulResponseExtensions ?? []),
+                ...(p.foldQueryExtensions ?? []),
+                ...(p.successfulFoldResponseExtensions ?? []),
+            ])
+            .map((ext) => ext(pluginContext));
+
         this.#foldFactory = new FoldCoronerQueryBuilderFactory(
             this.#queryExecutor,
             new FoldCoronerSimpleResponseBuilder(),
-            foldedPlugins,
+            foldedQueryBuilderExtensions,
+            failedFoldResponseExtensions,
+            successfulFoldResponseExtensions,
         );
 
-        const selectedPlugins = this.options.plugins
+        const selectedQueryBuilderExtensions = this.options.plugins
             ?.flatMap((p) => [
                 ...(p.queryExtensions ?? []),
                 ...(p.selectQueryExtensions ?? []),
@@ -105,13 +125,33 @@ export class BacktraceForensics {
             ])
             .map((ext) => ext(pluginContext));
 
+        const failedSelectResponseExtensions = this.options.plugins
+            ?.flatMap((p) => [
+                ...(p.responseExtensions ?? []),
+                ...(p.failedResponseExtensions ?? []),
+                ...(p.selectQueryExtensions ?? []),
+                ...(p.failedSelectResponseExtensions ?? []),
+            ])
+            .map((ext) => ext(pluginContext));
+
+        const successfulSelectResponseExtensions = this.options.plugins
+            ?.flatMap((p) => [
+                ...(p.responseExtensions ?? []),
+                ...(p.successfulResponseExtensions ?? []),
+                ...(p.selectQueryExtensions ?? []),
+                ...(p.successfulSelectResponseExtensions ?? []),
+            ])
+            .map((ext) => ext(pluginContext));
+
         this.#selectFactory = new SelectCoronerQueryBuilderFactory(
             this.#queryExecutor,
             new SelectCoronerSimpleResponseBuilder(),
-            selectedPlugins,
+            selectedQueryBuilderExtensions,
+            failedSelectResponseExtensions,
+            successfulSelectResponseExtensions,
         );
 
-        const basePlugins = this.options.plugins
+        const baseQueryBuilderExtensions = this.options.plugins
             ?.flatMap((p) => [
                 ...(p.queryExtensions ?? []),
                 ...(p.foldQueryExtensions ?? []),
@@ -119,11 +159,21 @@ export class BacktraceForensics {
             ])
             .map((ext) => ext(pluginContext));
 
+        const failedBaseResponseExtensions = this.options.plugins
+            ?.flatMap((p) => [...(p.responseExtensions ?? []), ...(p.failedResponseExtensions ?? [])])
+            .map((ext) => ext(pluginContext));
+
+        const successfulBaseResponseExtensions = this.options.plugins
+            ?.flatMap((p) => [...(p.responseExtensions ?? []), ...(p.successfulResponseExtensions ?? [])])
+            .map((ext) => ext(pluginContext));
+
         this.#queryFactory = new CoronerQueryBuilderFactory(
             this.#queryExecutor,
             this.#foldFactory,
             this.#selectFactory,
-            basePlugins,
+            baseQueryBuilderExtensions,
+            failedBaseResponseExtensions,
+            successfulBaseResponseExtensions,
         );
     }
 
