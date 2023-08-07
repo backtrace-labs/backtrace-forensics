@@ -32,6 +32,7 @@
     "workspaces": [
         "samples/backtrace-forensics-sample",
         "samples/backtrace-forensics-plugin-sample",
-        "samples/backtrace-forensics-plugin-sample-2"
+        "samples/backtrace-forensics-plugin-sample-2",
+        "plugins/*"
     ]
 }

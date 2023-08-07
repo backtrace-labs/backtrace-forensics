@@ -1,0 +1,19 @@
+{
+    "name": "@backtrace/forensics-issues",
+    "version": "0.0.1",
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts",
+    "peerDependencies": {
+        "@backtrace/forensics": "^0.6.0"
+    },
+    "devDependencies": {},
+    "scripts": {
+        "build": "tsc",
+        "watch": "tsc --watch",
+        "test": "NODE_ENV=test jest",
+        "prepack": "rm -rf lib && npm run build"
+    },
+    "author": "Backtrace <team@backtrace.io>",
+    "license": "LicenseRef-LICENSE",
+    "description": ""
+}

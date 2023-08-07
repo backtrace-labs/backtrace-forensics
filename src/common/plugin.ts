@@ -13,6 +13,7 @@ import {
     SelectedCoronerQuery,
     SuccessfulFoldQueryResponse,
     SuccessfulQueryResponse,
+    SuccessfulSelectQueryResponse,
 } from '../coroner';
 import { ICoronerApiCallerFactory } from '../interfaces';
 import { Extension } from './extensions';
@@ -45,7 +46,7 @@ export namespace Plugins {
 
         readonly selectResponseExtensions?: readonly PluginExtension<SelectQueryResponse>[];
         readonly failedSelectResponseExtensions?: readonly PluginExtension<FailedSelectQueryResponse>[];
-        readonly successfulSelectResponseExtensions?: readonly PluginExtension<SuccessfulQueryResponse>[];
+        readonly successfulSelectResponseExtensions?: readonly PluginExtension<SuccessfulSelectQueryResponse>[];
     }
 
     function pluginExtensionAdder<P extends keyof BacktraceForensicsPlugin>(prop: P) {
