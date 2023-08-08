@@ -1,8 +1,8 @@
 import { QuerySource } from '../../models';
 import { FoldCoronerQuery } from '../fold';
 import { SelectCoronerQuery } from '../select';
-import { AttributeType, AttributeValueType } from './attributes';
-import { FilterOperator, QueryAttributeFilter, QueryFilter, QueryRequest } from './requests';
+import { AttributeType } from './attributes';
+import { FilterOperator, QueryFilter, QueryRequest } from './requests';
 import { QueryResponse } from './responses';
 
 export interface CommonCoronerQuery {
@@ -52,7 +52,7 @@ export interface CommonCoronerQuery {
      *      .filter('timestamp', 'at-least', 1660000000)
      *      .filter('timestamp', 'at-most', 1660747935)
      */
-    filter<V extends AttributeType>(attribute: string, operator: FilterOperator<V>, value: AttributeValueType<V>): this;
+    filter<V extends AttributeType>(attribute: string, ...filter: FilterOperator<V>): this;
 
     /**
      * Adds filters to request.
@@ -68,7 +68,7 @@ export interface CommonCoronerQuery {
      * // filter with Filters
      * query.filter('timestamp', Filters.time.from.last.hours(2).to.now())
      */
-    filter(attribute: string, filters: readonly QueryAttributeFilter[]): this;
+    filter<V extends AttributeType>(attribute: string, filters: readonly FilterOperator<V>[]): this;
 
     /**
      * Adds filters to request.

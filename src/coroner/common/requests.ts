@@ -36,29 +36,96 @@ export type FilterOperator<T extends AttributeType = AttributeType> = T extends 
     ? UUIDFilterOperator
     : never;
 
-export type UIntFilterOperator = 'at-least' | 'at-most' | 'equal' | 'not-equal' | 'greater-than' | 'less-than';
-export type BooleanFilterOperator = 'equal' | 'not-equal';
-export type UUIDFilterOperator = UIntFilterOperator;
-export type DictionaryFilterOperator = StringFilterOperator;
-export type StringFilterOperator =
-    | 'at-least'
-    | 'at-most'
-    | 'contains'
-    | 'not-contains'
-    | 'equal'
-    | 'not-equal'
-    | 'greater-than'
-    | 'less-than'
-    | 'regular-expression'
-    | 'inverse-regular-expression';
+type StringFilterOptions = { case_insensitive?: boolean };
 
-export type QueryAttributeFilter<T extends AttributeType = AttributeType> = readonly [
-    FilterOperator<T>,
-    AttributeValueType<T>,
+type AtLeastFilterOperator<T extends AttributeType> = readonly [operator: 'at-least', value: AttributeValueType<T>];
+type AtMostFilterOperator<T extends AttributeType> = readonly [operator: 'at-most', value: AttributeValueType<T>];
+type EqualFilterOperator<T extends AttributeType> = readonly [
+    operator: 'equal',
+    value: AttributeValueType<T>,
+    // Query docs suggest that more values are accepted for multiple comparisons,
+    // but this does not work at this time
+    // ...value: AttributeValueType<T>[],
+];
+type NotEqualFilterOperator<T extends AttributeType> = readonly [
+    operator: 'not-equal',
+    value: AttributeValueType<T>,
+    // Query docs suggest that more values are accepted for multiple comparisons,
+    // but this does not work at this time
+    // ...value: AttributeValueType<T>[],
+];
+type GreaterThanFilterOperator<T extends AttributeType> = readonly [
+    operator: 'greater-than',
+    value: AttributeValueType<T>,
+];
+type LessThanFilterOperator<T extends AttributeType> = readonly [operator: 'less-than', value: AttributeValueType<T>];
+type ContainsFilterOperator<T extends AttributeType> = readonly [
+    operator: 'contains',
+    value: AttributeValueType<T>,
+    options?: StringFilterOptions,
+];
+type NotContainsFilterOperator<T extends AttributeType> = readonly [
+    operator: 'not-contains',
+    value: AttributeValueType<T>,
+    options?: StringFilterOptions,
+];
+type RegularExpressionFilterOperator<T extends AttributeType> = readonly [
+    operator: 'regular-expression',
+    value: AttributeValueType<T>,
+    options?: StringFilterOptions,
+];
+type InverseRegularExpressionFilterOperator<T extends AttributeType> = readonly [
+    operator: 'inverse-regular-expression',
+    value: AttributeValueType<T>,
+    options?: StringFilterOptions,
 ];
 
+export type UIntFilterOperator =
+    | AtLeastFilterOperator<UIntType>
+    | AtMostFilterOperator<UIntType>
+    | EqualFilterOperator<UIntType>
+    | NotEqualFilterOperator<UIntType>
+    | GreaterThanFilterOperator<UIntType>
+    | LessThanFilterOperator<UIntType>;
+
+export type BooleanFilterOperator = EqualFilterOperator<BooleanType> | NotEqualFilterOperator<BooleanType>;
+
+export type UUIDFilterOperator =
+    | AtLeastFilterOperator<UUIDType>
+    | AtMostFilterOperator<UUIDType>
+    | EqualFilterOperator<UUIDType>
+    | NotEqualFilterOperator<UUIDType>
+    | GreaterThanFilterOperator<UUIDType>
+    | LessThanFilterOperator<UUIDType>;
+
+export type DictionaryFilterOperator =
+    | AtLeastFilterOperator<DictionaryType>
+    | AtMostFilterOperator<DictionaryType>
+    | EqualFilterOperator<DictionaryType>
+    | NotEqualFilterOperator<DictionaryType>
+    | GreaterThanFilterOperator<DictionaryType>
+    | LessThanFilterOperator<DictionaryType>
+    | ContainsFilterOperator<DictionaryType>
+    | NotContainsFilterOperator<DictionaryType>
+    | RegularExpressionFilterOperator<DictionaryType>
+    | InverseRegularExpressionFilterOperator<DictionaryType>;
+
+export type StringFilterOperator =
+    | AtLeastFilterOperator<StringType>
+    | AtMostFilterOperator<StringType>
+    | EqualFilterOperator<StringType>
+    | NotEqualFilterOperator<StringType>
+    | GreaterThanFilterOperator<StringType>
+    | LessThanFilterOperator<StringType>
+    | ContainsFilterOperator<StringType>
+    | NotContainsFilterOperator<StringType>
+    | RegularExpressionFilterOperator<StringType>
+    | InverseRegularExpressionFilterOperator<StringType>;
+
+export type QueryAttributeFilter<T extends AttributeType = AttributeType> = FilterOperator<T>;
+
 export type QueryFilter<A extends string = string> = {
-    [K in A]: readonly QueryAttributeFilter[];
+    [K in A]: readonly FilterOperator[];
 };
 
 export type OrderDirection = 'descending' | 'ascending';

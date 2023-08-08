@@ -132,6 +132,88 @@ describe('CoronerQueryBuilder', () => {
         ]);
     });
 
+    it('should add multpile filters for multiple attributes', () => {
+        const request: QueryRequest = {
+            filter: [
+                {
+                    a: [['at-most', 56]],
+                },
+            ],
+        };
+        const queryable = buildQueryBuilder(request);
+
+        const newRequest = queryable
+            .filter({
+                a: [
+                    ['equal', 123],
+                    ['greater-than', 456],
+                ],
+                b: [['contains', 'test']],
+            })
+            .json();
+
+        expect(newRequest).toHaveProperty('filter', [
+            {
+                a: [
+                    ['at-most', 56],
+                    ['equal', 123],
+                    ['greater-than', 456],
+                ],
+                b: [['contains', 'test']],
+            },
+        ]);
+    });
+
+    it('should add multiple filters for one attribute', () => {
+        const request: QueryRequest = {
+            filter: [
+                {
+                    a: [['at-most', 56]],
+                },
+            ],
+        };
+        const queryable = buildQueryBuilder(request);
+
+        const newRequest = queryable
+            .filter('a', [
+                ['equal', 123],
+                ['greater-than', 456],
+            ])
+            .json();
+
+        expect(newRequest).toHaveProperty('filter', [
+            {
+                a: [
+                    ['at-most', 56],
+                    ['equal', 123],
+                    ['greater-than', 456],
+                ],
+            },
+        ]);
+    });
+
+    it('should add one filter for one attribute', () => {
+        const request: QueryRequest = {
+            filter: [
+                {
+                    a: [['at-most', 56]],
+                },
+            ],
+        };
+        const queryable = buildQueryBuilder(request);
+
+        const newRequest = queryable.filter('a', 'contains', '123', { case_insensitive: true }).json();
+
+        expect(newRequest).toHaveProperty('filter', [
+            {
+                a: [
+                    ['at-most', 56],
+                    ['contains', '123', { case_insensitive: true }],
+                ],
+            },
+        ]);
+    });
+
     it('should return an instance of select queryable when selected', () => {
         const request: QueryRequest = {};
         const queryable = buildQueryBuilder(request);

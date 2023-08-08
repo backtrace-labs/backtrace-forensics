@@ -1,14 +1,6 @@
-import {
-    CommonCoronerQuery,
-    FilterOperator,
-    QueryAttributeFilter,
-    QueryFilter,
-    QueryRequest,
-    QueryResponse
-} from '../../coroner/common';
-import { AttributeType, AttributeValueType } from '../../coroner/common/attributes';
+import { CommonCoronerQuery, FilterOperator, QueryFilter, QueryRequest, QueryResponse } from '../../coroner/common';
+import { AttributeType } from '../../coroner/common/attributes';
 import { QuerySource } from '../../models';
-import { convertInputValue } from '../helpers/convertInputValue';
 import { cloneRequest } from '../requests/cloneRequest';
 
 export abstract class CommonCoronerQueryBuilder implements CommonCoronerQuery {
@@ -36,52 +28,47 @@ export abstract class CommonCoronerQueryBuilder implements CommonCoronerQuery {
         return this.createInstance(request);
     }
 
-    public filter<V extends AttributeType>(
-        attribute: string,
-        operator: FilterOperator<V>,
-        value: AttributeValueType<V>
-    ): this;
-    public filter(attribute: string, filters: readonly QueryAttributeFilter[]): this;
+    public filter<V extends AttributeType>(attribute: string, ...operator: FilterOperator<V>): this;
+    public filter<V extends AttributeType>(attribute: string, filters: readonly FilterOperator<V>[]): this;
     public filter(...filters: QueryFilter[]): this;
-    public filter<V extends AttributeType>(...params: unknown[]): this {
-        const attributeOrFilters = params[0] as string | QueryFilter;
-        const operatorOrFilters = params[1] as FilterOperator<V> | readonly QueryAttributeFilter[];
-        const value = params[2] as AttributeValueType<V> | undefined;
-
-        const request = cloneRequest(this.#request);
-        if (typeof attributeOrFilters === 'string') {
-            const attribute = attributeOrFilters;
-            if (typeof operatorOrFilters === 'string') {
-                const operator = operatorOrFilters;
-                const filterValue = convertInputValue(value ?? null);
-                if (!request.filter || !request.filter.length) {
-                    const filter: QueryFilter = {};
-                    filter[attribute] = [[operator, filterValue]];
-                    request.filter = [filter];
-                } else if (!request.filter[0][attribute]) {
-                    request.filter[0][attribute] = [[operator, filterValue]];
-                } else {
-                    request.filter[0][attribute] = [...request.filter[0][attribute], [operator, filterValue]];
-                }
-            } else if (operatorOrFilters) {
-                if (!request.filter || !request.filter.length) {
-                    request.filter = [{ [attribute]: operatorOrFilters }];
-                } else if (!request.filter[0][attribute]) {
-                    request.filter[0][attribute] = operatorOrFilters;
-                } else {
-                    request.filter[0][attribute] = [...request.filter[0][attribute], ...operatorOrFilters];
-                }
-            }
-        } else {
+    public filter(...params: unknown[]): this {
+        const singleAttribute = typeof params[0] === 'string'; // params[0] will be a string if filters for a single attribute are passed
+        if (!singleAttribute) {
             const filters = params as QueryFilter[];
             let instance = this;
             for (const filter of filters) {
-                for (const key in attributeOrFilters) {
-                    instance = instance.filter(key, attributeOrFilters[key]);
+                for (const key in filter) {
+                    instance = instance.filter(key, filter[key]);
                 }
             }
 
             return instance;
+        }
+
+        const attribute = params[0] as string;
+        const singleFilter = typeof params[1] === 'string'; // params[1] will be a string if single filter is passed, or an array if multiple
+        if (!singleFilter) {
+            const filters = params.slice(1) as readonly FilterOperator[];
+            let instance = this;
+            for (const filter of filters) {
+                instance = instance.filter(attribute, ...filter);
+            }
+
+            return instance;
+        }
+
+        const filter = params.slice(1) as unknown as FilterOperator;
+        const request = cloneRequest(this.#request);
+        if (!request.filter || !request.filter.length) {
+            request.filter = [
+                {
+                    [attribute]: [filter],
+                },
+            ];
+        } else if (!request.filter[0][attribute]) {
+            request.filter[0][attribute] = [filter];
+        } else {
+            request.filter[0][attribute] = [...request.filter[0][attribute], filter];
         }
 
         return this.createInstance(request);
@@ -98,7 +85,6 @@ export abstract class CommonCoronerQueryBuilder implements CommonCoronerQuery {
     public json(): QueryRequest {
         return this.#request;
     }
-
 
     public abstract post(source?: Partial<QuerySource> | undefined): Promise<QueryResponse>;
     protected abstract createInstance(request: QueryRequest): this;
