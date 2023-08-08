@@ -79,6 +79,8 @@ type InverseRegularExpressionFilterOperator<T extends AttributeType> = readonly 
     value: AttributeValueType<T>,
     options?: StringFilterOptions,
 ];
+type IsSetFilterOperator = readonly ['is-set'];
+type IsNotSetFilterOperator = readonly ['is-not-set'];
 
 export type UIntFilterOperator =
     | AtLeastFilterOperator<UIntType>
@@ -86,9 +88,15 @@ export type UIntFilterOperator =
     | EqualFilterOperator<UIntType>
     | NotEqualFilterOperator<UIntType>
     | GreaterThanFilterOperator<UIntType>
-    | LessThanFilterOperator<UIntType>;
+    | LessThanFilterOperator<UIntType>
+    | IsSetFilterOperator
+    | IsNotSetFilterOperator;
 
-export type BooleanFilterOperator = EqualFilterOperator<BooleanType> | NotEqualFilterOperator<BooleanType>;
+export type BooleanFilterOperator =
+    | EqualFilterOperator<BooleanType>
+    | NotEqualFilterOperator<BooleanType>
+    | IsSetFilterOperator
+    | IsNotSetFilterOperator;
 
 export type UUIDFilterOperator =
     | AtLeastFilterOperator<UUIDType>
@@ -96,7 +104,9 @@ export type UUIDFilterOperator =
     | EqualFilterOperator<UUIDType>
     | NotEqualFilterOperator<UUIDType>
     | GreaterThanFilterOperator<UUIDType>
-    | LessThanFilterOperator<UUIDType>;
+    | LessThanFilterOperator<UUIDType>
+    | IsSetFilterOperator
+    | IsNotSetFilterOperator;
 
 export type DictionaryFilterOperator =
     | AtLeastFilterOperator<DictionaryType>
@@ -108,7 +118,9 @@ export type DictionaryFilterOperator =
     | ContainsFilterOperator<DictionaryType>
     | NotContainsFilterOperator<DictionaryType>
     | RegularExpressionFilterOperator<DictionaryType>
-    | InverseRegularExpressionFilterOperator<DictionaryType>;
+    | InverseRegularExpressionFilterOperator<DictionaryType>
+    | IsSetFilterOperator
+    | IsNotSetFilterOperator;
 
 export type StringFilterOperator =
     | AtLeastFilterOperator<StringType>
@@ -120,7 +132,9 @@ export type StringFilterOperator =
     | ContainsFilterOperator<StringType>
     | NotContainsFilterOperator<StringType>
     | RegularExpressionFilterOperator<StringType>
-    | InverseRegularExpressionFilterOperator<StringType>;
+    | InverseRegularExpressionFilterOperator<StringType>
+    | IsSetFilterOperator
+    | IsNotSetFilterOperator;
 
 export type QueryAttributeFilter<T extends AttributeType = AttributeType> = FilterOperator<T>;
 
