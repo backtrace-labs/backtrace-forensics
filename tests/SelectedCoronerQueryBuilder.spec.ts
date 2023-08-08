@@ -11,13 +11,17 @@ describe('SelectedCoronerQueryBuilder', () => {
         rows: jest.fn().mockReturnValue([]),
     };
 
+    function buildQueryBuilder(request: SelectQueryRequest) {
+        return new SelectedCoronerQueryBuilder(request, executorMock, buildQueryBuilder, builderMock);
+    }
+
     beforeEach(() => {
         jest.restoreAllMocks();
     });
 
     it('should set select keys to passed keys when initial keys are empty', () => {
         const request: SelectQueryRequest = {};
-        const queryable = new SelectedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
         const expectedKeys = ['a', 'b', 'c'];
 
         const newRequest = queryable.select('a').select('b').select('c').json();
@@ -29,7 +33,7 @@ describe('SelectedCoronerQueryBuilder', () => {
         const request: SelectQueryRequest = {
             select: ['a'],
         };
-        const queryable = new SelectedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
         const expectedKeys = ['a', 'b', 'c'];
 
         const newRequest = queryable.select('b').select('c').json();
@@ -39,7 +43,7 @@ describe('SelectedCoronerQueryBuilder', () => {
 
     it('should add order for a attribute when initial order is empty', () => {
         const request: SelectQueryRequest = {};
-        const queryable = new SelectedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.order('a', 'descending').json();
 
@@ -60,7 +64,7 @@ describe('SelectedCoronerQueryBuilder', () => {
                 },
             ],
         };
-        const queryable = new SelectedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.order('a', 'descending').json();
 

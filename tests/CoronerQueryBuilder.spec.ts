@@ -50,13 +50,17 @@ describe('CoronerQueryBuilder', () => {
         execute: jest.fn().mockReturnValue({ response: {} }),
     };
 
+    function buildQueryBuilder(request: QueryRequest) {
+        return new CoronerQueryBuilder(request, executorMock, buildQueryBuilder, foldFactory, selectFactory);
+    }
+
     beforeEach(() => {
         jest.restoreAllMocks();
     });
 
     it('should set limit to passed value', () => {
         const request: QueryRequest = {};
-        const queryable = new CoronerQueryBuilder(request, executorMock, foldFactory, selectFactory);
+        const queryable = buildQueryBuilder(request);
 
         const limit = 1337;
         const newRequest = queryable.limit(limit).json();
@@ -66,7 +70,7 @@ describe('CoronerQueryBuilder', () => {
 
     it('should set offset to passed value', () => {
         const request: QueryRequest = {};
-        const queryable = new CoronerQueryBuilder(request, executorMock, foldFactory, selectFactory);
+        const queryable = buildQueryBuilder(request);
 
         const offset = 1337;
         const newRequest = queryable.offset(offset).json();
@@ -76,7 +80,7 @@ describe('CoronerQueryBuilder', () => {
 
     it('should set filter to passed props when no filter was set', () => {
         const request: QueryRequest = {};
-        const queryable = new CoronerQueryBuilder(request, executorMock, foldFactory, selectFactory);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.filter('a', 'at-least', 123).json();
 
@@ -95,7 +99,7 @@ describe('CoronerQueryBuilder', () => {
                 },
             ],
         };
-        const queryable = new CoronerQueryBuilder(request, executorMock, foldFactory, selectFactory);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.filter('a', 'at-least', 123).json();
 
@@ -114,7 +118,7 @@ describe('CoronerQueryBuilder', () => {
                 },
             ],
         };
-        const queryable = new CoronerQueryBuilder(request, executorMock, foldFactory, selectFactory);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.filter('a', 'at-least', 123).json();
 
@@ -130,7 +134,7 @@ describe('CoronerQueryBuilder', () => {
 
     it('should return an instance of select queryable when selected', () => {
         const request: QueryRequest = {};
-        const queryable = new CoronerQueryBuilder(request, executorMock, foldFactory, selectFactory);
+        const queryable = buildQueryBuilder(request);
 
         const selectQueryable = queryable.select('a');
 
@@ -139,7 +143,7 @@ describe('CoronerQueryBuilder', () => {
 
     it('should call select on select queryable when selected', () => {
         const request: QueryRequest = {};
-        const queryable = new CoronerQueryBuilder(request, executorMock, foldFactory, selectFactory);
+        const queryable = buildQueryBuilder(request);
 
         queryable.select('a');
 
@@ -148,7 +152,7 @@ describe('CoronerQueryBuilder', () => {
 
     it('should return an instance of fold queryable when folded', () => {
         const request: QueryRequest = {};
-        const queryable = new CoronerQueryBuilder(request, executorMock, foldFactory, selectFactory);
+        const queryable = buildQueryBuilder(request);
 
         const foldQueryable = queryable.fold('a', 'head');
 
@@ -157,7 +161,7 @@ describe('CoronerQueryBuilder', () => {
 
     it('should call fold on fold queryable when folded', () => {
         const request: QueryRequest = {};
-        const queryable = new CoronerQueryBuilder(request, executorMock, foldFactory, selectFactory);
+        const queryable = buildQueryBuilder(request);
 
         queryable.fold('a', 'head');
 

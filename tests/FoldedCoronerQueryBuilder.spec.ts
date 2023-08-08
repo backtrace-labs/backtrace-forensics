@@ -1,4 +1,4 @@
-import { FoldedCoronerQuery, FoldQueryRequest, ICoronerQueryExecutor, IFoldCoronerSimpleResponseBuilder } from '../src';
+import { FoldQueryRequest, ICoronerQueryExecutor, IFoldCoronerSimpleResponseBuilder } from '../src';
 import { FoldedCoronerQueryBuilder } from '../src/implementation/queries/FoldCoronerQueryBuilder';
 
 describe('FoldedCoronerQueryBuilder', () => {
@@ -11,13 +11,17 @@ describe('FoldedCoronerQueryBuilder', () => {
         rows: jest.fn().mockReturnValue([]),
     };
 
+    function buildQueryBuilder(request: FoldQueryRequest) {
+        return new FoldedCoronerQueryBuilder(request, executorMock, buildQueryBuilder, builderMock);
+    }
+
     beforeEach(() => {
         jest.restoreAllMocks();
     });
 
     it('should set fold params to provided fold when initial fold is empty', () => {
         const request: FoldQueryRequest = {};
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.fold('a', 'head').json();
 
@@ -33,7 +37,7 @@ describe('FoldedCoronerQueryBuilder', () => {
             },
         };
 
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.fold('a', 'distribution', 3).json();
 
@@ -49,7 +53,7 @@ describe('FoldedCoronerQueryBuilder', () => {
             },
         };
 
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.fold('b', 'max').json();
 
@@ -66,7 +70,7 @@ describe('FoldedCoronerQueryBuilder', () => {
             },
         } as const;
 
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
         const newRequest = queryable.order('a', 'ascending', 'head').json();
 
         expect(newRequest.order).toEqual([
@@ -90,7 +94,7 @@ describe('FoldedCoronerQueryBuilder', () => {
             ],
         } as const;
 
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
         const newRequest = queryable.order('a', 'ascending', 'head').json();
 
         expect(newRequest.order).toEqual([
@@ -112,7 +116,7 @@ describe('FoldedCoronerQueryBuilder', () => {
             },
         } as const;
 
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
         const newRequest = queryable.order('a', 'ascending', 1).json();
 
         expect(newRequest.order).toEqual([
@@ -136,7 +140,7 @@ describe('FoldedCoronerQueryBuilder', () => {
             ],
         } as const;
 
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
         const newRequest = queryable.order('a', 'ascending', 1).json();
 
         expect(newRequest.order).toEqual([
@@ -158,7 +162,7 @@ describe('FoldedCoronerQueryBuilder', () => {
             },
         } as const;
 
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
         const newRequest = queryable.orderByCount('ascending').json();
 
         expect(newRequest.order).toEqual([
@@ -182,7 +186,7 @@ describe('FoldedCoronerQueryBuilder', () => {
             ],
         } as const;
 
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
         const newRequest = queryable.orderByCount('ascending').json();
 
         expect(newRequest.order).toEqual([
@@ -200,7 +204,7 @@ describe('FoldedCoronerQueryBuilder', () => {
     it('should add virtual column when initial virtual columns are empty', () => {
         const request: FoldQueryRequest = {};
 
-        const queryable: FoldedCoronerQuery = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable
             .virtualColumn('a', 'quantize_uint', { backing_column: 'b', offset: 123, size: 456 })
@@ -234,7 +238,7 @@ describe('FoldedCoronerQueryBuilder', () => {
             ],
         } as const;
 
-        const queryable: FoldedCoronerQuery = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable
             .virtualColumn('b', 'truncate_timestamp', { backing_column: 'y', granularity: 'day' })
@@ -267,7 +271,7 @@ describe('FoldedCoronerQueryBuilder', () => {
                 a: [['distribution', 3], ['range'], ['distribution', 5]],
             },
         };
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.having('a', ['range'], '==', { from: 123, to: 456 }).json();
 
@@ -297,7 +301,7 @@ describe('FoldedCoronerQueryBuilder', () => {
                 a: [['distribution', 3], ['range'], ['distribution', 5]],
             },
         };
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.having('a', ['distribution', 5], '==', { keys: 123, tail: 456 }).json();
 
@@ -327,7 +331,7 @@ describe('FoldedCoronerQueryBuilder', () => {
                 a: [['head']],
             },
         };
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.having('a', ['head'], '==', 123).json();
 
@@ -348,7 +352,7 @@ describe('FoldedCoronerQueryBuilder', () => {
                 a: [['distribution', 3], ['range'], ['distribution', 5]],
             },
         };
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.having('a', ['range'], '==', 1, 123).json();
 
@@ -369,7 +373,7 @@ describe('FoldedCoronerQueryBuilder', () => {
                 a: [['distribution', 3], ['range'], ['distribution', 5]],
             },
         };
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.having('a', ['distribution', 5], '==', 0, 123).json();
 
@@ -390,7 +394,7 @@ describe('FoldedCoronerQueryBuilder', () => {
                 a: [['head']],
             },
         };
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.having('a', ['head'], '==', 0, 123).json();
 
@@ -411,7 +415,7 @@ describe('FoldedCoronerQueryBuilder', () => {
                 a: [['head']],
             },
         };
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.having('a', 0, 'equal', 123).json();
 
@@ -432,7 +436,7 @@ describe('FoldedCoronerQueryBuilder', () => {
                 a: [['distribution', 3], ['range'], ['distribution', 5]],
             },
         };
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.having('a', 1, '==', { from: 123, to: 456 }).json();
 
@@ -462,7 +466,7 @@ describe('FoldedCoronerQueryBuilder', () => {
                 a: [['distribution', 3], ['range'], ['distribution', 5]],
             },
         };
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.having('a', 2, '==', { keys: 123, tail: 456 }).json();
 
@@ -488,7 +492,7 @@ describe('FoldedCoronerQueryBuilder', () => {
 
     it('should add post-aggregation filter by index and value index when initial having is empty', async () => {
         const request: FoldQueryRequest = {};
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.having('a', 2, '==', 0, 123).json();
 
@@ -514,7 +518,7 @@ describe('FoldedCoronerQueryBuilder', () => {
             ],
         };
 
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.having('a', 2, '==', 0, 123).json();
 
@@ -558,7 +562,7 @@ describe('FoldedCoronerQueryBuilder', () => {
             ],
         };
 
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.having('a', 2, '==', 0, 123).json();
 
@@ -593,7 +597,7 @@ describe('FoldedCoronerQueryBuilder', () => {
 
     it('should add post-aggregation filter on count when initial having is empty', () => {
         const request: FoldQueryRequest = {};
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.havingCount('==', 50).json();
 
@@ -628,7 +632,7 @@ describe('FoldedCoronerQueryBuilder', () => {
             ],
         };
 
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.havingCount('==', 123).json();
 
@@ -668,7 +672,7 @@ describe('FoldedCoronerQueryBuilder', () => {
             },
         };
 
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.removeFold('a', 'distribution', 5).json();
         expect(newRequest).toMatchObject({
@@ -685,7 +689,7 @@ describe('FoldedCoronerQueryBuilder', () => {
             },
         };
 
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.removeFold('a', 'distribution').json();
         expect(newRequest).toMatchObject({
@@ -703,7 +707,7 @@ describe('FoldedCoronerQueryBuilder', () => {
             },
         };
 
-        const queryable = new FoldedCoronerQueryBuilder(request, executorMock, builderMock);
+        const queryable = buildQueryBuilder(request);
 
         const newRequest = queryable.removeFold('a').json();
         expect(newRequest).toMatchObject({
