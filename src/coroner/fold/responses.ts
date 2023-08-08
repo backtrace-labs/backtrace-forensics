@@ -33,13 +33,14 @@ export type SingleQueryColumnValue = [CoronerValueType?];
 export type BinQueryColumnValue = [number, number, number][];
 export type RangeQueryColumnValue = [CoronerValueType, CoronerValueType];
 export type HistogramQueryColumnValue = [CoronerValueType, number][];
+export type ObjectQueryColumnValue = [string];
 
 export type DistributionQueryColumnValue = [
     {
         keys: number;
         tail?: number;
         vals: [CoronerValueType, number][];
-    }
+    },
 ];
 
 export type FoldQueryColumnValue<F extends FoldOperator = FoldOperator> = F extends DistributionFoldOperator
@@ -50,6 +51,8 @@ export type FoldQueryColumnValue<F extends FoldOperator = FoldOperator> = F exte
     ? RangeQueryColumnValue
     : F extends readonly ['histogram']
     ? HistogramQueryColumnValue
+    : F extends readonly ['object']
+    ? ObjectQueryColumnValue
     : F extends UIntFoldOperator | BooleanFoldOperator | StringFoldOperator | DictionaryFoldOperator
     ? SingleQueryColumnValue
     :

@@ -32,7 +32,7 @@ export type BackingColumnFoldVirtualColumnTypes<A extends string = string, BC ex
     quantize_uint: [QuantizeUintFoldVirtualColumn<A, BC>, QuantizeUintFoldVirtualColumn<A, BC>['quantize_uint']];
     truncate_timestamp: [
         TruncateTimestampFoldVirtualColumn<A, BC>,
-        TruncateTimestampFoldVirtualColumn<A, BC>['truncate_timestamp']
+        TruncateTimestampFoldVirtualColumn<A, BC>['truncate_timestamp'],
     ];
 };
 
@@ -43,12 +43,12 @@ export type FoldVirtualColumnType = keyof BackingColumnFoldVirtualColumnTypes<st
 export type BackingColumnFoldVirtualColumn<
     A extends string = string,
     T extends FoldVirtualColumnType = FoldVirtualColumnType,
-    BC extends string = string
+    BC extends string = string,
 > = BackingColumnFoldVirtualColumnTypes<A, BC>[T][0];
 
 export type FoldVirtualColumn<
     A extends string = string,
-    T extends FoldVirtualColumnType = FoldVirtualColumnType
+    T extends FoldVirtualColumnType = FoldVirtualColumnType,
 > = BackingColumnFoldVirtualColumn<A, T>;
 
 export type DistributionFoldOperator = readonly ['distribution', number];
@@ -65,7 +65,8 @@ export type UIntFoldOperator =
     | readonly ['range']
     | readonly ['sum']
     | readonly ['tail']
-    | readonly ['unique'];
+    | readonly ['unique']
+    | readonly ['object'];
 
 export type BooleanFoldOperator = UIntFoldOperator;
 export type UUIDFoldOperator = UIntFoldOperator;
@@ -77,7 +78,9 @@ export type StringFoldOperator =
     | readonly ['min']
     | readonly ['range']
     | readonly ['tail']
-    | readonly ['unique'];
+    | readonly ['unique']
+    | readonly ['object'];
+
 export type DictionaryFoldOperator = StringFoldOperator;
 
 export type FoldFilterParamOperator = '==' | '!=' | '<' | '>' | '>=' | '<=';
