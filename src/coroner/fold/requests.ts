@@ -59,12 +59,14 @@ export type UIntFoldOperator =
     | BinFoldOperator
     | readonly ['histogram']
     | readonly ['head']
+    | readonly ['first']
     | readonly ['max']
     | readonly ['mean']
     | readonly ['min']
     | readonly ['range']
     | readonly ['sum']
     | readonly ['tail']
+    | readonly ['last']
     | readonly ['unique']
     | readonly ['object'];
 
@@ -73,11 +75,13 @@ export type UUIDFoldOperator = UIntFoldOperator;
 export type StringFoldOperator =
     | DistributionFoldOperator
     | readonly ['head']
+    | readonly ['first']
     | readonly ['histogram']
     | readonly ['max']
     | readonly ['min']
     | readonly ['range']
     | readonly ['tail']
+    | readonly ['last']
     | readonly ['unique']
     | readonly ['object'];
 
