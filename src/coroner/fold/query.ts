@@ -39,7 +39,7 @@ export interface FoldCoronerQuery extends CommonCoronerQuery {
     group(attribute: string): FoldedCoronerQuery;
 
     /**
-     * Adds a virtual column. The virtual column can be then filtered,
+     * Adds a virtual column. The virtual column behaves like any other column.
      *
      * Request mutation: `request.virtual_columns += { name, type, [type]: params }`
      * @param name Name of the virtual column.

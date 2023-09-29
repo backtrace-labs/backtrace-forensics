@@ -62,20 +62,34 @@ You can provide options to change the behavior of the library:
     query.post({ project: 'coroner' });
     ```
 
--   `queryMaker`
+-   `queryMakerFactory`
 
-    Use this to override the default query maker for API calls.
+    Use this to override the default API caller for API calls.
 
-    Must implement `ICoronerQueryMaker`.
+    Must implement `ICoronerApiCallerFactory`.
 
-    See [Overriding the query maker](#overriding-the-query-maker) for more info.
+    See [Overriding the API caller](#overriding-the-api-caller) for more info.
+
+    **Example**
 
     ```typescript
     options.queryMaker = {
-        query: (source, request) => {
-            // make the request and return the response
-        },
+        create: () => ({
+            query: (source, request) => {
+                // make the request and return the response
+            },
+        }),
     };
+    ```
+
+-   `plugins`
+
+    Register any plugins within this instance or query. See [Plugins](#plugins) for more info.
+
+    **Example**
+
+    ```typescript
+    options.plugins = [myPlugin({ option: true })];
     ```
 
 ## Using the query functions
@@ -169,6 +183,36 @@ These functions are available always, regardless of folding or selecting.
     const filteredQuery = query.filter('timestamp', Filters.time.from.last.hours(2).to.now());
     ```
 
+-   `table(string)`
+
+    Sets the table name.
+
+    Request mutation: `request.table = table`
+
+    **Example**
+
+    ```typescript
+    // use 'metrics' table
+    query.table('metrics');
+    ```
+
+-   `json()`
+
+    Returns the build request. The request can be posted to any Coroner /api/query endpoint.
+
+-   `post(Partial<QuerySource>?)`
+
+    Makes a POST call to Coroner with the built request.
+
+    **Example**
+
+    ```typescript
+    const response = await query.post();
+    if (!response.error) {
+        // use the response
+    }
+    ```
+
 ### Select query functions
 
 These functions are only available when selecting, and when the query is neither selected or folded.
@@ -201,11 +245,22 @@ These functions are only available when selecting, and when the query is neither
     query = query.select('b');
     ```
 
+-   `order(attribute, direction)`
+
+    Adds order on attribute with direction specified.
+
+    **Example**
+
+    ```typescript
+    // This will order descending on attribute 'a', then ascending on attribute 'b'
+    query.select('a').select('b').order('a', 'descending').order('b', 'ascending');
+    ```
+
 ### Fold query functions
 
 These functions are only available when folding, and when the query is neither selected or folded.
 
--   `fold(string, ...FoldOperator[])`
+-   `fold(string, ...FoldOperator)`
 
     Adds provided fold to the request.
 
@@ -227,6 +282,135 @@ These functions are only available when folding, and when the query is neither s
     let query = query.fold();
     query = query.fold('fingerprint', 'head');
     query = query.fold('timestamp', 'tail');
+    ```
+
+-   `removeFold(attribute, ...Partial<FoldOperator>)`
+
+    Removes all previosuly added matching folds from the request.
+
+    Request mutation: `request.fold[attribute] -= [...fold]`
+
+    **Example**
+
+    ```typescript
+    const queryWithDistributions = query.fold('fingerprint', 'distribution', 3).fold('fingerprint', 'distribution', 4);
+
+    const queryWithoutDistributions = queryWithDistributions.removeFold('fingerprint', 'distribution');
+    ```
+
+-   `group(attribute)`
+
+    Sets the request group-by attribute. The attribute grouped by will be visible as `groupKey` in simple response.
+
+    Request mutation: `request.group = [attribute]`
+
+    **Example**
+
+    ```typescript
+    const groupedByFingerprint = query.group('fingerprint');
+    ```
+
+-   `order(attribute, direction, ...FoldOperator)`
+
+    Adds order on attribute fold with direction specified.
+
+    **Example**
+
+    ```typescript
+    // This will order descending on attribute 'a', fold 'head', then ascending on attribute 'a', fold 'tail'
+    query.fold('a', 'head').fold('a', 'tail').order('a', 'descending', 'head').order('a', 'ascending', 'tail');
+    ```
+
+-   `orderByCount(direction)`
+
+    Adds order on count with direction specified.
+
+    **Example**
+
+    ```typescript
+    // This will order descending on count
+    query.fold('a', 'head').fold('a', 'tail').orderByCount('descending');
+    ```
+
+-   `orderByGroup(direction)`
+
+    Adds order on group with direction specified.
+
+    **Example**
+
+    ```typescript
+    query.fold('a', 'head').fold('a', 'tail').groupBy('fingerprint').orderByGroup('descending');
+    ```
+
+-   `having(attribute, index, operator, value)`
+
+    Adds a post-aggregation filter on params specified.
+
+    **Example**
+
+    ```typescript
+    // Filters on 'head' fold
+    query.fold('a', 'head').having('a', ['head'], 'less-than', 123);
+
+    // Filters on 'distribution, 3' fold
+    query.fold('a', 'distribution', 3).having('a', ['distribution', 3], 'less-than', { keys: 123 });
+    ```
+
+-   `having(attribute, index, operator, valueIndex, value)`
+
+    Adds a post-aggregation filter on params specified.
+
+    **Example**
+
+    ```typescript
+    // Filters on 'head' fold
+    query.fold('a', 'head').having('a', 0, 'less-than', 0, 123);
+
+    // Filters on 'range' fold, value 'from'
+    query.fold('a', 'range').having('a', 0, 'less-than', 0, 123);
+
+    // Filters on 'range' fold, value 'to'
+    query.fold('a', 'range').having('a', 0, 'less-than', 1, 123);
+    ```
+
+-   `having(attribute, fold, operator, valueIndex, value)`
+
+    Adds a post-aggregation filter on params specified.
+
+    **Example**
+
+    ```typescript
+    // Filters on 'head' fold
+    query.fold('a', 'head').having('a', ['head'], 'less-than', 0, 123);
+
+    // Filters on 'range' fold, value 'from'
+    query.fold('a', 'range').having('a', ['range'], 'less-than', 0, 123);
+
+    // Filters on 'range' fold, value 'to'
+    query.fold('a', 'range').having('a', ['range'], 'less-than', 1, 123);
+    ```
+
+-   `havingCount(operator, value)`
+
+    Adds a post-aggregation filter on count.
+
+    **Example**
+
+    ```typescript
+    query.havingCount('greater-than', 10);
+    ```
+
+-   `virtualColumn(name, type, params)`
+
+    Adds a virtual column. The virtual column behaves like any other column.
+
+    Request mutation: `request.virtual_columns += { name, type, [type]: params }`
+
+    **Example**
+
+    ```typescript
+    // Adds a virtual column with name 'a'
+    query.virtualColumn('a', 'quantized_uint', { backing_column: 'timestamp', size: 3600, offset: 86400 });
     ```
 
 ## Getting the request
@@ -285,7 +469,7 @@ if (!coronerResponse.success) {
 }
 
 const firstRow = coronerResponse.first();
-const rows = coronerResponse.toArray(); // this will contain the firstRow above as the first element
+const rows = coronerResponse.all().rows; // this will contain the firstRow above as the first element
 for (const row of rows) {
     console.log(row.a, row.b, row.c); // prints values of attributes a, b, c
 }
@@ -294,7 +478,7 @@ for (const row of rows) {
 ### Simple fold response
 
 ```typescript
-const coronerResponse = await query
+const coronerResponse = await request
     .fold('a', 'head')
     .fold('a', 'range')
     .fold('b', 'min')
@@ -310,7 +494,7 @@ if (!coronerResponse.success) {
 }
 
 const firstRow = coronerResponse.first();
-const rows = coronerResponse.toArray(); // this will contain the firstRow above as the first element
+const rows = coronerResponse.all().rows; // this will contain the firstRow above as the first element
 for (const row of rows) {
     console.log(row.count); // displays the group count
     console.log(row.attributes.c.groupKey); // displays the group key
@@ -324,21 +508,21 @@ for (const row of rows) {
     console.log(row.attributes.b.distribution[0].fold); // prints "distribution"
     console.log(row.attributes.b.distribution[0].rawFold); // prints ["distribution", 3]
     const distributionOfB3 = row.attributes.b.distribution[0].value;
-    console.log(distributionOfB3.keys, distributionOfB3.tails);
+    console.log(distributionOfB3.keys, distributionOfB3.tail);
     for (const value of distributionOfB3.values) {
         console.log(value);
     }
 
     // displays all the details of [distribution, 5] of b attribute
     const distributionOfB5 = row.attributes.b.distribution[1];
-    console.log(distributionOfB5.keys, distributionOfB5.tails);
-    for (const value of distributionOfB5.values) {
+    console.log(distributionOfB5.value.keys, distributionOfB5.value.tail);
+    for (const value of distributionOfB5.value.values) {
         console.log(value);
     }
 
     // displays all the details of bins of c attribute
     const binOfC = row.attributes.c.bin[0].value;
-    for (const bin of binOfC) {
+    for (const bin of binOfC.values) {
         console.log(bin.from, bin.to, bin.count);
     }
 }
@@ -360,6 +544,8 @@ These are all available filter operators that you can use in `filter` function.
 -   `less-than`
 -   `regular-expression`
 -   `inverse-regular-expression`
+-   `is-set`
+-   `is-not-set`
 
 ### Number filters
 
@@ -369,11 +555,15 @@ These are all available filter operators that you can use in `filter` function.
 -   `not-equal`
 -   `greater-than`
 -   `less-than`
+-   `is-set`
+-   `is-not-set`
 
 ### Boolean filters
 
 -   `equal`
 -   `not-equal`
+-   `is-set`
+-   `is-not-set`
 
 ## Fluent filters
 
@@ -402,9 +592,24 @@ Use `Filters.range` to create filters with range.
 query.filter('_tx', Filters.range(100, 500));
 ```
 
+### Ticket filters
+
+Use `Filters.ticket` to create filters for tickets.
+
+```typescript
+query.filter(Filters.ticket.state.isResolved());
+```
+
+By default it uses `fingerprint;issues;state` attribute to check status. If you are querying the `issues` table
+directly, use `attribute()`:
+
+```typescript
+query.table('issues').filter(Filters.ticket.attribute('state').isResolved());
+```
+
 ## Available folds
 
-These are all available fold operators that you can use in `fold` function.
+These are all available fold operators that you can use in the `fold` function.
 
 ### Common folds
 
@@ -414,8 +619,9 @@ These are all available fold operators that you can use in `fold` function.
 -   `range` - returns the range of values, from min to max,
 -   `max` - returns the max value,
 -   `min` - returns the min value,
--   `distribution` - returns the distribution of values, in number of specified buckets.
--   `histogram` - returns count of each discrete value
+-   `distribution` - returns the distribution of values, in number of specified buckets,
+-   `histogram` - returns count of each discrete value,
+-   `object` - returns highest row ID in the group.
 
 ### String folds
 
@@ -426,161 +632,141 @@ String folds use only the common folds.
 In addition to common folds, there are additional folds available:
 
 -   `mean` - returns the mean value of all values in group,
--   `sum` - returns the sum of all values in group
--   `bin` - ? not sure how to describe this, help
+-   `sum` - returns the sum of all values in group,
+-   `bin` - ? not sure how to describe this, help.
 
-## Attribute lists
+## Available `having` filters
 
-You can use common or custom attribute lists to improve IDE autocompletion. These will be used in supported places.
+These are all available having operators that you can use in the `having` function.
 
-Some common attributes have been written already. You can import them by importing `CommonAttributes`.
+-   `==` (`equal`)
+-   `!=` (`not equal`)
+-   `<` (`less-than`)
+-   `>` (`greater-than`)
+-   `<=` (`at-least`)
+-   `>=` (`at-most`)
 
-To use the attribute list, pass the attribute list into `.create()` method:
+Filters in parentheses are supported only by Forensics, and not by Coroner itself.
 
-```typescript
-import { BacktraceForensics, CommonAttributes } from 'backtrace-forensics';
+## Available virtual column types
 
-const instance = new BacktraceForensics();
-const query = instance.create({
-    attributeList: CommonAttributes,
-});
+These are all available virtual column ttypes that you can use in the `virtualColumn` function.
 
-const query = BacktraceForensics.create(
-    {},
+-   `quantize_uint`
+
+    Options:
+
+    ```typescript
     {
-        attributeList: CommonAttributes,
-    },
-);
-```
+        backing_column: string;
+        size: number;
+        offset: number;
+    }
+    ```
 
-### Creating own attribute lists
+-   `truncate_timestamp`
 
-If you need to use your own attribute list, create one using `createAttributeList` function:
+    Options:
 
-```typescript
-import { createAttributeList } from 'backtrace-forensics';
+    ```typescript
+    {
+        backing_column: string;
+        granularity: 'day' | 'month' | 'quarter' | 'year';
+    }
+    ```
 
-const attributeList = createAttributeList([
-    ['attribute1', 'none', 'string'],
-    ['attribute2', 'sha256', 'dictionary'],
-] as const);
-```
-
-**Remember to use `as const`, or Typescript won't know the types in runtime.**
-
-### Extending attribute lists
-
-You may extend the current `CommonAttributes` with your attribute list by using `extendAttributeList`:
-
-```typescript
-import { createAttributeList, extendAttributeList, CommonAttributes } from 'backtrace-forensics';
-
-const attributeList = createAttributeList([
-    ['attribute1', 'none', 'string'],
-    ['attribute2', 'sha256', 'dictionary'],
-] as const);
-
-const extended = extendAttributeList(CommonAttributes, attributeList);
-```
-
-The attributes passed as second parameter will overwrite those passed as first parameter.
-
-## Overriding the query maker
+## Overriding the API caller
 
 By default, the query maker is using `http`/`https` modules in Node, and `XMLHttpRequest` in browser.
 
-If you want to use your own implementation for making the query, provide an implementation of `ICoronerQueryMaker` to
-the `BacktraceForensics` options.
+If you want to use your own implementation for making the query, provide an implementation of `ICoronerApiCallerFactory`
+to the `BacktraceForensics` options. The factory should create your `ICoronerApiCaller`
 
-A Typescript class implementation of a query maker using `axios` may look like this:
+A Typescript class implementation of an API caller using `axios` may look like this:
 
 ```typescript
 import axios from 'axios';
 import { ICoronerQueryMaker } from 'backtrace-forensics';
 
-class AxiosCoronerQueryMaker implements ICoronerQueryMaker {
-    public async query<R extends QueryResponse>(
-        source: QuerySource,
-        request: QueryRequest,
-    ): Promise<CoronerResponse<R>> {
-        const response = await axios.post<CoronerResponse<R>>('/api/query', request, {
-            baseUrl: source.address,
-            params: { project: source.project },
-            headers: {
-                'X-Coroner-Location': source.location ?? source.address,
-                'X-Coroner-Token': source.token,
-            },
-        });
-
+class AxiosCoronerQueryMaker implements ICoronerApiCaller {
+    public async post<R extends QueryResponse>(
+        url: string | URL,
+        body?: string,
+        headers?: Record<string, string>,
+    ): Promise<R> {
+        const response = await axios.post<R>(url, body, { headers });
         return response.data;
     }
 }
 ```
 
-# Writing extensions
+# Plugins
 
-As of version 0.3.0, `backtrace-forensics` supports writing extensions to its query functions.
+As of version 0.6.0, `backtrace-forensics` supports writing plugins. Plugins pack multiple extensions that can later
+extend a `BacktraceForensics` instance.
 
-To extend any of the queries, use one of the following functions:
+## Importing a plugin
 
--   `extendCoronerQuery` - use with `CommonCoronerQuery` interface
--   `extendSelectCoronerQuery` - use with `SelectCoronerQuery` interface
--   `extendSelectedCoronerQuery` - use with `SelectedCoronerQuery` interface
--   `extendFoldCoronerQuery` - use with `FoldCoronerQuery` interface
--   `extendFoldedCoronerQuery` - use with `FoldedCoronerQuery` interface
-
-Be sure to add typings for Typescript.
-
-You can check out sample plugins in the `samples` folder. The usage of these plugins is in the main sample in
-`extensions.ts`.
-
-## Adding methods
-
-To add a method to a query, let's say fold queries:
+Pass the plugin into options while creating the instance:
 
 ```typescript
-// plugin.ts
-
-extendFoldCoronerQuery({
-    addHeadAndTailFolds(attribute: string) {
-        return this.fold(attribute, 'head').fold(attribute, 'tail');
-    },
+const instance = new BacktraceForensics({
+    plugins: [myPlugin()],
 });
 
-extendFoldedCoronerQuery({
-    addHourlyQuantizedColumn(attribute: string, name: string) {
-        return this.virtualColumn(name, 'quantized_uint', {
-            backing_column: attribute,
-            size: 3600,
-            offset: 86400,
-        });
-    },
-});
+const response = await instance
+    .addHeadAndTailsFold('attribute')
+    .addHourlyQuantizedColumn('timestamp', 'quantized_timestamp')
+    .group('quantized_timestamp')
+    .post();
+```
 
-declare module 'backtrace-forensics' {
-    interface FoldCoronerQuery {
-        // For not folded queries, be sure to return FoldedCoronerQuery to continue folding
-        addHeadAndTailFolds(attribute: string): FoldedCoronerQuery;
-    }
+## Writing a plugin
 
-    interface FoldedCoronerQuery {
-        // For already-folded queries, return FoldedCoronerQuery, or just this
-        addHourlyQuantizedColumn(attribute: string, name: string): this;
-    }
+Import `Plugins` namespace from `backtrace-forensics`, and use the `Plugins.createPlugin` function to begin. Add each
+extension as a element to the plugin, for example:
+
+```typescript
+export function myPlugin() {
+    return Plugins.createPlugin(
+        Plugins.extendFoldCoronerQuery((context) => ({
+            addHeadAndTailFolds(attribute: string) {
+                return this.fold(attribute, 'head').fold(attribute, 'tail');
+            },
+        })),
+        Plugins.extendFoldedCoronerQuery((context) => ({
+            addHourlyQuantizedColumn(attribute: string, name: string) {
+                return this.virtualColumn(name, 'quantized_uint', {
+                    backing_column: attribute,
+                    size: 3600,
+                    offset: 86400,
+                });
+            },
+        })),
+    );
 }
 ```
 
-Now, as long as you have this module imported, you can use this method:
+### Adding extensions
 
-```typescript
-import './plugin';
+Use methods in the `Plugins` namespace and pass them to `createPlugin`:
 
-BacktraceForensics.create()
-    .filter('a', 'equals', 'b')
-    .addHeadAndTailFolds('a')
-    .fold('c', 'unique')
-    .addHourlyQuantizedColumn('x', 'timestamp');
-```
+-   `addQueryExtension`
+-   `addFoldQueryExtension`
+-   `addFoldedQueryExtension`
+-   `addSelectQueryExtension`
+-   `addSelectedQueryExtension`
+-   `addResponseExtension`
+-   `addFailedResponseExtension`
+-   `addSuccessfulResponseExtension`
+-   `addFoldResponseExtension`
+-   `addFailedFoldResponseExtension`
+-   `addSuccessfulFoldResponseExtension`
+-   `addSelectResponseExtension`
+-   `addFailedSelectResponseExtension`
+-   `addSuccessfulSelectResponseExtension`
+
+Each function will add functions to a specific query or response interface.
 
 # Contact
 
