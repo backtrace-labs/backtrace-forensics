@@ -1,6 +1,6 @@
 import { QuerySource } from '../../models';
 import { CommonCoronerQuery, OrderDirection } from '../common';
-import { SelectQueryRequest } from './requests';
+import { SelectQueryRequest, SelectWildcard } from './requests';
 import { SelectQueryResponse } from './responses';
 
 export interface SelectCoronerQuery extends CommonCoronerQuery {
@@ -23,6 +23,25 @@ export interface SelectCoronerQuery extends CommonCoronerQuery {
      * query.select('a', 'b', 'c');
      */
     select(...attributes: string[]): SelectedCoronerQuery;
+
+    /**
+     * Selects all available indexed attributes.
+     *
+     * Request mutation: `request.select_wildcard = { physical: true, virtual: true, derived: true }`
+     * @example
+     * query.selectAll();
+     */
+    selectAll(): SelectedCoronerQuery;
+
+    /**
+     * Selects all available indexed attributes, physical, virtual, derived, or a combination of these.
+     *
+     * Request mutation: `request.select_wildcard = options`
+     * @param options Which attribute types to select.
+     * @example
+     * query.selectAll({ physical: true, virtual: false });
+     */
+    selectAll(options?: SelectWildcard): SelectedCoronerQuery;
 }
 
 export interface SelectedCoronerQuery extends SelectCoronerQuery {

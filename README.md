@@ -245,6 +245,30 @@ These functions are only available when selecting, and when the query is neither
     query = query.select('b');
     ```
 
+-   `selectAll()`
+
+    Selects all indexed attributes in table.
+
+    Request mutation: `request.select_wildcard = { physical: true, virtual: true, derived: true }`
+
+    **Example**
+
+    ```typescript
+    let query = query.selectAll();
+    ```
+
+-   `selectAll(options)`
+
+    Selects all available indexed attributes, physical, virtual, derived, or a combination of these.
+
+    Request mutation: `request.select_wildcard = options`
+
+    **Example**
+
+    ```typescript
+    let query = query.selectAll({ physical: true, virtual: false });
+    ```
+
 -   `order(attribute, direction)`
 
     Adds order on attribute with direction specified.

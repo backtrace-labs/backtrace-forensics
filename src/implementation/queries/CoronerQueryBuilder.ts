@@ -15,7 +15,7 @@ import {
     FoldVirtualColumnTypes,
     FoldedCoronerQuery,
 } from '../../coroner/fold';
-import { SelectedCoronerQuery } from '../../coroner/select';
+import { SelectWildcard, SelectedCoronerQuery } from '../../coroner/select';
 import { ICoronerQueryExecutor } from '../../interfaces';
 import { IFoldCoronerQueryBuilderFactory } from '../../interfaces/factories/IFoldCoronerQueryBuilderFactory';
 import { ISelectCoronerQueryBuilderFactory } from '../../interfaces/factories/ISelectCoronerQueryBuilderFactory';
@@ -53,6 +53,11 @@ export class CoronerQueryBuilder extends CommonCoronerQueryBuilder implements Co
     public select(...attributes: string[]): SelectedCoronerQuery {
         const query = this.#selectQueryFactory.create(this.#request);
         return query.select(...attributes);
+    }
+
+    public selectAll(options?: SelectWildcard): SelectedCoronerQuery {
+        const query = this.#selectQueryFactory.create(this.#request);
+        return query.selectAll(options);
     }
 
     public fold(attribute?: string, ...fold: any): FoldedCoronerQuery {

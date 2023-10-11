@@ -6,6 +6,7 @@ import {
     SelectOrder,
     SelectQueryRequest,
     SelectQueryResponse,
+    SelectWildcard,
     SelectedCoronerQuery,
     SimpleSelectRow,
     SimpleSelectRows,
@@ -49,6 +50,13 @@ export class SelectedCoronerQueryBuilder extends CommonCoronerQueryBuilder imple
         } else {
             request.select = [...request.select, ...attributes];
         }
+
+        return this.createInstance(request) as unknown as SelectedCoronerQuery;
+    }
+
+    public selectAll(opts?: SelectWildcard): SelectedCoronerQuery {
+        const request = cloneSelectRequest(this.#request);
+        request.select_wildcard = opts ?? { derived: true, physical: true, virtual: true };
 
         return this.createInstance(request) as unknown as SelectedCoronerQuery;
     }
