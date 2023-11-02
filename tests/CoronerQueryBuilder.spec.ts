@@ -40,6 +40,7 @@ describe('CoronerQueryBuilder', () => {
         offset: jest.fn().mockReturnThis(),
         order: jest.fn().mockReturnThis(),
         table: jest.fn().mockReturnThis(),
+        selectAll: jest.fn().mockReturnThis(),
     };
 
     const selectFactory: ISelectCoronerQueryBuilderFactory = {
