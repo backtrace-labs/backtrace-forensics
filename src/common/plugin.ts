@@ -1,4 +1,4 @@
-import { BacktraceForensicsOptions } from '../BacktraceForensics';
+import { ForensicsOptions } from '../Forensics';
 import {
     CoronerQuery,
     FailedFoldQueryResponse,
@@ -20,14 +20,14 @@ import { Extension } from './extensions';
 
 export namespace Plugins {
     export interface PluginContext {
-        readonly options: BacktraceForensicsOptions;
+        readonly options: ForensicsOptions;
         readonly apiCallerFactory: ICoronerApiCallerFactory;
     }
 
     export type PluginExtension<T> = (context: PluginContext) => Extension<T>;
-    export type PluginBuilder = (plugin: BacktraceForensicsPlugin) => BacktraceForensicsPlugin;
+    export type PluginBuilder = (plugin: ForensicsPlugin) => ForensicsPlugin;
 
-    export interface BacktraceForensicsPlugin {
+    export interface ForensicsPlugin {
         readonly queryExtensions?: readonly PluginExtension<CoronerQuery>[];
 
         readonly foldQueryExtensions?: readonly PluginExtension<FoldCoronerQuery>[];
@@ -49,9 +49,9 @@ export namespace Plugins {
         readonly successfulSelectResponseExtensions?: readonly PluginExtension<SuccessfulSelectQueryResponse>[];
     }
 
-    function pluginExtensionAdder<P extends keyof BacktraceForensicsPlugin>(prop: P) {
-        return function addExtension(extension: NonNullable<BacktraceForensicsPlugin[P]>[number]): PluginBuilder {
-            return function addExtension(plugin: BacktraceForensicsPlugin): BacktraceForensicsPlugin {
+    function pluginExtensionAdder<P extends keyof ForensicsPlugin>(prop: P) {
+        return function addExtension(extension: NonNullable<ForensicsPlugin[P]>[number]): PluginBuilder {
+            return function addExtension(plugin: ForensicsPlugin): ForensicsPlugin {
                 const array = plugin[prop];
                 return {
                     ...plugin,
@@ -82,7 +82,7 @@ export namespace Plugins {
     export const addSuccessfulSelectResponseExtension = pluginExtensionAdder('successfulSelectResponseExtensions');
 
     export function createPlugin(...extensions: PluginBuilder[]) {
-        return extensions.reduce((plugin, extend) => extend(plugin), {} as BacktraceForensicsPlugin);
+        return extensions.reduce((plugin, extend) => extend(plugin), {} as ForensicsPlugin);
     }
 
     export function extend<T>(obj: T, extensions: Extension<T>[]): T {

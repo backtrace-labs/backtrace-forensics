@@ -1,4 +1,4 @@
-export * from './BacktraceForensics';
+export * from './Forensics';
 export * from './common';
 export * from './coroner';
 export * from './filters';

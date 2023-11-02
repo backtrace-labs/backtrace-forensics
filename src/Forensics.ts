@@ -18,7 +18,7 @@ import { ICoronerQueryExecutor } from './interfaces/ICoronerQueryExecutor';
 import { DescribeSource } from './models/DescribeSource';
 import { QuerySource } from './models/QuerySource';
 
-export interface BacktraceForensicsOptions {
+export interface ForensicsOptions {
     /**
      * Data from this source will be used as defaults for API calls.
      *
@@ -53,15 +53,15 @@ export interface BacktraceForensicsOptions {
      * @example
      * options.plugins = [issuePlugin, otherPlugin];
      */
-    readonly plugins?: Plugins.BacktraceForensicsPlugin[];
+    readonly plugins?: Plugins.ForensicsPlugin[];
 }
 
 export interface CreateQueryOptions<R extends QueryRequest = QueryRequest> {
     request?: R;
 }
 
-export class BacktraceForensics {
-    public readonly options: BacktraceForensicsOptions;
+export class Forensics {
+    public readonly options: ForensicsOptions;
 
     readonly #queryExecutor: ICoronerQueryExecutor;
     readonly #describeExecutor: ICoronerDescribeExecutor;
@@ -69,7 +69,7 @@ export class BacktraceForensics {
     readonly #foldFactory: IFoldCoronerQueryBuilderFactory;
     readonly #selectFactory: ISelectCoronerQueryBuilderFactory;
 
-    constructor(options?: Partial<BacktraceForensicsOptions>) {
+    constructor(options?: Partial<ForensicsOptions>) {
         this.options = this.getDefaultOptions(options);
 
         const apiCallerFactory = this.options.queryMakerFactory ?? new PlatformCoronerApiCallerFactory();
@@ -181,7 +181,7 @@ export class BacktraceForensics {
      * Creates a new query with options from the instance.
      * @param request Request to use with the query. If not provided, will create an empty request.
      * @example
-     * const instance = new BacktraceForensics();
+     * const instance = new Forensics();
      * const query = instance.create().filter(...).fold(...);
      */
     public create<R extends QueryRequest>(options?: CreateQueryOptions<R>): CoronerQuery;
@@ -213,32 +213,34 @@ export class BacktraceForensics {
      * @param request Request to use with the query. If not provided, will create an empty request.
      * @param options Options to be used with the query.
      * @example
-     * const query = BacktraceForensics.create().filter(...).fold(...);
+     * const query = Forensics.create().filter(...).fold(...);
      */
     public static create<R extends QueryRequest>(
-        options?: Partial<BacktraceForensicsOptions>,
+        options?: Partial<ForensicsOptions>,
         createOptions?: CreateQueryOptions<R>,
     ): CoronerQuery;
     public static create<R extends SelectQueryRequest>(
-        options?: Partial<BacktraceForensicsOptions>,
+        options?: Partial<ForensicsOptions>,
         createOptions?: CreateQueryOptions<R>,
     ): SelectedCoronerQuery;
     public static create<R extends FoldQueryRequest>(
-        options?: Partial<BacktraceForensicsOptions>,
+        options?: Partial<ForensicsOptions>,
         createOptions?: CreateQueryOptions<R>,
     ): FoldedCoronerQuery;
     public static create(
-        options?: Partial<BacktraceForensicsOptions>,
+        options?: Partial<ForensicsOptions>,
         createOptions?: CreateQueryOptions<QueryRequest>,
     ): CoronerQuery | SelectCoronerQuery | FoldCoronerQuery {
-        return new BacktraceForensics(options).create(createOptions);
+        return new Forensics(options).create(createOptions);
     }
 
-    public static describe(source?: Partial<DescribeSource>, options?: Partial<BacktraceForensicsOptions>) {
-        return new BacktraceForensics(options).describe(source);
+    public static describe(source?: Partial<DescribeSource>, options?: Partial<ForensicsOptions>) {
+        return new Forensics(options).describe(source);
     }
 
-    private getDefaultOptions(options?: BacktraceForensicsOptions) {
+    private getDefaultOptions(options?: ForensicsOptions) {
         return Object.assign({}, {}, options);
     }
 }
+
+export const BacktraceForensics = Forensics;

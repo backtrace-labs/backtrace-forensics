@@ -21,21 +21,21 @@ npm run test
 
 You can create a query in two ways:
 
-1. Create a `BacktraceForensics` instance and create queries from there:
+1. Create a `Forensics` instance and create queries from there:
 
     ```typescript
-    import { BacktraceForensics } from 'backtrace-forensics';
-    const instance = new BacktraceForensics({
+    import { Forensics } from '@backtrace/forensics';
+    const instance = new Forensics({
         /* any options here */
     });
     const query = instance.create();
     ```
 
-2. Use the static function from `BacktraceForensics`:
+2. Use the static function from `Forensics`:
 
     ```typescript
-    import { BacktraceForensics } from 'backtrace-forensics';
-    const query = BacktraceForensics.create({
+    import { Forensics } from '@backtrace/forensics';
+    const query = Forensics.create({
         /* any options here */
     });
     ```
@@ -598,7 +598,7 @@ To simplify some attributes filtering, you can use `Filters` helper to create mo
 Use `Filters.time` to create time filters with ranges.
 
 ```typescript
-import { Filters } from 'backtrace-forensics';
+import { Filters } from '@backtrace/forensics';
 
 // Will return data from the last 2 hours
 query.filter('timestamp', Filters.time.from.last.hours(2).to.now());
@@ -704,13 +704,13 @@ These are all available virtual column ttypes that you can use in the `virtualCo
 By default, the query maker is using `http`/`https` modules in Node, and `XMLHttpRequest` in browser.
 
 If you want to use your own implementation for making the query, provide an implementation of `ICoronerApiCallerFactory`
-to the `BacktraceForensics` options. The factory should create your `ICoronerApiCaller`
+to the `Forensics` options. The factory should create your `ICoronerApiCaller`
 
 A Typescript class implementation of an API caller using `axios` may look like this:
 
 ```typescript
 import axios from 'axios';
-import { ICoronerQueryMaker } from 'backtrace-forensics';
+import { ICoronerQueryMaker } from '@backtrace/forensics';
 
 class AxiosCoronerQueryMaker implements ICoronerApiCaller {
     public async post<R extends QueryResponse>(
@@ -726,15 +726,15 @@ class AxiosCoronerQueryMaker implements ICoronerApiCaller {
 
 # Plugins
 
-As of version 0.6.0, `backtrace-forensics` supports writing plugins. Plugins pack multiple extensions that can later
-extend a `BacktraceForensics` instance.
+As of version 0.6.0, `@backtrace/forensics` supports writing plugins. Plugins pack multiple extensions that can later
+extend a `Forensics` instance.
 
 ## Importing a plugin
 
 Pass the plugin into options while creating the instance:
 
 ```typescript
-const instance = new BacktraceForensics({
+const instance = new Forensics({
     plugins: [myPlugin()],
 });
 
@@ -747,7 +747,7 @@ const response = await instance
 
 ## Writing a plugin
 
-Import `Plugins` namespace from `backtrace-forensics`, and use the `Plugins.createPlugin` function to begin. Add each
+Import `Plugins` namespace from `@backtrace/forensics`, and use the `Plugins.createPlugin` function to begin. Add each
 extension as a element to the plugin, for example:
 
 ```typescript
