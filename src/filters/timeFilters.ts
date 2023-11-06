@@ -17,190 +17,213 @@ export interface ToTimeFluentFiltering<RT = QueryAttributeFilter<UIntType>[]> ex
 export interface RangeTimeFluentFiltering<RT> {
     /**
      * Exactly now.
+     * @param notEqual If `true`, will use `less-than`/`greater-than`, else will use `at-least`/`at-most`.
      */
-    now(): RT;
+    now(notEqual?: boolean): RT;
 
     readonly last: {
         /**
          * 1 hour ago (now - 1 hour).
+         * @param notEqual If `true`, will use `less-than`/`greater-than`, else will use `at-least`/`at-most`.
          */
-        hour(): RT;
+        hour(notEqual?: boolean): RT;
 
         /**
          * _count_ hours ago (now - _count_ hours).
          * @param count Specifies the number of hours.
+         * @param notEqual If `true`, will use `less-than`/`greater-than`, else will use `at-least`/`at-most`.
          */
-        hours(count: number): RT;
+        hours(count: number, notEqual?: boolean): RT;
 
         /**
          * 1 day ago (now - 1 day).
+         * @param notEqual If `true`, will use `less-than`/`greater-than`, else will use `at-least`/`at-most`.
          */
-        day(): RT;
+        day(notEqual?: boolean): RT;
 
         /**
          * _count_ days ago (now - _count_ days).
          * @param count Specifies the number of days.
+         * @param notEqual If `true`, will use `less-than`/`greater-than`, else will use `at-least`/`at-most`.
          */
-        days(count: number): RT;
+        days(count: number, notEqual?: boolean): RT;
 
         /**
          * 1 year ago (now - 1 year).
+         * @param notEqual If `true`, will use `less-than`/`greater-than`, else will use `at-least`/`at-most`.
          */
-        year(): RT;
+        year(notEqual?: boolean): RT;
 
         /**
          * _count_ years ago (now - _count_ years).
          * @param count Specifies the number of years.
+         * @param notEqual If `true`, will use `less-than`/`greater-than`, else will use `at-least`/`at-most`.
          */
-        years(count: number): RT;
+        years(count: number, notEqual?: boolean): RT;
     };
 
     readonly next: {
         /**
          * 1 hour from now (now + 1 hour).
+         * @param notEqual If `true`, will use `less-than`/`greater-than`, else will use `at-least`/`at-most`.
          */
-        hour(): RT;
+        hour(notEqual?: boolean): RT;
 
         /**
          * _count_ hours from now (now + _count_ hours).
          * @param count Specifies the number of hours.
+         * @param notEqual If `true`, will use `less-than`/`greater-than`, else will use `at-least`/`at-most`.
          */
-        hours(count: number): RT;
+        hours(count: number, notEqual?: boolean): RT;
 
         /**
          * 1 day from now (now + 1 day).
          */
-        day(): RT;
+        day(notEqual?: boolean): RT;
 
         /**
          * _count_ days from now (now + _count_ days).
          * @param count Specifies the number of days.
+         * @param notEqual If `true`, will use `less-than`/`greater-than`, else will use `at-least`/`at-most`.
          */
-        days(count: number): RT;
+        days(count: number, notEqual?: boolean): RT;
 
         /**
          * 1 year from now (now + 1 year).
+         * @param notEqual If `true`, will use `less-than`/`greater-than`, else will use `at-least`/`at-most`.
          */
-        year(): RT;
+        year(notEqual?: boolean): RT;
 
         /**
          * _count_ years from now (now + _count_ years).
          * @param count Specifies the number of years.
+         * @param notEqual If `true`, will use `less-than`/`greater-than`, else will use `at-least`/`at-most`.
          */
-        years(count: number): RT;
+        years(count: number, notEqual?: boolean): RT;
     };
 
     /**
      * A specific date.
      * @param date Date to use.
+     * @param notEqual If `true`, will use `less-than`/`greater-than`, else will use `at-least`/`at-most`.
      */
-    date(date: Date): RT;
+    date(date: Date, notEqual?: boolean): RT;
 }
 
 export interface TimeFluentFilteringContext {
     from?: Date;
     to?: Date;
+    fromNotEqual?: boolean;
+    toNotEqual?: boolean;
     now: () => Date;
 }
 
-function getFilters(context: TimeFluentFilteringContext): QueryAttributeFilter<UIntType>[] {
+function getFilters({
+    from,
+    to,
+    fromNotEqual,
+    toNotEqual,
+}: TimeFluentFilteringContext): QueryAttributeFilter<UIntType>[] {
     const filters: QueryAttributeFilter<UIntType>[] = [];
-    if (context.from) {
-        filters.push(['at-least', convertInputValue(context.from) as AttributeValueType<UIntType>]);
+    if (from) {
+        filters.push([
+            fromNotEqual ? 'greater-than' : 'at-least',
+            convertInputValue(from) as AttributeValueType<UIntType>,
+        ]);
     }
-    if (context.to) {
-        filters.push(['at-most', convertInputValue(context.to) as AttributeValueType<UIntType>]);
+    if (to) {
+        filters.push([toNotEqual ? 'less-than' : 'at-most', convertInputValue(to) as AttributeValueType<UIntType>]);
     }
     return filters;
 }
 
 function createRange<RT>(
     context: TimeFluentFilteringContext,
-    setter: (date: Date) => any,
-    returnValue: (context: TimeFluentFilteringContext) => RT
+    setter: (date: Date, notEqual?: boolean) => any,
+    returnValue: (context: TimeFluentFilteringContext) => RT,
 ): RangeTimeFluentFiltering<RT> {
     return {
-        date(date: Date) {
-            setter(date);
+        date(date: Date, notEqual?: boolean) {
+            setter(date, notEqual);
             return returnValue(context);
         },
-        now() {
-            setter(context.now());
+        now(notEqual?: boolean) {
+            setter(context.now(), notEqual);
             return returnValue(context);
         },
         last: {
-            hour() {
+            hour(notEqual?: boolean) {
                 const date = context.now();
                 date.setHours(date.getHours() - 1);
-                setter(date);
+                setter(date, notEqual);
                 return returnValue(context);
             },
-            hours(count: number) {
+            hours(count: number, notEqual?: boolean) {
                 const date = context.now();
                 date.setHours(date.getHours() - count);
-                setter(date);
+                setter(date, notEqual);
                 return returnValue(context);
             },
-            day() {
+            day(notEqual?: boolean) {
                 const date = context.now();
                 date.setDate(date.getDate() - 1);
-                setter(date);
+                setter(date, notEqual);
                 return returnValue(context);
             },
-            days(count: number) {
+            days(count: number, notEqual?: boolean) {
                 const date = context.now();
                 date.setDate(date.getDate() - count);
-                setter(date);
+                setter(date, notEqual);
                 return returnValue(context);
             },
-            year() {
+            year(notEqual?: boolean) {
                 const date = context.now();
                 date.setFullYear(date.getFullYear() - 1);
-                setter(date);
+                setter(date, notEqual);
                 return returnValue(context);
             },
-            years(count: number) {
+            years(count: number, notEqual?: boolean) {
                 const date = context.now();
                 date.setFullYear(date.getFullYear() - count);
-                setter(date);
+                setter(date, notEqual);
                 return returnValue(context);
             },
         },
         next: {
-            hour() {
+            hour(notEqual?: boolean) {
                 const date = context.now();
                 date.setHours(date.getHours() + 1);
-                setter(date);
+                setter(date, notEqual);
                 return returnValue(context);
             },
-            hours(count: number) {
+            hours(count: number, notEqual?: boolean) {
                 const date = context.now();
                 date.setHours(date.getHours() + count);
-                setter(date);
+                setter(date, notEqual);
                 return returnValue(context);
             },
-            day() {
+            day(notEqual?: boolean) {
                 const date = context.now();
                 date.setDate(date.getDate() + 1);
-                setter(date);
+                setter(date, notEqual);
                 return returnValue(context);
             },
-            days(count: number) {
+            days(count: number, notEqual?: boolean) {
                 const date = context.now();
                 date.setDate(date.getDate() + count);
-                setter(date);
+                setter(date, notEqual);
                 return returnValue(context);
             },
-            year() {
+            year(notEqual?: boolean) {
                 const date = context.now();
                 date.setFullYear(date.getFullYear() + 1);
-                setter(date);
+                setter(date, notEqual);
                 return returnValue(context);
             },
-            years(count: number) {
+            years(count: number, notEqual?: boolean) {
                 const date = context.now();
                 date.setFullYear(date.getFullYear() + count);
-                setter(date);
+                setter(date, notEqual);
                 return returnValue(context);
             },
         },
@@ -214,10 +237,11 @@ export function createTimeFluentFiltering(): TimeFluentFiltering {
 
     const range = createRange(
         context,
-        (d) => {
+        (d, notEqual) => {
             context.from = d;
+            context.fromNotEqual = notEqual;
         },
-        (context) => getFilters(context)
+        (context) => getFilters(context),
     );
 
     return {
@@ -228,10 +252,13 @@ export function createTimeFluentFiltering(): TimeFluentFiltering {
             (context) => ({
                 to: createRange(
                     context,
-                    (d) => (context.to = d),
-                    (context) => getFilters(context)
+                    (d, notEqual) => {
+                        context.to = d;
+                        context.toNotEqual = notEqual;
+                    },
+                    (context) => getFilters(context),
                 ),
-            })
+            }),
         ),
     };
 }
