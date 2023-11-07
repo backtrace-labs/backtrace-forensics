@@ -1,4 +1,5 @@
-import BacktraceForensics, {
+import {
+    BacktraceForensics,
     FoldQueryRequest,
     FoldQueryResponse,
     RawCoronerResponse,

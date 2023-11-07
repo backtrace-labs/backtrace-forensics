@@ -1,4 +1,4 @@
-import BacktraceForensics from '@backtrace/forensics';
+import { BacktraceForensics } from '@backtrace/forensics';
 
 export const instance = BacktraceForensics.create({
     defaultSource: {

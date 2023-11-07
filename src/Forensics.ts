@@ -244,3 +244,4 @@ export class Forensics {
 }
 
 export const BacktraceForensics = Forensics;
+export type BacktraceForensics = typeof Forensics;
