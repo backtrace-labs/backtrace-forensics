@@ -6,10 +6,6 @@ export class FetchCoronerApiCaller implements ICoronerApiCaller {
             'Content-Type': 'application/json',
         };
 
-        if (body) {
-            headers['Content-Length'] = body.length.toString();
-        }
-
         Object.assign(headers, customHeaders);
 
         const response = await fetch(url, {

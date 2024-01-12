@@ -12,10 +12,6 @@ export class NodeCoronerApiCaller implements ICoronerApiCaller {
                 'Content-Type': 'application/json',
             };
 
-            if (body) {
-                headers['Content-Length'] = body.length;
-            }
-
             Object.assign(headers, customHeaders);
 
             const req = protocol.request(
