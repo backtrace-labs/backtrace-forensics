@@ -42,9 +42,10 @@ import { BacktraceForensics, Filters } from '@backtrace/forensics';
             project: 'salex',
         },
     })
-        // .limit(2)
+        .limit(2)
         // .offset(20)
         .filter('timestamp', Filters.time.from.last.days(90).to.now())
+        .filter('uname.sysname', 'not-equal', '中文')
         // .filter('_tx', Filters.range(100, 200))
         .select('timestamp', 'hostname', 'fingerprint');
 
