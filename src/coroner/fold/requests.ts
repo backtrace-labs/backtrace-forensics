@@ -51,7 +51,7 @@ export type FoldVirtualColumn<
     T extends FoldVirtualColumnType = FoldVirtualColumnType,
 > = BackingColumnFoldVirtualColumn<A, T>;
 
-export type DistributionFoldOperator = readonly ['distribution', number];
+export type DistributionFoldOperator = readonly ['distribution', number?];
 export type BinFoldOperator = readonly ['bin', ...number[]];
 
 export type UIntFoldOperator =
