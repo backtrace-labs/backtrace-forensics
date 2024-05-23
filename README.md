@@ -62,23 +62,23 @@ You can provide options to change the behavior of the library:
     query.post({ project: 'coroner' });
     ```
 
--   `queryMakerFactory`
+-   `apiCaller`
 
     Use this to override the default API caller for API calls.
 
-    Must implement `ICoronerApiCallerFactory`.
-
-    See [Overriding the API caller](#overriding-the-api-caller) for more info.
+    The caller must implement the `ICoronerApiCaller` interface.
 
     **Example**
 
     ```typescript
-    options.queryMaker = {
-        create: () => ({
-            query: (source, request) => {
-                // make the request and return the response
-            },
-        }),
+    options.apiCaller = new NodeCoronerApiCaller({
+        disableSslVerification: true,
+    });
+    options.apiCaller = async () => new MyCoronerApiCaller();
+    options.apiCaller = {
+        async create() {
+            return new MyCoronerApiCaller();
+        },
     };
     ```
 

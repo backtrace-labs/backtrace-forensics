@@ -10,7 +10,11 @@ import { PlatformCoronerApiCallerFactory } from './implementation/factories/Plat
 import { SelectCoronerQueryBuilderFactory } from './implementation/factories/SelectCoronerQueryBuilderFactory';
 import { FoldCoronerSimpleResponseBuilder } from './implementation/responses/FoldCoronerSimpleResponseBuilder';
 import { SelectCoronerSimpleResponseBuilder } from './implementation/responses/SelectCoronerSimpleResponseBuilder';
-import { ICoronerApiCallerFactory } from './interfaces/factories/ICoronerQueryMakerFactory';
+import {
+    CoronerApiCallerProvider,
+    getApiCallerFactory,
+    ICoronerApiCallerFactory,
+} from './interfaces/factories/ICoronerQueryMakerFactory';
 import { IFoldCoronerQueryBuilderFactory } from './interfaces/factories/IFoldCoronerQueryBuilderFactory';
 import { ISelectCoronerQueryBuilderFactory } from './interfaces/factories/ISelectCoronerQueryBuilderFactory';
 import { ICoronerDescribeExecutor } from './interfaces/ICoronerDescribeExecutor';
@@ -35,15 +39,25 @@ export interface ForensicsOptions {
     readonly defaultSource?: Partial<QuerySource>;
 
     /**
-     * Use this to override the default query maker factory for API calls.
+     * Use this to override the default API caller for API calls.
      *
-     * Return type of factory `create` function must implement `ICoronerQueryMaker`.
+     * The caller must implement the `ICoronerApiCaller` interface.
+     *
      * @example
-     * options.queryMaker = {
-     *     query: (source, request) => {
-     *         // make the request and return the response
-     *     }
+     * options.apiCaller = new NodeCoronerApiCaller({
+     *   disableSslVerification: true
+     * })
+     * options.apiCaller = async () => new MyCoronerApiCaller();
+     * options.apiCaller = {
+     *   async create() {
+     *     return new MyCoronerApiCaller();
+     *   }
      * }
+     */
+    readonly apiCaller?: CoronerApiCallerProvider | ICoronerApiCallerFactory;
+
+    /**
+     * @deprecated Use `apiCallerFactory`.
      */
     readonly queryMakerFactory?: ICoronerApiCallerFactory;
 
@@ -72,7 +86,9 @@ export class Forensics {
     constructor(options?: Partial<ForensicsOptions>) {
         this.options = this.getDefaultOptions(options);
 
-        const apiCallerFactory = this.options.queryMakerFactory ?? new PlatformCoronerApiCallerFactory();
+        const apiCallerFactory = getApiCallerFactory(
+            this.options.apiCaller ?? this.options.queryMakerFactory ?? new PlatformCoronerApiCallerFactory(),
+        );
 
         this.#queryExecutor = new CoronerQueryExecutor(apiCallerFactory, this.options.defaultSource);
 

@@ -11,7 +11,7 @@
         "lib"
     ],
     "scripts": {
-        "build": "npm run clean && NODE_ENV=production webpack",
+        "build": "npm run clean && NODE_ENV=production webpack && tsc --emitDeclarationOnly",
         "watch": "webpack --watch",
         "test": "NODE_ENV=test jest",
         "prepack": "npm run clean && npm run build",

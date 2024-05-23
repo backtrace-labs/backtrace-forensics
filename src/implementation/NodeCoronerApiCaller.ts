@@ -2,10 +2,22 @@ import http from 'http';
 import https from 'https';
 import { ICoronerApiCaller } from '../interfaces/ICoronerApiCaller';
 
+export interface NodeCoronerApiCallerOptions {
+    readonly disableSslVerification?: boolean;
+}
+
 export class NodeCoronerApiCaller implements ICoronerApiCaller {
+    constructor(private readonly options?: NodeCoronerApiCallerOptions) {}
+
     public async post<R>(url: string | URL, body?: string, customHeaders?: Record<string, string>): Promise<R> {
         const urlObj = url instanceof URL ? url : new URL(url);
         const protocol = urlObj.protocol.startsWith('https') ? https : http;
+
+        const agent = this.options?.disableSslVerification
+            ? new protocol.Agent({
+                  rejectUnauthorized: false,
+              })
+            : undefined;
 
         return new Promise<R>((resolve, reject) => {
             const headers: http.OutgoingHttpHeaders = {
@@ -21,6 +33,7 @@ export class NodeCoronerApiCaller implements ICoronerApiCaller {
                     path: urlObj.pathname + urlObj.search,
                     method: 'POST',
                     headers,
+                    agent,
                 },
                 (res) => {
                     switch (res.statusCode) {
