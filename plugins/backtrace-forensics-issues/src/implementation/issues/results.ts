@@ -1,29 +1,17 @@
-import { FailedQueryResponse, SuccessfulFoldQueryResponse, ValueConverter } from '@backtrace/forensics';
+import { FoldQueryResponse, ValueConverter } from '@backtrace/forensics';
 import { OkCoronerIssueResponse } from '../../coroner';
 import {
     FailedFingerprintIssueResult,
-    FailedQueryIssueResult,
     FailedRequestFingerprintIssueResult,
     FingerprintIssueResult,
     IssueRequestResponse,
     OkFingerprintIssueResult,
     OkIssueResult,
-    OkIssueResults,
+    IssueResults,
 } from '../../coroner/issues/results';
 import { memoize } from '../utils';
 import { DEFAULT_TICKET_WATCHER } from './query';
-
-export function toQueryFailedResult(result: FailedQueryResponse): FailedQueryIssueResult {
-    return {
-        error: result.json().error.message,
-        errorCause: 'query-failed',
-        queryResponse: result,
-        success: false,
-        failed() {
-            return [toQueryFailedResult(result)];
-        },
-    };
-}
+import { Result } from '@backtrace/utils';
 
 function toOkIssueResult(response: OkCoronerIssueResponse): OkIssueResult {
     const tickets = response.ticket ? ValueConverter.toTickets(response.ticket) : [];
@@ -87,7 +75,7 @@ function toFingerprintResult(response: IssueRequestResponse): FingerprintIssueRe
     });
 }
 
-export function toResults(result: SuccessfulFoldQueryResponse, responses: IssueRequestResponse[]): OkIssueResults {
+export function toResults(result: FoldQueryResponse, responses: IssueRequestResponse[]): Result<IssueResults, never> {
     const all = memoize(() => responses.flatMap(toFingerprintResult));
 
     function isFingerprintResultFailed(
@@ -96,8 +84,7 @@ export function toResults(result: SuccessfulFoldQueryResponse, responses: IssueR
         return !result.success;
     }
 
-    return {
-        success: true,
+    return Result.ok({
         queryResponse: result,
         json: responses.map((r) => r.response),
         failed: memoize(() => all().filter(isFingerprintResultFailed)),
@@ -106,5 +93,5 @@ export function toResults(result: SuccessfulFoldQueryResponse, responses: IssueR
         fingerprint(fp) {
             return all().find((r) => r.fingerprint === fp);
         },
-    };
+    });
 }

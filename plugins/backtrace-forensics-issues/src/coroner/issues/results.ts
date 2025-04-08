@@ -1,11 +1,4 @@
-import {
-    FailedQueryResponse,
-    IssueInvariant,
-    SuccessfulFoldQueryResponse,
-    Ticket,
-    TicketAssignee,
-    TicketState,
-} from '@backtrace/forensics';
+import { FoldQueryResponse, IssueInvariant, Ticket, TicketAssignee, TicketState } from '@backtrace/forensics';
 import { UpdateIssuesRequest } from './requests';
 import {
     CoronerIssuesResponse,
@@ -42,14 +35,6 @@ export interface IssueRequestResponse {
     readonly response: CoronerIssuesResponse;
 }
 
-export interface FailedQueryIssueResult {
-    readonly success: false;
-    readonly error: string;
-    readonly errorCause: 'query-failed';
-    readonly queryResponse: FailedQueryResponse;
-    failed(): Array<FailedQueryIssueResult>;
-}
-
 export interface OkFingerprintIssueResult {
     readonly success: true;
     readonly fingerprint: string;
@@ -81,14 +66,11 @@ export type FingerprintIssueResult =
     | FailedFingerprintIssueResult
     | FailedRequestFingerprintIssueResult;
 
-export interface OkIssueResults {
-    readonly success: true;
-    readonly queryResponse: SuccessfulFoldQueryResponse;
+export interface IssueResults {
+    readonly queryResponse: FoldQueryResponse;
     readonly json: CoronerIssuesResponse[];
     failed(): Array<FailedFingerprintIssueResult | FailedRequestFingerprintIssueResult>;
     all(): FingerprintIssueResult[];
     first(): FingerprintIssueResult | undefined;
     fingerprint(fingerprint: string): FingerprintIssueResult | undefined;
 }
-
-export type IssueResults = OkIssueResults | FailedQueryIssueResult;

@@ -41,25 +41,18 @@ export interface DescribeAttribute {
     };
 }
 
-export interface CoronerError {
+export interface CoronerErrorResponse {
     message: string;
     code: number;
 }
 
-export interface SuccessfulQueryResponse<
+export interface QueryResponse<
     R extends RawQueryResponse = RawQueryResponse,
-    Q extends CommonCoronerQuery = CommonCoronerQuery
+    Q extends CommonCoronerQuery = CommonCoronerQuery,
 > {
-    readonly success: true;
     readonly query: Q;
     json(): SuccessfulRawCoronerResponse<R>;
     nextPage(): Q;
-}
-
-export interface FailedQueryResponse<Q extends CommonCoronerQuery = CommonCoronerQuery> {
-    readonly success: false;
-    readonly query: Q;
-    json(): FailedRawCoronerResponse;
 }
 
 export type RawCoronerResponse<R extends RawQueryResponse = RawQueryResponse> =
@@ -85,20 +78,15 @@ export interface SuccessfulRawCoronerResponse<R extends RawQueryResponse = RawQu
 
 export interface FailedRawCoronerResponse {
     response: unknown;
-    error: CoronerError;
+    error: CoronerErrorResponse;
 }
 
-export type QueryResponse<
-    R extends RawQueryResponse = RawQueryResponse,
-    Q extends CommonCoronerQuery = CommonCoronerQuery
-> = SuccessfulQueryResponse<R, Q> | FailedQueryResponse;
+export type RawDescribeResponse = SuccessfulRawDescribeResponse | FailedRawDescribeResponse;
 
-export type DescribeResponse = SuccessfulDescribeResponse | FailedDescribeResponse;
-
-export interface SuccessfulDescribeResponse {
+export interface SuccessfulRawDescribeResponse {
     describe: DescribeAttribute[];
     error: undefined;
 }
-export interface FailedDescribeResponse {
-    error: CoronerError;
+export interface FailedRawDescribeResponse {
+    error: CoronerErrorResponse;
 }

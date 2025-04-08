@@ -1,4 +1,4 @@
-import { CoronerValueType, FailedQueryResponse, RawQueryResponse, SuccessfulQueryResponse } from '../common';
+import { CoronerValueType, RawQueryResponse, QueryResponse } from '../common';
 import { SelectedCoronerQuery } from './query';
 import { SimpleSelectRow, SimpleSelectRows } from './simpleResponses';
 
@@ -17,13 +17,8 @@ export interface RawSelectQueryResponse extends RawQueryResponse {
     readonly order?: QueryOrder[];
 }
 
-export interface SuccessfulSelectQueryResponse
-    extends SuccessfulQueryResponse<RawSelectQueryResponse, SelectedCoronerQuery> {
+export interface SelectQueryResponse extends QueryResponse<RawSelectQueryResponse, SelectedCoronerQuery> {
     readonly total: number;
     all(): SimpleSelectRows;
     first(): SimpleSelectRow | undefined;
 }
-
-export type FailedSelectQueryResponse = FailedQueryResponse<SelectedCoronerQuery>;
-
-export type SelectQueryResponse = SuccessfulSelectQueryResponse | FailedSelectQueryResponse;

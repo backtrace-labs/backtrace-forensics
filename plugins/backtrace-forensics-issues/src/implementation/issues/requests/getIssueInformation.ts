@@ -1,12 +1,13 @@
 import {
+    CoronerError,
     CoronerQuery,
-    FailedQueryResponse,
     FoldCoronerQuery,
+    FoldQueryResponse,
     QuerySource,
-    SuccessfulFoldQueryResponse,
     Ticket,
     ValueConverter,
 } from '@backtrace/forensics';
+import { Result } from '@backtrace/utils';
 
 export interface CoronerIssueInfo {
     readonly fingerprint: string;
@@ -15,21 +16,15 @@ export interface CoronerIssueInfo {
     readonly tags?: string;
 }
 
-export interface OkCoronerIssueInfoResult {
-    readonly success: true;
+export interface CoronerIssueInfoResult {
     readonly issueInfo: CoronerIssueInfo[];
-    readonly queryResult: SuccessfulFoldQueryResponse;
+    readonly queryResult: FoldQueryResponse;
 }
-
-export interface FailedCoronerIssueInfoResult {
-    readonly success: false;
-    readonly queryResult: FailedQueryResponse;
-}
-
-export type CoronerIssueInfoResult = OkCoronerIssueInfoResult | FailedCoronerIssueInfoResult;
 
 export function getIssueInformation(query: CoronerQuery | FoldCoronerQuery) {
-    return async function getIssueInformation(source?: Partial<QuerySource>): Promise<CoronerIssueInfoResult> {
+    return async function getIssueInformation(
+        source?: Partial<QuerySource>,
+    ): Promise<Result<CoronerIssueInfoResult, CoronerError>> {
         const currentTable = query.json().table;
         const prefix = currentTable === 'issues' ? '' : 'fingerprint;issues;';
 
@@ -40,22 +35,19 @@ export function getIssueInformation(query: CoronerQuery | FoldCoronerQuery) {
             .fold(`${prefix}ticket`, 'head')
             .post(source);
 
-        if (!queryResult.success) {
-            return {
-                success: false,
-                queryResult,
-            };
+        if (Result.isErr(queryResult)) {
+            return queryResult;
         }
 
-        const project = queryResult.json()._.project;
+        const project = queryResult.data.json()._.project;
 
-        const issueInfo = queryResult.all().rows.map((row) => ({
+        const issueInfo = queryResult.data.all().rows.map((row) => ({
             fingerprint: row.group() as string,
             project,
             tags: row.fold(`${prefix}tags`, 'head') as string,
             tickets: ValueConverter.toTickets(row.fold(`${prefix}ticket`, 'head')),
         }));
 
-        return { success: true, issueInfo, queryResult };
+        return Result.ok({ issueInfo, queryResult: queryResult.data });
     };
 }

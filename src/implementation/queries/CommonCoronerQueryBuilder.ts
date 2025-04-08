@@ -1,7 +1,9 @@
+import { Result } from '@backtrace/utils';
 import { CommonCoronerQuery, FilterOperator, QueryFilter, QueryRequest, QueryResponse } from '../../coroner/common';
 import { AttributeType } from '../../coroner/common/attributes';
 import { QuerySource } from '../../models';
 import { cloneRequest } from '../requests/cloneRequest';
+import { CoronerError } from '../../coroner/common/errors';
 
 export abstract class CommonCoronerQueryBuilder implements CommonCoronerQuery {
     readonly #request: QueryRequest;
@@ -86,6 +88,6 @@ export abstract class CommonCoronerQueryBuilder implements CommonCoronerQuery {
         return this.#request;
     }
 
-    public abstract post(source?: Partial<QuerySource> | undefined): Promise<QueryResponse>;
+    public abstract post(source?: Partial<QuerySource> | undefined): Promise<Result<QueryResponse, CoronerError>>;
     protected abstract createInstance(request: QueryRequest): this;
 }

@@ -1,4 +1,11 @@
-import { CoronerQuery, FoldCoronerQuery, IssueInvariant, QuerySource, TicketState } from '@backtrace/forensics';
+import {
+    CoronerError,
+    CoronerQuery,
+    FoldCoronerQuery,
+    IssueInvariant,
+    QuerySource,
+    TicketState,
+} from '@backtrace/forensics';
 import { DeferredUpdateIssuesRequest } from '../../coroner/issues/deferredRequests';
 import { UpdateIssuesQuery } from '../../coroner/issues/query';
 import { UpdateTicketRequest, UpdateTicketUserRequest } from '../../coroner/issues/requests';
@@ -25,7 +32,8 @@ import {
     setTickets,
 } from './query';
 import { GetRequests, IssueRequestsResult } from './requests/getRequests';
-import { toQueryFailedResult, toResults } from './results';
+import { toResults } from './results';
+import { Result } from '@backtrace/utils';
 
 export class UpdateIssuesQueryBuilder implements UpdateIssuesQuery {
     readonly #query: CoronerQuery | FoldCoronerQuery;
@@ -122,17 +130,17 @@ export class UpdateIssuesQueryBuilder implements UpdateIssuesQuery {
         return this.#buildSelf(removeTickets(predicate));
     }
 
-    public json(source?: Partial<QuerySource>): Promise<IssueRequestsResult> {
+    public json(source?: Partial<QuerySource>): Promise<Result<IssueRequestsResult, CoronerError>> {
         return this.#requestsProvider(this.#request, this.#query, source);
     }
 
-    public async post(source?: Partial<QuerySource>): Promise<IssueResults> {
+    public async post(source?: Partial<QuerySource>): Promise<Result<IssueResults, CoronerError>> {
         const requestsResult = await this.json(source);
-        if (!requestsResult.success) {
-            return toQueryFailedResult(requestsResult.queryResult);
+        if (Result.isErr(requestsResult)) {
+            return requestsResult;
         }
 
-        const responses = await this.#requestsPoster(requestsResult.requests, source);
-        return toResults(requestsResult.queryResult, responses);
+        const responses = await this.#requestsPoster(requestsResult.data.requests, source);
+        return toResults(requestsResult.data.queryResult, responses);
     }
 }

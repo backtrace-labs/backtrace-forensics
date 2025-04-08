@@ -1,9 +1,9 @@
+import { Result } from '@backtrace/utils';
 import { Extension, Plugins } from '../../common';
 import { OrderDirection, nextPage } from '../../coroner/common';
 import { AttributeValueType } from '../../coroner/common/attributes';
 import {
     CountFoldOrder,
-    FailedFoldQueryResponse,
     FoldFilter,
     FoldFilterInput,
     FoldFilterOperatorInput,
@@ -20,7 +20,6 @@ import {
     RawFoldQueryResponse,
     SimpleFoldRow,
     SimpleFoldRows,
-    SuccessfulFoldQueryResponse,
 } from '../../coroner/fold';
 import { ICoronerQueryExecutor } from '../../interfaces/ICoronerQueryExecutor';
 import { IFoldCoronerSimpleResponseBuilder } from '../../interfaces/responses/IFoldCoronerSimpleResponseBuilder';
@@ -28,22 +27,21 @@ import { QuerySource } from '../../models/QuerySource';
 import { foldStartsWith } from '../helpers/foldsEqual';
 import { cloneFoldRequest } from '../requests/cloneRequest';
 import { CommonCoronerQueryBuilder } from './CommonCoronerQueryBuilder';
+import { CoronerError } from '../../coroner/common/errors';
 
 export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder implements FoldedCoronerQuery {
     readonly #request: FoldQueryRequest;
     readonly #executor: ICoronerQueryExecutor;
     readonly #buildSelf: (request: FoldQueryRequest) => FoldedCoronerQueryBuilder;
     readonly #simpleResponseBuilder: IFoldCoronerSimpleResponseBuilder;
-    readonly #failedResponseExtensions: Extension<FailedFoldQueryResponse>[];
-    readonly #successfulFoldResponseExtensions: Extension<SuccessfulFoldQueryResponse>[];
+    readonly #successfulFoldResponseExtensions: Extension<FoldQueryResponse>[];
 
     constructor(
         request: FoldQueryRequest,
         executor: ICoronerQueryExecutor,
         buildSelf: (request: FoldQueryRequest) => FoldedCoronerQueryBuilder,
         builder: IFoldCoronerSimpleResponseBuilder,
-        failedResponseExtensions?: Extension<FailedFoldQueryResponse>[],
-        successfulFoldResponseExtensions?: Extension<SuccessfulFoldQueryResponse>[],
+        successfulFoldResponseExtensions?: Extension<FoldQueryResponse>[],
     ) {
         super(request);
         this.#request = request;
@@ -51,7 +49,6 @@ export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder impleme
         this.#buildSelf = buildSelf;
         this.#simpleResponseBuilder = builder;
 
-        this.#failedResponseExtensions = failedResponseExtensions ?? [];
         this.#successfulFoldResponseExtensions = successfulFoldResponseExtensions ?? [];
     }
 
@@ -258,16 +255,10 @@ export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder impleme
         return this.#request;
     }
 
-    public async post(source?: Partial<QuerySource>): Promise<FoldQueryResponse> {
+    public async post(source?: Partial<QuerySource>): Promise<Result<FoldQueryResponse, CoronerError>> {
         const response = await this.#executor.execute<RawFoldQueryResponse>(this.#request, source);
         if (response.error) {
-            const queryResponse: FailedFoldQueryResponse = {
-                success: false,
-                query: this,
-                json: () => response,
-            };
-            Plugins.extend(queryResponse, this.#failedResponseExtensions);
-            return queryResponse;
+            return Result.err(new CoronerError(response.error));
         }
 
         const total = response.response.cardinalities?.pagination.groups ?? 0;
@@ -275,8 +266,7 @@ export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder impleme
         let cachedFirst: SimpleFoldRow | undefined | null = null;
         let cachedAll: SimpleFoldRows | null = null;
 
-        const queryResponse: SuccessfulFoldQueryResponse = {
-            success: true,
+        const queryResponse: FoldQueryResponse = {
             total,
             query: this,
             json: () => response,
@@ -291,7 +281,7 @@ export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder impleme
             },
         };
         Plugins.extend(queryResponse, this.#successfulFoldResponseExtensions);
-        return queryResponse;
+        return Result.ok(queryResponse);
     }
 
     protected createInstance(request: FoldQueryRequest): this {

@@ -1,4 +1,4 @@
-import { DescribeResponse } from '../coroner/common';
+import { RawDescribeResponse } from '../coroner/common';
 import { ICoronerApiCallerFactory } from '../interfaces/factories/ICoronerQueryMakerFactory';
 import { ICoronerDescribeExecutor } from '../interfaces/ICoronerDescribeExecutor';
 import { DescribeSource } from '../models/DescribeSource';
@@ -14,7 +14,7 @@ export class CoronerDescribeExecutor implements ICoronerDescribeExecutor {
         this.#defaultSource = defaultSource ?? {};
     }
 
-    public async execute(source?: Partial<DescribeSource>): Promise<DescribeResponse> {
+    public async execute(source?: Partial<DescribeSource>): Promise<RawDescribeResponse> {
         const querySource = Object.assign({}, this.#defaultSource, source);
         if (!querySource.project) {
             throw new Error('Coroner project is not available.');
@@ -27,6 +27,6 @@ export class CoronerDescribeExecutor implements ICoronerDescribeExecutor {
         }
 
         const queryMaker = await this.#queryMakerFactory.create();
-        return await queryMaker.post<DescribeResponse>(url, '{"action": "describe"}', headers);
+        return await queryMaker.post<RawDescribeResponse>(url, '{"action": "describe"}', headers);
     }
 }

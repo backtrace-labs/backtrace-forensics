@@ -1,7 +1,8 @@
-import { IssueInvariant, QuerySource, TicketState } from '@backtrace/forensics';
+import { CoronerError, IssueInvariant, QuerySource, TicketState } from '@backtrace/forensics';
 import { IssueRequestsResult } from '../../implementation/issues/requests/getRequests';
 import { UpdateTicketRequest, UpdateTicketUserRequest } from './requests';
 import { IssueResults } from './results';
+import { Result } from '@backtrace/utils';
 
 export interface UpdateIssuesQuery {
     setTags(...tags: string[]): UpdateIssuesQuery;
@@ -27,6 +28,6 @@ export interface UpdateIssuesQuery {
     addTickets(...tickets: UpdateTicketRequest[]): UpdateIssuesQuery;
     removeTickets(predicate: (ticket: UpdateTicketRequest) => boolean): UpdateIssuesQuery;
 
-    json(source?: Partial<QuerySource>): Promise<IssueRequestsResult>;
-    post(source?: Partial<QuerySource>): Promise<IssueResults>;
+    json(source?: Partial<QuerySource>): Promise<Result<IssueRequestsResult, CoronerError>>;
+    post(source?: Partial<QuerySource>): Promise<Result<IssueResults, CoronerError>>;
 }

@@ -1,4 +1,4 @@
-import { CoronerValueType, FailedQueryResponse, RawQueryResponse, SuccessfulQueryResponse } from '../common';
+import { CoronerValueType, RawQueryResponse, QueryResponse } from '../common';
 import { FoldedCoronerQuery } from './query';
 
 import {
@@ -70,12 +70,8 @@ export interface RawFoldQueryResponse extends RawQueryResponse {
     readonly values: FoldQueryRowValue[];
 }
 
-export interface SuccessfulFoldQueryResponse extends SuccessfulQueryResponse<RawFoldQueryResponse, FoldedCoronerQuery> {
+export interface FoldQueryResponse extends QueryResponse<RawFoldQueryResponse, FoldedCoronerQuery> {
     readonly total: number;
     all(): SimpleFoldRows;
     first(): SimpleFoldRow | undefined;
 }
-
-export type FailedFoldQueryResponse = FailedQueryResponse<FoldedCoronerQuery>;
-
-export type FoldQueryResponse = SuccessfulFoldQueryResponse | FailedFoldQueryResponse;

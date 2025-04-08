@@ -1,12 +1,11 @@
+import { Result } from '@backtrace/utils';
 import { Extension, Plugins } from '../../common';
 import {
     CommonCoronerQuery,
     CoronerQuery,
-    FailedQueryResponse,
     QueryRequest,
     QueryResponse,
     RawQueryResponse,
-    SuccessfulQueryResponse,
     nextPage,
 } from '../../coroner/common';
 import {
@@ -21,6 +20,7 @@ import { IFoldCoronerQueryBuilderFactory } from '../../interfaces/factories/IFol
 import { ISelectCoronerQueryBuilderFactory } from '../../interfaces/factories/ISelectCoronerQueryBuilderFactory';
 import { QuerySource } from '../../models';
 import { CommonCoronerQueryBuilder } from './CommonCoronerQueryBuilder';
+import { CoronerError } from '../../coroner/common/errors';
 
 export class CoronerQueryBuilder extends CommonCoronerQueryBuilder implements CoronerQuery {
     readonly #request: QueryRequest;
@@ -28,8 +28,7 @@ export class CoronerQueryBuilder extends CommonCoronerQueryBuilder implements Co
     readonly #executor: ICoronerQueryExecutor;
     readonly #foldQueryFactory: IFoldCoronerQueryBuilderFactory;
     readonly #selectQueryFactory: ISelectCoronerQueryBuilderFactory;
-    readonly #failedResponseExtensions: Extension<FailedQueryResponse>[];
-    readonly #successfulResponseExtensions: Extension<SuccessfulQueryResponse>[];
+    readonly #successfulResponseExtensions: Extension<QueryResponse>[];
 
     constructor(
         request: QueryRequest,
@@ -37,8 +36,7 @@ export class CoronerQueryBuilder extends CommonCoronerQueryBuilder implements Co
         buildSelf: (request: QueryRequest) => CoronerQueryBuilder,
         foldQueryFactory: IFoldCoronerQueryBuilderFactory,
         selectQueryFactory: ISelectCoronerQueryBuilderFactory,
-        failedResponseExtensions?: Extension<FailedQueryResponse>[],
-        successfulResponseExtensions?: Extension<SuccessfulQueryResponse>[],
+        successfulResponseExtensions?: Extension<QueryResponse>[],
     ) {
         super(request);
         this.#executor = executor;
@@ -46,7 +44,6 @@ export class CoronerQueryBuilder extends CommonCoronerQueryBuilder implements Co
         this.#buildSelf = buildSelf;
         this.#foldQueryFactory = foldQueryFactory;
         this.#selectQueryFactory = selectQueryFactory;
-        this.#failedResponseExtensions = failedResponseExtensions ?? [];
         this.#successfulResponseExtensions = successfulResponseExtensions ?? [];
     }
 
@@ -85,20 +82,13 @@ export class CoronerQueryBuilder extends CommonCoronerQueryBuilder implements Co
 
     public async post(
         source?: Partial<QuerySource> | undefined,
-    ): Promise<QueryResponse<RawQueryResponse, CommonCoronerQuery>> {
+    ): Promise<Result<QueryResponse<RawQueryResponse, CommonCoronerQuery>, CoronerError>> {
         const response = await this.#executor.execute<RawQueryResponse>(this.#request, source);
         if (response.error) {
-            const queryResponse: FailedQueryResponse = {
-                success: false,
-                query: this,
-                json: () => response,
-            };
-            Plugins.extend(queryResponse, this.#failedResponseExtensions);
-            return queryResponse;
+            return Result.err(new CoronerError(response.error));
         }
 
-        const queryResponse: SuccessfulQueryResponse = {
-            success: true,
+        const queryResponse: QueryResponse = {
             query: this,
             json: () => response,
             nextPage: () => {
@@ -107,7 +97,7 @@ export class CoronerQueryBuilder extends CommonCoronerQueryBuilder implements Co
             },
         };
         Plugins.extend(queryResponse, this.#successfulResponseExtensions);
-        return queryResponse;
+        return Result.ok(queryResponse);
     }
 
     protected createInstance(request: QueryRequest): this {

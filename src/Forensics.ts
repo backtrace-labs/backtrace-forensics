@@ -1,5 +1,7 @@
+import { Result } from '@backtrace/utils';
 import { Plugins } from './common/plugin';
-import { CoronerQuery, defaultRequest, QueryRequest } from './coroner/common';
+import { CoronerQuery, defaultRequest, DescribeAttribute, QueryRequest } from './coroner/common';
+import { CoronerError } from './coroner/common/errors';
 import { FoldCoronerQuery, FoldedCoronerQuery, FoldQueryRequest, isFoldRequest } from './coroner/fold';
 import { isSelectRequest, SelectCoronerQuery, SelectedCoronerQuery, SelectQueryRequest } from './coroner/select';
 import { CoronerDescribeExecutor } from './implementation/CoronerDescribeExecutor';
@@ -107,15 +109,6 @@ export class Forensics {
             ])
             .map((ext) => ext(pluginContext));
 
-        const failedFoldResponseExtensions = this.options.plugins
-            ?.flatMap((p) => [
-                ...(p.responseExtensions ?? []),
-                ...(p.failedResponseExtensions ?? []),
-                ...(p.foldQueryExtensions ?? []),
-                ...(p.failedFoldResponseExtensions ?? []),
-            ])
-            .map((ext) => ext(pluginContext));
-
         const successfulFoldResponseExtensions = this.options.plugins
             ?.flatMap((p) => [
                 ...(p.responseExtensions ?? []),
@@ -129,7 +122,6 @@ export class Forensics {
             this.#queryExecutor,
             new FoldCoronerSimpleResponseBuilder(),
             foldedQueryBuilderExtensions,
-            failedFoldResponseExtensions,
             successfulFoldResponseExtensions,
         );
 
@@ -138,15 +130,6 @@ export class Forensics {
                 ...(p.queryExtensions ?? []),
                 ...(p.selectQueryExtensions ?? []),
                 ...(p.selectedQueryExtensions ?? []),
-            ])
-            .map((ext) => ext(pluginContext));
-
-        const failedSelectResponseExtensions = this.options.plugins
-            ?.flatMap((p) => [
-                ...(p.responseExtensions ?? []),
-                ...(p.failedResponseExtensions ?? []),
-                ...(p.selectQueryExtensions ?? []),
-                ...(p.failedSelectResponseExtensions ?? []),
             ])
             .map((ext) => ext(pluginContext));
 
@@ -163,7 +146,6 @@ export class Forensics {
             this.#queryExecutor,
             new SelectCoronerSimpleResponseBuilder(),
             selectedQueryBuilderExtensions,
-            failedSelectResponseExtensions,
             successfulSelectResponseExtensions,
         );
 
@@ -175,10 +157,6 @@ export class Forensics {
             ])
             .map((ext) => ext(pluginContext));
 
-        const failedBaseResponseExtensions = this.options.plugins
-            ?.flatMap((p) => [...(p.responseExtensions ?? []), ...(p.failedResponseExtensions ?? [])])
-            .map((ext) => ext(pluginContext));
-
         const successfulBaseResponseExtensions = this.options.plugins
             ?.flatMap((p) => [...(p.responseExtensions ?? []), ...(p.successfulResponseExtensions ?? [])])
             .map((ext) => ext(pluginContext));
@@ -188,7 +166,6 @@ export class Forensics {
             this.#foldFactory,
             this.#selectFactory,
             baseQueryBuilderExtensions,
-            failedBaseResponseExtensions,
             successfulBaseResponseExtensions,
         );
     }
@@ -220,8 +197,12 @@ export class Forensics {
         return this.#queryFactory.create(defaultRequest);
     }
 
-    public describe(source?: Partial<DescribeSource>) {
-        return this.#describeExecutor.execute(source);
+    public async describe(source?: Partial<DescribeSource>): Promise<Result<DescribeAttribute[], CoronerError>> {
+        const result = await this.#describeExecutor.execute(source);
+        if (result.error) {
+            return Result.err(new CoronerError(result.error));
+        }
+        return Result.ok(result.describe);
     }
 
     /**

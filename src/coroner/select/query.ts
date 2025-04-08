@@ -1,5 +1,7 @@
+import { Result } from '@backtrace/utils';
 import { QuerySource } from '../../models';
 import { CommonCoronerQuery, OrderDirection } from '../common';
+import { CoronerError } from '../common/errors';
 import { SelectQueryRequest, SelectWildcard } from './requests';
 import { SelectQueryResponse } from './responses';
 
@@ -64,5 +66,5 @@ export interface SelectedCoronerQuery extends SelectCoronerQuery {
      * Makes a POST call to Coroner with the built request.
      * @param source Where to make the request. If not specified, will supply data from default source.
      */
-    post(source?: Partial<QuerySource>): Promise<SelectQueryResponse>;
+    post(source?: Partial<QuerySource>): Promise<Result<SelectQueryResponse, CoronerError>>;
 }

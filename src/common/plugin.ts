@@ -1,9 +1,6 @@
 import { ForensicsOptions } from '../Forensics';
 import {
     CoronerQuery,
-    FailedFoldQueryResponse,
-    FailedQueryResponse,
-    FailedSelectQueryResponse,
     FoldCoronerQuery,
     FoldQueryResponse,
     FoldedCoronerQuery,
@@ -11,9 +8,6 @@ import {
     SelectCoronerQuery,
     SelectQueryResponse,
     SelectedCoronerQuery,
-    SuccessfulFoldQueryResponse,
-    SuccessfulQueryResponse,
-    SuccessfulSelectQueryResponse,
 } from '../coroner';
 import { ICoronerApiCallerFactory } from '../interfaces';
 import { Extension } from './extensions';
@@ -37,16 +31,13 @@ export namespace Plugins {
         readonly selectedQueryExtensions?: readonly PluginExtension<SelectedCoronerQuery>[];
 
         readonly responseExtensions?: readonly PluginExtension<QueryResponse>[];
-        readonly failedResponseExtensions?: readonly PluginExtension<FailedQueryResponse>[];
-        readonly successfulResponseExtensions?: readonly PluginExtension<SuccessfulQueryResponse>[];
+        readonly successfulResponseExtensions?: readonly PluginExtension<QueryResponse>[];
 
         readonly foldResponseExtensions?: readonly PluginExtension<FoldQueryResponse>[];
-        readonly failedFoldResponseExtensions?: readonly PluginExtension<FailedFoldQueryResponse>[];
-        readonly successfulFoldResponseExtensions?: readonly PluginExtension<SuccessfulFoldQueryResponse>[];
+        readonly successfulFoldResponseExtensions?: readonly PluginExtension<FoldQueryResponse>[];
 
         readonly selectResponseExtensions?: readonly PluginExtension<SelectQueryResponse>[];
-        readonly failedSelectResponseExtensions?: readonly PluginExtension<FailedSelectQueryResponse>[];
-        readonly successfulSelectResponseExtensions?: readonly PluginExtension<SuccessfulSelectQueryResponse>[];
+        readonly successfulSelectResponseExtensions?: readonly PluginExtension<SelectQueryResponse>[];
     }
 
     function pluginExtensionAdder<P extends keyof ForensicsPlugin>(prop: P) {
@@ -70,15 +61,12 @@ export namespace Plugins {
     export const addSelectedQueryExtension = pluginExtensionAdder('selectedQueryExtensions');
 
     export const addResponseExtension = pluginExtensionAdder('responseExtensions');
-    export const addFailedResponseExtension = pluginExtensionAdder('failedResponseExtensions');
     export const addSuccessfulResponseExtension = pluginExtensionAdder('successfulResponseExtensions');
 
     export const addFoldResponseExtension = pluginExtensionAdder('foldResponseExtensions');
-    export const addFailedFoldResponseExtension = pluginExtensionAdder('failedFoldResponseExtensions');
     export const addSuccessfulFoldResponseExtension = pluginExtensionAdder('successfulFoldResponseExtensions');
 
     export const addSelectResponseExtension = pluginExtensionAdder('selectResponseExtensions');
-    export const addFailedSelectResponseExtension = pluginExtensionAdder('failedSelectResponseExtensions');
     export const addSuccessfulSelectResponseExtension = pluginExtensionAdder('successfulSelectResponseExtensions');
 
     export function createPlugin(...extensions: PluginBuilder[]) {

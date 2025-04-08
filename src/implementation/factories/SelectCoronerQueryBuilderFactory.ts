@@ -1,10 +1,5 @@
 import { Extension, Plugins } from '../../common';
-import {
-    FailedSelectQueryResponse,
-    SelectCoronerQuery,
-    SelectQueryRequest,
-    SuccessfulSelectQueryResponse,
-} from '../../coroner/select';
+import { SelectCoronerQuery, SelectQueryRequest, SelectQueryResponse } from '../../coroner/select';
 import { ISelectCoronerQueryBuilderFactory } from '../../interfaces/factories/ISelectCoronerQueryBuilderFactory';
 import { ICoronerQueryExecutor } from '../../interfaces/ICoronerQueryExecutor';
 import { ISelectCoronerSimpleResponseBuilder } from '../../interfaces/responses/ISelectCoronerSimpleResponseBuilder';
@@ -14,20 +9,17 @@ export class SelectCoronerQueryBuilderFactory implements ISelectCoronerQueryBuil
     readonly #executor: ICoronerQueryExecutor;
     readonly #simpleResponseBuilder: ISelectCoronerSimpleResponseBuilder;
     readonly #queryBuilderExtensions?: Extension<SelectedCoronerQueryBuilder>[];
-    readonly #failedResponseExtensions?: Extension<FailedSelectQueryResponse>[];
-    readonly #successfulSelectResponseExtensions?: Extension<SuccessfulSelectQueryResponse>[];
+    readonly #successfulSelectResponseExtensions?: Extension<SelectQueryResponse>[];
 
     constructor(
         executor: ICoronerQueryExecutor,
         builder: ISelectCoronerSimpleResponseBuilder,
         queryBuilderExtensions?: Extension<SelectedCoronerQueryBuilder>[],
-        failedResponseExtensions?: Extension<FailedSelectQueryResponse>[],
-        successfulSelectResponseExtensions?: Extension<SuccessfulSelectQueryResponse>[],
+        successfulSelectResponseExtensions?: Extension<SelectQueryResponse>[],
     ) {
         this.#executor = executor;
         this.#simpleResponseBuilder = builder;
         this.#queryBuilderExtensions = queryBuilderExtensions;
-        this.#failedResponseExtensions = failedResponseExtensions;
         this.#successfulSelectResponseExtensions = successfulSelectResponseExtensions;
     }
 
@@ -38,7 +30,6 @@ export class SelectCoronerQueryBuilderFactory implements ISelectCoronerQueryBuil
                 this.#executor,
                 buildSelf,
                 this.#simpleResponseBuilder,
-                this.#failedResponseExtensions,
                 this.#successfulSelectResponseExtensions,
             );
 

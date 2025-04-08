@@ -14,7 +14,7 @@ declare module '@backtrace/forensics' {
         fingerprints(): UpdateIssuesQuery;
     }
 
-    interface SuccessfulFoldQueryResponse {
+    interface FoldQueryResponse {
         fingerprints(): UpdateIssuesQuery;
     }
 }

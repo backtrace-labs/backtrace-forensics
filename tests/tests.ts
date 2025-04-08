@@ -1,3 +1,4 @@
+import { Result } from '@backtrace/utils';
 import {
     BacktraceForensics,
     FoldQueryRequest,
@@ -30,13 +31,13 @@ import {
     // @up its not valid, Coroner allows for multiple folds on the same fold type
     dynamicFold = dynamicFold.fold('awkfhajhfaw', 'head').fold('a1', 'distribution', 3).fold('a1', 'distribution', 5);
     const response = await dynamicFold.post();
-    if (response.success) {
-        const results = response.all();
+    if (Result.isOk(response)) {
+        const results = response.data.all();
         for (const result of results.rows) {
             for (const attribute in result.attributes) {
                 const values = result.attributes;
-                const headValueOrNull = response.first()?.fold('something_user_provdes', 'distribution', 3);
-                const a = response.first()?.fold('asdsa', 'bin');
+                const headValueOrNull = response.data.first()?.fold('something_user_provdes', 'distribution', 3);
+                const a = response.data.first()?.fold('asdsa', 'bin');
             }
         }
     }
@@ -61,8 +62,8 @@ import {
 
     const staticFoldResult = await staticFold.post();
 
-    if (staticFoldResult.success) {
-        const test = staticFoldResult;
+    if (Result.isOk(staticFoldResult)) {
+        const test = staticFoldResult.data;
         const simpleTest = test.first();
         simpleTest?.attributes;
     }
@@ -73,13 +74,13 @@ import {
         runtimeDynamicSelect = runtimeDynamicSelect.select(attr);
     }
 
-    runtimeDynamicSelect.post().then((s) => s.success && s.json().response.values[1][1]);
+    runtimeDynamicSelect.post().then((s) => Result.isOk(s) && s.data.json().response.values[1][1]);
 
     const staticSelect = staticQuery.select('timestamp').select('_deleted');
 
     const selectResult = await staticSelect.post();
-    if (selectResult.success) {
-        const simple = selectResult.first();
+    if (Result.isOk(selectResult)) {
+        const simple = selectResult.data.first();
     }
 
     const dynamicSelectQuery = coronerQuery
@@ -96,8 +97,8 @@ import {
         .filter('asda', 'at-least', 'asdas');
 
     const dynamicSelectResult = await dynamicSelectQuery.post();
-    if (dynamicSelectResult.success) {
-        const test = dynamicSelectResult.first();
+    if (Result.isOk(dynamicSelectResult)) {
+        const test = dynamicSelectResult.data.first();
     }
 
     const dynamicFoldQuery = coronerQuery
@@ -119,8 +120,8 @@ import {
         .group('a');
 
     const dynamicFoldResult = await dynamicFoldQuery.post(); // const dynamicFoldResult = await coronerQuery.post(dynamicFoldQuery);
-    if (dynamicFoldResult.success) {
-        const test = dynamicFoldResult.first();
+    if (Result.isOk(dynamicFoldResult)) {
+        const test = dynamicFoldResult.data.first();
         if (test) {
             test.tryFold('c', 'distribution', 6);
             test.attributes.a;
@@ -138,8 +139,8 @@ import {
         .having('a', 4, '==', 1, 123)
         .post();
 
-    if (havingTest.success) {
-        havingTest.first()?.attributes.a;
+    if (Result.isOk(havingTest)) {
+        havingTest.data.first()?.attributes.a;
     }
 
     const dynamicHavingTest = await coronerQuery
@@ -164,8 +165,8 @@ import {
         .order('a', 'descending', 1)
         .order('a', 'descending', 'distribution', 4)
         .post();
-    if (staticFold1.success) {
-        const firstRow = staticFold1.first();
+    if (Result.isOk(staticFold1)) {
+        const firstRow = staticFold1.data.first();
         if (firstRow) {
             firstRow.fold('a', 'head');
             firstRow.fold('a', 'distribution', 3);
@@ -188,8 +189,8 @@ import {
         .fold('a', 'head')
         .order('a', 'descending', 'min')
         .post();
-    if (dynamicFold1.success) {
-        const firstRow = dynamicFold1.first();
+    if (Result.isOk(dynamicFold1)) {
+        const firstRow = dynamicFold1.data.first();
         if (firstRow) {
             firstRow.fold('a', 'head');
             firstRow.fold('a', 'distribution', 3);
@@ -227,18 +228,14 @@ const foldReq: FoldQueryRequest = {
 } as const;
 
 const foldRes = {} as FoldQueryResponse;
-if (foldRes.success) {
-    const azzz = foldRes.first()!.tryFold('a', 'distribution', 3);
-}
+const azzz = foldRes.first()!.tryFold('a', 'distribution', 3);
 
 const selectReq: SelectQueryRequest = {
     select: ['a', 'b', 'c', 'a'],
 } as const;
 
 const selectResponse = {} as SelectQueryResponse;
-if (selectResponse.success) {
-    const v = selectResponse.first()?.values;
-}
+const v = selectResponse.first()?.values;
 
 const testFoldResponse: RawCoronerResponse<RawFoldQueryResponse> = {
     _: {

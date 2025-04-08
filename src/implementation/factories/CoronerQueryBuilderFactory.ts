@@ -1,5 +1,5 @@
 import { Extension, Plugins } from '../../common';
-import { FailedQueryResponse, QueryRequest, SuccessfulQueryResponse } from '../../coroner/common';
+import { QueryRequest, QueryResponse } from '../../coroner/common';
 import { ICoronerQueryExecutor } from '../../interfaces';
 import { IFoldCoronerQueryBuilderFactory } from '../../interfaces/factories/IFoldCoronerQueryBuilderFactory';
 import { ISelectCoronerQueryBuilderFactory } from '../../interfaces/factories/ISelectCoronerQueryBuilderFactory';
@@ -10,22 +10,19 @@ export class CoronerQueryBuilderFactory {
     readonly #foldQueryFactory: IFoldCoronerQueryBuilderFactory;
     readonly #selectQueryFactory: ISelectCoronerQueryBuilderFactory;
     readonly #extensions?: Extension<CoronerQueryBuilder>[];
-    readonly #failedResponseExtensions?: Extension<FailedQueryResponse>[];
-    readonly #successfulResponseExtensions?: Extension<SuccessfulQueryResponse>[];
+    readonly #successfulResponseExtensions?: Extension<QueryResponse>[];
 
     constructor(
         executor: ICoronerQueryExecutor,
         foldQueryFactory: IFoldCoronerQueryBuilderFactory,
         selectQueryFactory: ISelectCoronerQueryBuilderFactory,
         extensions?: Extension<CoronerQueryBuilder>[],
-        failedResponseExtensions?: Extension<FailedQueryResponse>[],
-        successfulResponseExtensions?: Extension<SuccessfulQueryResponse>[],
+        successfulResponseExtensions?: Extension<QueryResponse>[],
     ) {
         this.#executor = executor;
         this.#foldQueryFactory = foldQueryFactory;
         this.#selectQueryFactory = selectQueryFactory;
         this.#extensions = extensions;
-        this.#failedResponseExtensions = failedResponseExtensions;
         this.#successfulResponseExtensions = successfulResponseExtensions;
     }
 
@@ -37,7 +34,6 @@ export class CoronerQueryBuilderFactory {
                 buildSelf,
                 this.#foldQueryFactory,
                 this.#selectQueryFactory,
-                this.#failedResponseExtensions,
                 this.#successfulResponseExtensions,
             );
 

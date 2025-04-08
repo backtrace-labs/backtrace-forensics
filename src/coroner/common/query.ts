@@ -1,9 +1,11 @@
+import { Result } from '@backtrace/utils';
 import { QuerySource } from '../../models';
 import { FoldCoronerQuery } from '../fold';
 import { SelectCoronerQuery } from '../select';
 import { AttributeType } from './attributes';
 import { FilterOperator, QueryFilter, QueryRequest } from './requests';
 import { QueryResponse } from './responses';
+import { CoronerError } from './errors';
 
 export interface CommonCoronerQuery {
     /**
@@ -112,7 +114,7 @@ export interface CommonCoronerQuery {
      *     // use the response
      * }
      */
-    post(source?: Partial<QuerySource>): Promise<QueryResponse>;
+    post(source?: Partial<QuerySource>): Promise<Result<QueryResponse, CoronerError>>;
 }
 
 export interface CoronerQuery extends CommonCoronerQuery, SelectCoronerQuery, FoldCoronerQuery {}
