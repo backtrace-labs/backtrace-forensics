@@ -99,6 +99,7 @@ export class Forensics {
         const pluginContext: Plugins.PluginContext = {
             options: this.options,
             apiCallerFactory,
+            forensics: this,
         };
 
         const foldedQueryBuilderExtensions = this.options.plugins

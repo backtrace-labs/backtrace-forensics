@@ -1,4 +1,4 @@
-import { ForensicsOptions } from '../Forensics';
+import { Forensics, ForensicsOptions } from '../Forensics';
 import {
     CoronerQuery,
     FoldCoronerQuery,
@@ -16,6 +16,7 @@ export namespace Plugins {
     export interface PluginContext {
         readonly options: ForensicsOptions;
         readonly apiCallerFactory: ICoronerApiCallerFactory;
+        readonly forensics: Forensics;
     }
 
     export type PluginExtension<T> = (context: PluginContext) => Extension<T>;
