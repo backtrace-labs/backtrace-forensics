@@ -258,7 +258,7 @@ export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder impleme
     public async post(source?: Partial<QuerySource>): Promise<Result<FoldQueryResponse, CoronerError>> {
         const response = await this.#executor.execute<RawFoldQueryResponse>(this.#request, source);
         if (response.error) {
-            return Result.err(new CoronerError(response.error));
+            return Result.err(CoronerError.ofResponse(response.error));
         }
 
         const total = response.response.cardinalities?.pagination.groups ?? 0;

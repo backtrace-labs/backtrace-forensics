@@ -81,7 +81,7 @@ export class SelectedCoronerQueryBuilder extends CommonCoronerQueryBuilder imple
     public async post(source?: Partial<QuerySource>): Promise<Result<SelectQueryResponse, CoronerError>> {
         const response = await this.#executor.execute<RawSelectQueryResponse>(this.#request, source);
         if (response.error) {
-            return Result.err(new CoronerError(response.error));
+            return Result.err(CoronerError.ofResponse(response.error));
         }
 
         const total = response._.runtime.filter.rows;

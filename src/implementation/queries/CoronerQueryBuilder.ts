@@ -85,7 +85,7 @@ export class CoronerQueryBuilder extends CommonCoronerQueryBuilder implements Co
     ): Promise<Result<QueryResponse<RawQueryResponse, CommonCoronerQuery>, CoronerError>> {
         const response = await this.#executor.execute<RawQueryResponse>(this.#request, source);
         if (response.error) {
-            return Result.err(new CoronerError(response.error));
+            return Result.err(CoronerError.ofResponse(response.error));
         }
 
         const queryResponse: QueryResponse = {

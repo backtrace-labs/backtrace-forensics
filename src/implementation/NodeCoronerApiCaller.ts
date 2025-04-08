@@ -37,17 +37,15 @@ export class NodeCoronerApiCaller implements ICoronerApiCaller {
                 },
                 (res) => {
                     switch (res.statusCode) {
-                        case 200:
-                        case 400:
-                        case 403: // we want to return the error from data
-                            break;
                         case 301:
                         case 302:
                             if (res.headers.location) {
                                 return this.post<R>(url, body, customHeaders).then(resolve).catch(reject);
                             }
-                        default:
-                            reject(new Error(`Invalid coroner status code: ${res.statusCode}.`));
+                    }
+
+                    if (res.headers['content-type'] !== 'application/json') {
+                        return reject(new Error('Coroner did not reply with a JSON message.'));
                     }
 
                     let result: Buffer | undefined;
