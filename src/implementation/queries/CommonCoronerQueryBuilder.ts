@@ -88,6 +88,6 @@ export abstract class CommonCoronerQueryBuilder implements CommonCoronerQuery {
         return this.#request;
     }
 
-    public abstract post(source?: Partial<QuerySource> | undefined): Promise<Result<QueryResponse, CoronerError>>;
+    public abstract post(source?: Partial<QuerySource> | undefined): Promise<Result<QueryResponse, Error>>;
     protected abstract createInstance(request: QueryRequest): this;
 }

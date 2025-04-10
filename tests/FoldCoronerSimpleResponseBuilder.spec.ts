@@ -1,6 +1,7 @@
 import assert from 'assert';
 import { FoldQueryRequest, RawFoldQueryResponse } from '../src';
 import { FoldCoronerSimpleResponseBuilder } from '../src/implementation/responses/FoldCoronerSimpleResponseBuilder';
+import { Result, ResultErr } from '@backtrace/utils';
 
 describe('FoldCoronerSimpleResponseBuilder', () => {
     const testRequest: FoldQueryRequest = {
@@ -846,36 +847,36 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
         expect(() => element.fold('randomInt', 'max' as 'head')).toThrowError(/does not exist/i);
     });
 
-    it('[non-grouped] should return undefined from non-existing attribute when searching via tryFold', () => {
+    it('[non-grouped] should return Error from non-existing attribute when searching via tryFold', () => {
         const queryable = new FoldCoronerSimpleResponseBuilder();
         const element = queryable.first(testResponse, testRequest);
         assert(element);
         const actual = element.tryFold('non_existing_attribute' as 'randomInt', 'head');
-        expect(actual).toBeUndefined();
+        expect(Result.isErr(actual)).toEqual(true);
     });
 
-    it('[non-grouped] should return undefined from non-existing attribute when searching via tryFold on rows', () => {
+    it('[non-grouped] should return Error from non-existing attribute when searching via tryFold on rows', () => {
         const queryable = new FoldCoronerSimpleResponseBuilder();
         const element = queryable.rows(testResponse, testRequest);
         assert(element);
         const actual = element.tryFold('non_existing_attribute' as 'randomInt', 'head');
-        expect(actual).toBeUndefined();
+        expect(Result.isErr(actual)).toEqual(true);
     });
 
-    it('[non-grouped] should return undefined from non-existing fold when searching via tryFold', () => {
+    it('[non-grouped] should return Error from non-existing fold when searching via tryFold', () => {
         const queryable = new FoldCoronerSimpleResponseBuilder();
         const element = queryable.first(testResponse, testRequest);
         assert(element);
         const actual = element.tryFold('randomInt', 'max');
-        expect(actual).toBeUndefined();
+        expect(Result.isErr(actual)).toEqual(true);
     });
 
-    it('[non-grouped] should return undefined from non-existing fold when searching via tryFold on rows', () => {
+    it('[non-grouped] should return Error from non-existing fold when searching via tryFold on rows', () => {
         const queryable = new FoldCoronerSimpleResponseBuilder();
         const element = queryable.rows(testResponse, testRequest);
         assert(element);
         const actual = element.tryFold('randomInt', 'max');
-        expect(actual).toBeUndefined();
+        expect(Result.isErr(actual)).toEqual(true);
     });
 
     it('[non-grouped] should return * from group when searching via group without attribute', () => {
@@ -998,36 +999,36 @@ describe('FoldCoronerSimpleResponseBuilder', () => {
         expect(() => element.group('randomInt' as 'fingerprint')).toThrowError(/does not exist/i);
     });
 
-    it('[grouped] should return undefined from non-existing attribute via tryGroup', () => {
+    it('[grouped] should return Error from non-existing attribute via tryGroup', () => {
         const queryable = new FoldCoronerSimpleResponseBuilder();
         const element = queryable.first(testGroupResponse, testGroupRequest);
         assert(element);
         const actual = element.tryGroup('non-existing' as 'fingerprint');
-        expect(actual).toBeUndefined();
+        expect(Result.isErr(actual)).toEqual(true);
     });
 
-    it('[grouped] should return undefined from non-existing attribute via tryGroup on rows', () => {
+    it('[grouped] should return Error from non-existing attribute via tryGroup on rows', () => {
         const queryable = new FoldCoronerSimpleResponseBuilder();
         const element = queryable.rows(testGroupResponse, testGroupRequest);
         assert(element);
         const actual = element.tryGroup('non-existing' as 'fingerprint');
-        expect(actual).toBeUndefined();
+        expect(Result.isErr(actual)).toEqual(true);
     });
 
-    it('[grouped] should return undefined from non-grouped attribute via tryGroup', () => {
+    it('[grouped] should return Error from non-grouped attribute via tryGroup', () => {
         const queryable = new FoldCoronerSimpleResponseBuilder();
         const element = queryable.first(testGroupResponse, testGroupRequest);
         assert(element);
         const actual = element.tryGroup('randomInt' as 'fingerprint');
-        expect(actual).toBeUndefined();
+        expect(Result.isErr(actual)).toEqual(true);
     });
 
-    it('[grouped] should return undefined from non-grouped attribute via tryGroup on rows', () => {
+    it('[grouped] should return Error from non-grouped attribute via tryGroup on rows', () => {
         const queryable = new FoldCoronerSimpleResponseBuilder();
         const element = queryable.rows(testGroupResponse, testGroupRequest);
         assert(element);
         const actual = element.tryGroup('randomInt' as 'fingerprint');
-        expect(actual).toBeUndefined();
+        expect(Result.isErr(actual)).toEqual(true);
     });
 
     it('should return undefined element from queried elements from first when no elements are present', () => {

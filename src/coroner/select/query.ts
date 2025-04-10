@@ -66,5 +66,5 @@ export interface SelectedCoronerQuery extends SelectCoronerQuery {
      * Makes a POST call to Coroner with the built request.
      * @param source Where to make the request. If not specified, will supply data from default source.
      */
-    post(source?: Partial<QuerySource>): Promise<Result<SelectQueryResponse, CoronerError>>;
+    post(source?: Partial<QuerySource>): Promise<Result<SelectQueryResponse, Error>>;
 }

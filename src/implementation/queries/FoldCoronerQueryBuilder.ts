@@ -255,8 +255,13 @@ export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder impleme
         return this.#request;
     }
 
-    public async post(source?: Partial<QuerySource>): Promise<Result<FoldQueryResponse, CoronerError>> {
-        const response = await this.#executor.execute<RawFoldQueryResponse>(this.#request, source);
+    public async post(source?: Partial<QuerySource>): Promise<Result<FoldQueryResponse, Error>> {
+        const responseResult = await this.#executor.execute<RawFoldQueryResponse>(this.#request, source);
+        if (Result.isErr(responseResult)) {
+            return responseResult;
+        }
+
+        const response = responseResult.data;
         if (response.error) {
             return Result.err(CoronerError.ofResponse(response.error));
         }
@@ -277,7 +282,7 @@ export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder impleme
             all: () => cachedAll ?? (cachedAll = this.#simpleResponseBuilder.rows(response.response, this.#request)),
             nextPage: () => {
                 const request = nextPage(this.#request, response);
-                return this.createInstance(request);
+                return Result.map(request, (request) => this.createInstance(request));
             },
         };
         Plugins.extend(queryResponse, this.#successfulFoldResponseExtensions);

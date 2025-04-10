@@ -1,3 +1,4 @@
+import { Result } from '@backtrace/utils';
 import { CoronerValueType } from '../common';
 import { BinFoldOperator, DefaultGroup, DistributionFoldOperator, FoldOperator } from './requests';
 import {
@@ -80,10 +81,10 @@ export interface SimpleFoldRow {
     readonly count: number;
 
     fold<O extends FoldOperator>(attribute: string, ...fold: O): SimpleFoldValue<O[0]>;
-    tryFold<O extends FoldOperator>(attribute: string, ...fold: O): SimpleFoldValue<O[0]> | undefined;
+    tryFold<O extends FoldOperator>(attribute: string, ...fold: O): Result<SimpleFoldValue<O[0]>, Error>;
 
     group(attribute?: string): CoronerValueType | DefaultGroup;
-    tryGroup(attribute?: string): CoronerValueType | DefaultGroup | undefined;
+    tryGroup(attribute?: string): Result<CoronerValueType | DefaultGroup, Error>;
 }
 
 export interface SimpleFoldRows {
@@ -91,14 +92,8 @@ export interface SimpleFoldRows {
     readonly rows: readonly SimpleFoldRow[];
 
     fold<O extends FoldOperator>(attribute: string, ...fold: O): SimpleFoldValue<O[0]>[];
-    tryFold<O extends FoldOperator>(attribute: string, ...fold: O): SimpleFoldValue<O[0]>[] | undefined;
+    tryFold<O extends FoldOperator>(attribute: string, ...fold: O): Result<SimpleFoldValue<O[0]>[], Error>;
 
     group(attribute?: string): CoronerValueType[] | DefaultGroup[];
-    tryGroup(attribute?: string): CoronerValueType[] | DefaultGroup[] | undefined;
+    tryGroup(attribute?: string): Result<CoronerValueType[] | DefaultGroup[], Error>;
 }
-
-type FilterArray<T extends readonly any[], V> = T extends readonly [infer L, ...infer R]
-    ? L extends V
-        ? [L, ...FilterArray<R, V>]
-        : [...FilterArray<R, V>]
-    : T;

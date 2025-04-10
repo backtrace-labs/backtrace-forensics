@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { RawSelectQueryResponse, SelectQueryRequest, SuccessfulRawCoronerResponse } from '../src';
+import { RawSelectQueryResponse, Result, SelectQueryRequest, SuccessfulRawCoronerResponse } from '../src';
 import { SelectCoronerSimpleResponseBuilder } from '../src/implementation/responses/SelectCoronerSimpleResponseBuilder';
 
 describe('SelectCoronerSimpleResponseBuilder', () => {
@@ -94,12 +94,12 @@ describe('SelectCoronerSimpleResponseBuilder', () => {
         expect(() => element.select('not-existing' as 'fingerprint')).toThrowError(/does not exist/i);
     });
 
-    it('should return undefined on non-existing attribute via trySelect', () => {
+    it('should return Error on non-existing attribute via trySelect', () => {
         const builder = new SelectCoronerSimpleResponseBuilder();
         const element = builder.rows(testResponse).rows[4];
         assert(element);
         const actual = element.trySelect('non-existing');
-        expect(actual).toBeUndefined();
+        expect(Result.isErr(actual)).toEqual(true);
     });
 
     it('should return values via select on rows', () => {
@@ -124,12 +124,12 @@ describe('SelectCoronerSimpleResponseBuilder', () => {
         expect(() => element.select('not-existing' as 'fingerprint')).toThrowError(/does not exist/i);
     });
 
-    it('should return undefined on non-existing attribute via trySelect', () => {
+    it('should return Error on non-existing attribute via trySelect', () => {
         const builder = new SelectCoronerSimpleResponseBuilder();
         const element = builder.rows(testResponse).rows[4];
         assert(element);
         const actual = element.trySelect('non-existing');
-        expect(actual).toBeUndefined();
+        expect(Result.isErr(actual)).toEqual(true);
     });
 
     it('should throw on non-existing attribute via select on rows', () => {
@@ -139,12 +139,12 @@ describe('SelectCoronerSimpleResponseBuilder', () => {
         expect(() => element.select('not-existing' as 'fingerprint')).toThrowError(/does not exist/i);
     });
 
-    it('should return undefined on non-existing attribute via trySelect on rows', () => {
+    it('should return Error on non-existing attribute via trySelect on rows', () => {
         const builder = new SelectCoronerSimpleResponseBuilder();
         const element = builder.rows(testResponse);
         assert(element);
         const actual = element.trySelect('non-existing');
-        expect(actual).toBeUndefined();
+        expect(Result.isErr(actual)).toEqual(true);
     });
 
     it('should return undefined element from queried elements from first when no elements are present', async () => {

@@ -1,6 +1,7 @@
 import http from 'http';
 import https from 'https';
 import { ICoronerApiCaller } from '../interfaces/ICoronerApiCaller';
+import { Result } from '@backtrace/utils';
 
 export interface NodeCoronerApiCallerOptions {
     readonly disableSslVerification?: boolean;
@@ -9,7 +10,11 @@ export interface NodeCoronerApiCallerOptions {
 export class NodeCoronerApiCaller implements ICoronerApiCaller {
     constructor(private readonly options?: NodeCoronerApiCallerOptions) {}
 
-    public async post<R>(url: string | URL, body?: string, customHeaders?: Record<string, string>): Promise<R> {
+    public async post<R>(
+        url: string | URL,
+        body?: string,
+        customHeaders?: Record<string, string>,
+    ): Promise<Result<R, Error>> {
         const urlObj = url instanceof URL ? url : new URL(url);
         const protocol = urlObj.protocol.startsWith('https') ? https : http;
 
@@ -19,7 +24,7 @@ export class NodeCoronerApiCaller implements ICoronerApiCaller {
               })
             : undefined;
 
-        return new Promise<R>((resolve, reject) => {
+        return new Promise<Result<R, Error>>((resolve, reject) => {
             const headers: http.OutgoingHttpHeaders = {
                 'Content-Type': 'application/json',
             };
@@ -45,7 +50,7 @@ export class NodeCoronerApiCaller implements ICoronerApiCaller {
                     }
 
                     if (res.headers['content-type'] !== 'application/json') {
-                        return reject(new Error('Coroner did not reply with a JSON message.'));
+                        return resolve(Result.err(new Error('Coroner did not reply with a JSON message.')));
                     }
 
                     let result: Buffer | undefined;
@@ -55,10 +60,10 @@ export class NodeCoronerApiCaller implements ICoronerApiCaller {
 
                     res.on('close', () => {
                         if (!result) {
-                            return reject(new Error('No response has been returned.'));
+                            return reject(Result.err(Error('No response has been returned.')));
                         }
 
-                        resolve(JSON.parse(result.toString('utf-8')));
+                        resolve(Result.ok(JSON.parse(result.toString('utf-8'))));
                     });
                 },
             );

@@ -82,8 +82,13 @@ export class CoronerQueryBuilder extends CommonCoronerQueryBuilder implements Co
 
     public async post(
         source?: Partial<QuerySource> | undefined,
-    ): Promise<Result<QueryResponse<RawQueryResponse, CommonCoronerQuery>, CoronerError>> {
-        const response = await this.#executor.execute<RawQueryResponse>(this.#request, source);
+    ): Promise<Result<QueryResponse<RawQueryResponse, CommonCoronerQuery>, Error>> {
+        const responseResult = await this.#executor.execute<RawQueryResponse>(this.#request, source);
+        if (Result.isErr(responseResult)) {
+            return responseResult;
+        }
+
+        const response = responseResult.data;
         if (response.error) {
             return Result.err(CoronerError.ofResponse(response.error));
         }
@@ -93,7 +98,7 @@ export class CoronerQueryBuilder extends CommonCoronerQueryBuilder implements Co
             json: () => response,
             nextPage: () => {
                 const request = nextPage(this.#request, response);
-                return this.createInstance(request);
+                return Result.map(request, (request) => this.createInstance(request));
             },
         };
         Plugins.extend(queryResponse, this.#successfulResponseExtensions);

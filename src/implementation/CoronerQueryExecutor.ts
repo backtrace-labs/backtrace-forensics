@@ -1,3 +1,4 @@
+import { Result } from '@backtrace/utils';
 import { QueryRequest, RawCoronerResponse, RawQueryResponse } from '../coroner/common';
 import { ICoronerQueryExecutor } from '../interfaces/ICoronerQueryExecutor';
 import { ICoronerApiCallerFactory } from '../interfaces/factories/ICoronerQueryMakerFactory';
@@ -16,13 +17,19 @@ export class CoronerQueryExecutor implements ICoronerQueryExecutor {
     public async execute<R extends RawQueryResponse>(
         request: QueryRequest,
         source?: Partial<QuerySource>,
-    ): Promise<RawCoronerResponse<R>> {
+    ): Promise<Result<RawCoronerResponse<R>, Error>> {
         const querySource = Object.assign({}, this.#defaultSource, source);
         if (!querySource.project) {
-            throw new Error('Coroner project is not available.');
+            return Result.err(new Error('Coroner project is not available.'));
         }
 
-        const { url, headers } = createRequestData(querySource, '/api/query');
+        const requestDataResult = createRequestData(querySource, '/api/query');
+        if (Result.isErr(requestDataResult)) {
+            return requestDataResult;
+        }
+
+        const { url, headers } = requestDataResult.data;
+
         const queryMaker = await this.#queryMakerFactory.create();
         return await queryMaker.post<RawCoronerResponse<R>>(url, JSON.stringify(request), headers);
     }

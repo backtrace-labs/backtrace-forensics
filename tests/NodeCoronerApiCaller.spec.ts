@@ -1,5 +1,5 @@
 import nock from 'nock';
-import { QuerySource, RawCoronerResponse } from '../src';
+import { QuerySource, RawCoronerResponse, Result } from '../src';
 import { NodeCoronerApiCaller } from '../src/implementation/NodeCoronerApiCaller';
 
 describe('NodeCoronerApiCaller', () => {
@@ -21,7 +21,7 @@ describe('NodeCoronerApiCaller', () => {
             .reply(200, expectedResponse);
 
         const maker = new NodeCoronerApiCaller();
-        const response = await maker.post(url, '{}');
+        const response = Result.unwrap(await maker.post(url, '{}'));
 
         expect(response).toEqual(expectedResponse);
         scope.done();
@@ -45,7 +45,7 @@ describe('NodeCoronerApiCaller', () => {
             .reply(200, expectedResponse);
 
         const maker = new NodeCoronerApiCaller();
-        const response = await maker.post(url, '{}');
+        const response = Result.unwrap(await maker.post(url, '{}'));
 
         expect(response).toEqual(expectedResponse);
         scope.done();
@@ -82,7 +82,7 @@ describe('NodeCoronerApiCaller', () => {
             .reply(200, expectedResponse);
 
         const maker = new NodeCoronerApiCaller();
-        const response = await maker.post(httpUrl, '{}');
+        const response = Result.unwrap(await maker.post(httpUrl, '{}'));
 
         expect(response).toEqual(expectedResponse);
         httpScope.done();
@@ -112,10 +112,12 @@ describe('NodeCoronerApiCaller', () => {
             .reply(200, expectedResponse);
 
         const maker = new NodeCoronerApiCaller();
-        const response = await maker.post(url, '{}', {
-            'X-Coroner-Location': source.address,
-            'X-Coroner-Token': source.token,
-        });
+        const response = Result.unwrap(
+            await maker.post(url, '{}', {
+                'X-Coroner-Location': source.address,
+                'X-Coroner-Token': source.token,
+            }),
+        );
 
         expect(response).toEqual(expectedResponse);
         scope.done();
@@ -134,7 +136,9 @@ describe('NodeCoronerApiCaller', () => {
             .reply(500);
 
         const maker = new NodeCoronerApiCaller();
-        await expect(maker.post(url, '{}')).rejects.toThrow(/Invalid coroner status code/);
+        await expect(async () => Result.unwrap(await maker.post(url, '{}'))).rejects.toThrow(
+            /Coroner did not reply with a JSON message./,
+        );
         scope.done();
     });
 });

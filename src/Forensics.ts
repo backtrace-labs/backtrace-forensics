@@ -198,12 +198,17 @@ export class Forensics {
         return this.#queryFactory.create(defaultRequest);
     }
 
-    public async describe(source?: Partial<DescribeSource>): Promise<Result<DescribeAttribute[], CoronerError>> {
-        const result = await this.#describeExecutor.execute(source);
-        if (result.error) {
-            return Result.err(CoronerError.ofResponse(result.error));
+    public async describe(source?: Partial<DescribeSource>): Promise<Result<DescribeAttribute[], Error>> {
+        const responseResult = await this.#describeExecutor.execute(source);
+        if (Result.isErr(responseResult)) {
+            return responseResult;
         }
-        return Result.ok(result.describe);
+
+        const response = responseResult.data;
+        if (response.error) {
+            return Result.err(CoronerError.ofResponse(response.error));
+        }
+        return Result.ok(response.describe);
     }
 
     /**

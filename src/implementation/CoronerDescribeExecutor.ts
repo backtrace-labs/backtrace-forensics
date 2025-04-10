@@ -1,3 +1,4 @@
+import { Result } from '@backtrace/utils';
 import { RawDescribeResponse } from '../coroner/common';
 import { ICoronerApiCallerFactory } from '../interfaces/factories/ICoronerQueryMakerFactory';
 import { ICoronerDescribeExecutor } from '../interfaces/ICoronerDescribeExecutor';
@@ -14,13 +15,18 @@ export class CoronerDescribeExecutor implements ICoronerDescribeExecutor {
         this.#defaultSource = defaultSource ?? {};
     }
 
-    public async execute(source?: Partial<DescribeSource>): Promise<RawDescribeResponse> {
+    public async execute(source?: Partial<DescribeSource>): Promise<Result<RawDescribeResponse, Error>> {
         const querySource = Object.assign({}, this.#defaultSource, source);
         if (!querySource.project) {
-            throw new Error('Coroner project is not available.');
+            return Result.err(new Error('Coroner project is not available.'));
         }
 
-        const { url, headers } = createRequestData(querySource, '/api/query?action=describe');
+        const requestDataResult = createRequestData(querySource, '/api/query?action=describe');
+        if (Result.isErr(requestDataResult)) {
+            return requestDataResult;
+        }
+
+        const { url, headers } = requestDataResult.data;
 
         if (querySource.table) {
             url.searchParams.set('table', querySource.table);

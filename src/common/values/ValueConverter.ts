@@ -1,74 +1,110 @@
+import { Result } from '@backtrace/utils';
 import { IssueInvariant } from '../../coroner/models/IssueInvariant';
 import { Ticket } from '../../coroner/models/Ticket';
 
 export class ValueConverter {
-    public static toLabels(value: unknown): string[] {
+    public static toLabels(value: unknown): Result<string[], Error> {
         if (!value) {
-            return [];
+            return Result.ok([]);
         }
 
         if (typeof value !== 'string') {
-            throw new TypeError('Invalid value type, expected string.');
+            return Result.err(new TypeError('Invalid value type, expected string.'));
         }
 
-        return value.split(' ').filter((s) => s);
+        return Result.ok(value.split(' ').filter((s) => s));
     }
 
-    public static toCallstack(value: unknown): string[] {
-        if (!value) {
-            return [];
+    public static toLabelsUnsafe(value: unknown): string[] {
+        return Result.unwrap(this.toLabels(value));
+    }
+
+    public static toCallstack(value: unknown): Result<string[], Error> {
+        if (!value || value === '*') {
+            return Result.ok([]);
         }
 
         if (typeof value !== 'string') {
-            throw new TypeError('Invalid value type, expected string.');
+            return Result.err(new TypeError('Invalid value type, expected string.'));
         }
 
-        const obj = JSON.parse(value);
+        const parseResult = this.safeParse(value);
+        if (Result.isErr(parseResult)) {
+            return parseResult;
+        }
+
+        const obj = parseResult.data;
         const frames = obj.frame;
         if (!frames) {
-            return [];
+            return Result.ok([]);
         }
 
         if (!Array.isArray(frames)) {
-            throw new TypeError('Invalid JSON, expected "frame" to be an array.');
+            return Result.err(new TypeError('Invalid JSON, expected "frame" to be an array.'));
         }
 
         if (frames.some((f) => typeof f !== 'string')) {
-            throw new TypeError('Invalid JSON, expected all "frame" elements to be of string type.');
+            return Result.err(new TypeError('Invalid JSON, expected all "frame" elements to be of string type.'));
         }
 
-        return frames;
+        return Result.ok(frames);
     }
 
-    public static toTickets(value: unknown): Ticket[] {
+    public static toCallstackUnsafe(value: unknown): string[] {
+        return Result.unwrap(this.toCallstack(value));
+    }
+
+    public static toTickets(value: unknown): Result<Ticket[], Error> {
         if (!value) {
-            return [];
+            return Result.ok([]);
         }
 
         if (typeof value !== 'string') {
-            throw new TypeError('Invalid value type, expected string.');
+            return Result.err(new TypeError('Invalid value type, expected string.'));
         }
 
-        const obj = JSON.parse(value);
+        const parseResult = this.safeParse(value);
+        if (Result.isErr(parseResult)) {
+            return parseResult;
+        }
+
+        const obj = parseResult.data;
 
         // TODO: Further checks?
 
-        return obj;
+        return Result.ok(obj);
     }
 
-    public static toIssueInvariants(value: unknown): IssueInvariant[] {
+    public static toTicketsUnsafe(value: unknown): Ticket[] {
+        return Result.unwrap(this.toTickets(value));
+    }
+
+    public static toIssueInvariants(value: unknown): Result<IssueInvariant[], Error> {
         if (!value) {
-            return [];
+            return Result.ok([]);
         }
 
         if (typeof value !== 'string') {
-            throw new TypeError('Invalid value type, expected string.');
+            return Result.err(new TypeError('Invalid value type, expected string.'));
         }
 
-        const obj = JSON.parse(value);
+        const parseResult = this.safeParse(value);
+        if (Result.isErr(parseResult)) {
+            return parseResult;
+        }
+
+        const obj = parseResult.data;
 
         // TODO: Further checks?
 
-        return obj;
+        return Result.ok(obj);
+    }
+
+    public static toIssueInvariantsUnsafe(value: unknown): IssueInvariant[] {
+        return Result.unwrap(this.toIssueInvariants(value));
+    }
+
+    private static safeParse<T = any>(json: string): Result<T, Error> {
+        return Result.tryCatch(() => JSON.parse(json));
     }
 }

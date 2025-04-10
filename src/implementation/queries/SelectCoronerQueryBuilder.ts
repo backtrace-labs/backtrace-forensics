@@ -78,8 +78,13 @@ export class SelectedCoronerQueryBuilder extends CommonCoronerQueryBuilder imple
         return this.#request;
     }
 
-    public async post(source?: Partial<QuerySource>): Promise<Result<SelectQueryResponse, CoronerError>> {
-        const response = await this.#executor.execute<RawSelectQueryResponse>(this.#request, source);
+    public async post(source?: Partial<QuerySource>): Promise<Result<SelectQueryResponse, Error>> {
+        const responseResult = await this.#executor.execute<RawSelectQueryResponse>(this.#request, source);
+        if (Result.isErr(responseResult)) {
+            return responseResult;
+        }
+
+        const response = responseResult.data;
         if (response.error) {
             return Result.err(CoronerError.ofResponse(response.error));
         }
@@ -98,7 +103,7 @@ export class SelectedCoronerQueryBuilder extends CommonCoronerQueryBuilder imple
             all: () => cachedAll ?? (cachedAll = this.#simpleResponseBuilder.rows(response)),
             nextPage: () => {
                 const request = nextPage(this.#request, response);
-                return this.createInstance(request);
+                return Result.map(request, (request) => this.createInstance(request));
             },
         };
         Plugins.extend(queryResponse, this.#successfulSelectResponseExtensions);

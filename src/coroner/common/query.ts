@@ -114,7 +114,7 @@ export interface CommonCoronerQuery {
      *     // use the response
      * }
      */
-    post(source?: Partial<QuerySource>): Promise<Result<QueryResponse, CoronerError>>;
+    post(source?: Partial<QuerySource>): Promise<Result<QueryResponse, Error>>;
 }
 
 export interface CoronerQuery extends CommonCoronerQuery, SelectCoronerQuery, FoldCoronerQuery {}

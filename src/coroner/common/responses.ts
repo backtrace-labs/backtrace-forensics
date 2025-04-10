@@ -1,3 +1,4 @@
+import { Result } from '@backtrace/utils';
 import { FoldOperator } from '../fold';
 import { AttributeFormat, AttributeType } from './attributes';
 import { CommonCoronerQuery } from './query';
@@ -52,7 +53,7 @@ export interface QueryResponse<
 > {
     readonly query: Q;
     json(): SuccessfulRawCoronerResponse<R>;
-    nextPage(): Q;
+    nextPage(): Result<Q, Error>;
 }
 
 export type RawCoronerResponse<R extends RawQueryResponse = RawQueryResponse> =

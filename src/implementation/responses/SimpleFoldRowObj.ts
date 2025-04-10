@@ -1,37 +1,36 @@
+import { Result } from '@backtrace/utils';
 import { CoronerValueType, FoldOperator, SimpleFoldAttributes, SimpleFoldRow, SimpleFoldValue } from '../../coroner';
 
 export class SimpleFoldRowObj implements SimpleFoldRow {
     constructor(public readonly attributes: Readonly<SimpleFoldAttributes>, public readonly count: number) {}
 
     public fold<O extends FoldOperator>(attribute: string, ...fold: O): SimpleFoldValue<O[0]> {
-        const result = this.tryFold(attribute, ...fold);
-        if (result === undefined) {
-            throw new Error(`Attribute "${attribute}" or fold ${JSON.stringify(fold)} does not exist.`);
-        }
-        return result;
+        return Result.unwrap(this.tryFold(attribute, ...fold));
     }
 
-    public tryFold<O extends FoldOperator>(attribute: string, ...fold: O): SimpleFoldValue<O[0]> | undefined {
+    public tryFold<O extends FoldOperator>(attribute: string, ...fold: O): Result<SimpleFoldValue<O[0]>, Error> {
         const result = this.filterFolds(attribute, ...fold);
         if (result.length > 1) {
-            throw new Error(
-                'Ambiguous results found. This can happen when there are two columns with the same fold operator. ' +
-                    'Try providing the built request to the simple response builder.',
+            return Result.err(
+                new Error(
+                    'Ambiguous results found. This can happen when there are two columns with the same fold operator. ' +
+                        'Try providing the built request to the simple response builder.',
+                ),
             );
         }
 
-        return result[0] as SimpleFoldValue<O[0]> | undefined;
+        if (!result[0]) {
+            return Result.err(new Error(`Attribute "${attribute}" or fold ${JSON.stringify(fold)} does not exist.`));
+        }
+
+        return Result.ok(result[0] as SimpleFoldValue<O[0]>);
     }
 
     public group(attribute?: string | undefined): CoronerValueType {
-        const result = this.tryGroup(attribute);
-        if (result === undefined) {
-            throw new Error(`Attribute "${attribute}" does not exist or wasn't grouped on.`);
-        }
-        return result;
+        return Result.unwrap(this.tryGroup(attribute));
     }
 
-    public tryGroup(attribute?: string | undefined): CoronerValueType | undefined {
+    public tryGroup(attribute?: string | undefined): Result<CoronerValueType, Error> {
         if (attribute === '*') {
             attribute = undefined;
         }
@@ -42,16 +41,16 @@ export class SimpleFoldRowObj implements SimpleFoldRow {
             }
 
             const attributeValues = this.attributes[key];
-            if ('groupKey' in attributeValues) {
-                return attributeValues.groupKey;
+            if ('groupKey' in attributeValues && attributeValues.groupKey != undefined) {
+                return Result.ok(attributeValues.groupKey);
             }
         }
 
-        if (!attribute) {
-            return '*';
+        if (attribute == undefined) {
+            return Result.ok('*');
         }
 
-        return undefined;
+        return Result.err(new Error(`Attribute "${attribute}" does not exist or wasn't grouped on.`));
     }
 
     private filterFolds(attribute: string, ...search: FoldOperator): SimpleFoldValue[] {

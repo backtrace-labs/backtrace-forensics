@@ -1,7 +1,12 @@
+import { Result } from '@backtrace/utils';
 import { ICoronerApiCaller } from '../interfaces/ICoronerApiCaller';
 
 export class FetchCoronerApiCaller implements ICoronerApiCaller {
-    public async post<R>(url: string | URL, body?: string, customHeaders?: Record<string, string>): Promise<R> {
+    public async post<R>(
+        url: string | URL,
+        body?: string,
+        customHeaders?: Record<string, string>,
+    ): Promise<Result<R, Error>> {
         const headers: HeadersInit = {
             'Content-Type': 'application/json',
         };
@@ -14,6 +19,6 @@ export class FetchCoronerApiCaller implements ICoronerApiCaller {
             headers,
         });
 
-        return await response.json();
+        return Result.ok(await response.json());
     }
 }

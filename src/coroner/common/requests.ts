@@ -1,3 +1,4 @@
+import { Result } from '@backtrace/utils';
 import { cloneRequest } from '../../implementation/requests/cloneRequest';
 import {
     AttributeType,
@@ -9,6 +10,7 @@ import {
     UUIDType,
 } from './attributes';
 import { RawCoronerResponse } from './responses';
+import { CoronerError } from './errors';
 
 export type CoronerValueType = string | number | boolean | null;
 
@@ -188,14 +190,14 @@ export const defaultRequest: QueryRequest = {
     offset: 0,
 };
 
-export function nextPage<R extends QueryRequest>(request: R, response: RawCoronerResponse<any>): R {
+export function nextPage<R extends QueryRequest>(request: R, response: RawCoronerResponse<any>): Result<R, Error> {
     if (response.error) {
-        throw new Error('Response has errors.');
+        return Result.err(new CoronerError(response.error, 'Response has errors.'));
     }
 
     const newRequest = cloneRequest(request);
     if (newRequest.limit == null) {
-        throw new Error('Limit is not defined.');
+        return Result.err(new Error('Limit is not defined.'));
     }
 
     if (newRequest.offset == null) {
@@ -219,5 +221,5 @@ export function nextPage<R extends QueryRequest>(request: R, response: RawCorone
         }
     }
 
-    return newRequest as R;
+    return Result.ok(newRequest as R);
 }

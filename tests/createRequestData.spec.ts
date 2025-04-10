@@ -1,4 +1,4 @@
-import { QuerySource } from '../src';
+import { QuerySource, Result } from '../src';
 import { createRequestData } from '../src/implementation/helpers/createRequestData';
 
 describe('createRequestData', () => {
@@ -9,7 +9,7 @@ describe('createRequestData', () => {
             token: 'token',
         };
 
-        const { url } = createRequestData(querySource, '/api/query');
+        const { url } = Result.unwrap(createRequestData(querySource, '/api/query'));
         expect(url.origin).toEqual(querySource.address);
     });
 
@@ -20,7 +20,7 @@ describe('createRequestData', () => {
             token: 'token',
         };
 
-        const { url } = createRequestData(querySource, '/api/query');
+        const { url } = Result.unwrap(createRequestData(querySource, '/api/query'));
         expect(url.pathname).toEqual('/api/query');
     });
 
@@ -31,7 +31,7 @@ describe('createRequestData', () => {
             token: 'token',
         };
 
-        const { url } = createRequestData(querySource, '/api/query');
+        const { url } = Result.unwrap(createRequestData(querySource, '/api/query'));
         expect([...url.searchParams.entries()]).toContainEqual(['project', querySource.project]);
     });
 
@@ -47,7 +47,7 @@ describe('createRequestData', () => {
             },
         };
 
-        const { url } = createRequestData(querySource, '/api/query');
+        const { url } = Result.unwrap(createRequestData(querySource, '/api/query'));
         expect([...url.searchParams.entries()]).toContainEqual(['project', querySource.project]);
     });
 
@@ -59,7 +59,7 @@ describe('createRequestData', () => {
             token: 'token',
         };
 
-        const { url } = createRequestData(querySource, '/api/query');
+        const { url } = Result.unwrap(createRequestData(querySource, '/api/query'));
         expect([...url.searchParams.entries()]).toContainEqual(['universe', querySource.universe]);
     });
 
@@ -75,7 +75,7 @@ describe('createRequestData', () => {
             },
         };
 
-        const { url } = createRequestData(querySource, '/api/query');
+        const { url } = Result.unwrap(createRequestData(querySource, '/api/query'));
         expect([...url.searchParams.entries()]).toContainEqual(['param1', 'a']);
         expect([...url.searchParams.entries()]).toContainEqual(['param2', 'b']);
         expect([...url.searchParams.entries()]).toContainEqual(['param2', 'c']);
@@ -93,7 +93,7 @@ describe('createRequestData', () => {
             },
         };
 
-        const { url } = createRequestData(querySource, '/api/query?param2=x');
+        const { url } = Result.unwrap(createRequestData(querySource, '/api/query?param2=x'));
         expect([...url.searchParams.entries()]).toContainEqual(['param1', 'a']);
         expect([...url.searchParams.entries()]).toContainEqual(['param2', 'b']);
         expect([...url.searchParams.entries()]).toContainEqual(['param2', 'c']);
@@ -107,7 +107,7 @@ describe('createRequestData', () => {
             token: 'token',
         };
 
-        const { headers } = createRequestData(querySource, '/api/query');
+        const { headers } = Result.unwrap(createRequestData(querySource, '/api/query'));
         expect(headers).toMatchObject({ 'X-Coroner-Location': querySource.address });
     });
 
@@ -119,7 +119,7 @@ describe('createRequestData', () => {
             token: 'token',
         };
 
-        const { headers } = createRequestData(querySource, '/api/query');
+        const { headers } = Result.unwrap(createRequestData(querySource, '/api/query'));
         expect(headers).toMatchObject({ 'X-Coroner-Location': querySource.location });
     });
 
@@ -130,7 +130,7 @@ describe('createRequestData', () => {
             token: 'token',
         };
 
-        const { headers } = createRequestData(querySource, '/api/query');
+        const { headers } = Result.unwrap(createRequestData(querySource, '/api/query'));
         expect(headers).toMatchObject({ 'X-Coroner-Token': querySource.token });
     });
 });

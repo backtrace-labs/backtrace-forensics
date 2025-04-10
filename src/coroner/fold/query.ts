@@ -2,7 +2,6 @@ import { Result } from '@backtrace/utils';
 import { QuerySource } from '../../models/QuerySource';
 import { CommonCoronerQuery, OrderDirection } from '../common';
 import { AttributeValueType } from '../common/attributes';
-import { CoronerError } from '../common/errors';
 import { FoldFilterInput, FoldFilterOperatorInput, FoldFilterValueIndex, SupportedFoldFilterFolds } from './inputs';
 import { BackingColumnFoldVirtualColumnTypes, FoldOperator, FoldQueryRequest, FoldVirtualColumnType } from './requests';
 import { FoldQueryResponse } from './responses';
@@ -223,5 +222,5 @@ export interface FoldedCoronerQuery extends FoldCoronerQuery {
      *     const b = row.attributes.b.groupKey;
      * }
      */
-    post(source?: Partial<QuerySource>): Promise<Result<FoldQueryResponse, CoronerError>>;
+    post(source?: Partial<QuerySource>): Promise<Result<FoldQueryResponse, Error>>;
 }
