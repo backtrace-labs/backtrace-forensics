@@ -5,4 +5,3 @@ export * from './filters';
 export * from './implementation';
 export * from './interfaces';
 export * from './models';
-export { Result } from '@backtrace/utils';

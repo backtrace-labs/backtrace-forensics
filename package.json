@@ -38,7 +38,7 @@
         "samples/backtrace-forensics-plugin-sample-2",
         "plugins/*"
     ],
-    "dependencies": {
+    "peerDependencies": {
         "@backtrace/utils": "^0.1.3"
     }
 }
