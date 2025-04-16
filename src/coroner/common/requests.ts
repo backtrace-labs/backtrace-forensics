@@ -11,6 +11,7 @@ import {
 } from './attributes';
 import { RawCoronerResponse } from './responses';
 import { CoronerError } from './errors';
+import { MissingLimitError } from '../../common/errors';
 
 export type CoronerValueType = string | number | boolean | null;
 
@@ -197,7 +198,7 @@ export function nextPage<R extends QueryRequest>(request: R, response: RawCorone
 
     const newRequest = cloneRequest(request);
     if (newRequest.limit == null) {
-        return Result.err(new Error('Limit is not defined.'));
+        return Result.err(new MissingLimitError());
     }
 
     if (newRequest.offset == null) {

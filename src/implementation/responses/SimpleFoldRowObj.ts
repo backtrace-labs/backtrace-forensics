@@ -1,5 +1,6 @@
 import { Result } from '@backtrace/utils';
 import { CoronerValueType, FoldOperator, SimpleFoldAttributes, SimpleFoldRow, SimpleFoldValue } from '../../coroner';
+import { AmbiguousFoldError, AttributeNotFoldedError, AttributeNotGroupedError } from '../../common/errors';
 
 export class SimpleFoldRowObj implements SimpleFoldRow {
     constructor(public readonly attributes: Readonly<SimpleFoldAttributes>, public readonly count: number) {}
@@ -11,16 +12,11 @@ export class SimpleFoldRowObj implements SimpleFoldRow {
     public tryFold<O extends FoldOperator>(attribute: string, ...fold: O): Result<SimpleFoldValue<O[0]>, Error> {
         const result = this.filterFolds(attribute, ...fold);
         if (result.length > 1) {
-            return Result.err(
-                new Error(
-                    'Ambiguous results found. This can happen when there are two columns with the same fold operator. ' +
-                        'Try providing the built request to the simple response builder.',
-                ),
-            );
+            return Result.err(new AmbiguousFoldError());
         }
 
         if (!result.length) {
-            return Result.err(new Error(`Attribute "${attribute}" or fold ${JSON.stringify(fold)} does not exist.`));
+            return Result.err(new AttributeNotFoldedError(attribute, fold));
         }
 
         return Result.ok(result[0] as SimpleFoldValue<O[0]>);
@@ -50,7 +46,7 @@ export class SimpleFoldRowObj implements SimpleFoldRow {
             return Result.ok('*');
         }
 
-        return Result.err(new Error(`Attribute "${attribute}" does not exist or wasn't grouped on.`));
+        return Result.err(new AttributeNotGroupedError(attribute));
     }
 
     private filterFolds(attribute: string, ...search: FoldOperator): SimpleFoldValue[] {

@@ -4,6 +4,7 @@ import { ICoronerQueryExecutor } from '../interfaces/ICoronerQueryExecutor';
 import { ICoronerApiCallerFactory } from '../interfaces/factories/ICoronerQueryMakerFactory';
 import { QuerySource } from '../models/QuerySource';
 import { createRequestData } from './helpers/createRequestData';
+import { MissingProjectError } from '../common/errors';
 
 export class CoronerQueryExecutor implements ICoronerQueryExecutor {
     readonly #queryMakerFactory: ICoronerApiCallerFactory;
@@ -20,7 +21,7 @@ export class CoronerQueryExecutor implements ICoronerQueryExecutor {
     ): Promise<Result<RawCoronerResponse<R>, Error>> {
         const querySource = Object.assign({}, this.#defaultSource, source);
         if (!querySource.project) {
-            return Result.err(new Error('Coroner project is not available.'));
+            return Result.err(new MissingProjectError());
         }
 
         const requestDataResult = createRequestData(querySource, '/api/query');

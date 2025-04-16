@@ -1,6 +1,7 @@
+import { ForensicsError } from '../../common/errors';
 import { CoronerErrorResponse } from './responses';
 
-export class CoronerError extends Error {
+export class CoronerError extends ForensicsError {
     constructor(public readonly response: CoronerErrorResponse, message?: string) {
         super(message ?? response.message);
     }

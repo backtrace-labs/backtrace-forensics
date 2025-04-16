@@ -1,10 +1,11 @@
 import { Result } from '@backtrace/utils';
 import { QuerySource } from '../../models';
+import { MissingAddressError } from '../../common/errors';
 
 export function createRequestData(querySource: Partial<QuerySource>, resource: string) {
     const { address, token, universe, project, location, params } = querySource;
     if (!address) {
-        return Result.err(new Error('Coroner address is not available.'));
+        return Result.err(new MissingAddressError());
     }
 
     const qs = new URLSearchParams();

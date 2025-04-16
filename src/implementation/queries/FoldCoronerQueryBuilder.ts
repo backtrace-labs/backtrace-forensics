@@ -28,6 +28,7 @@ import { foldStartsWith } from '../helpers/foldsEqual';
 import { cloneFoldRequest } from '../requests/cloneRequest';
 import { CommonCoronerQueryBuilder } from './CommonCoronerQueryBuilder';
 import { CoronerError } from '../../coroner/common/errors';
+import { AttributeNotFoldedError } from '../../common/errors';
 
 export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder implements FoldedCoronerQuery {
     readonly #request: FoldQueryRequest;
@@ -296,7 +297,7 @@ export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder impleme
     private findAttributeFoldIndex(attribute: string, operator: FoldOperator) {
         const attributeFolds = this.#request.fold && this.#request.fold[attribute];
         if (!attributeFolds) {
-            throw new Error(`Attribute ${attribute} was not folded before.`);
+            throw new AttributeNotFoldedError(attribute, operator);
         }
 
         const index = attributeFolds.findIndex((d) => {
@@ -310,7 +311,7 @@ export class FoldedCoronerQueryBuilder extends CommonCoronerQueryBuilder impleme
         });
 
         if (index === -1) {
-            throw new Error(`Attribute ${attribute} is not folded on ${JSON.stringify(operator)}.`);
+            throw new AttributeNotFoldedError(attribute, operator);
         }
 
         return index;
