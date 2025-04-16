@@ -1,4 +1,5 @@
-import { Result, ValueConverter } from '../src';
+import { ValueConverter } from '../src';
+import { Result } from '@backtrace/utils';
 
 describe('ValueConverter', () => {
     describe('toLabels', () => {

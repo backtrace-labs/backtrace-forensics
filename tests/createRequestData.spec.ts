@@ -1,5 +1,6 @@
-import { QuerySource, Result } from '../src';
+import { QuerySource } from '../src';
 import { createRequestData } from '../src/implementation/helpers/createRequestData';
+import { Result } from '@backtrace/utils';
 
 describe('createRequestData', () => {
     it('should return URL with provided address as origin', () => {

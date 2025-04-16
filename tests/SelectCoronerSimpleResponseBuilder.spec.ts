@@ -1,6 +1,7 @@
 import assert from 'assert';
-import { RawSelectQueryResponse, Result, SelectQueryRequest, SuccessfulRawCoronerResponse } from '../src';
+import { RawSelectQueryResponse, SelectQueryRequest, SuccessfulRawCoronerResponse } from '../src';
 import { SelectCoronerSimpleResponseBuilder } from '../src/implementation/responses/SelectCoronerSimpleResponseBuilder';
+import { Result } from '@backtrace/utils';
 
 describe('SelectCoronerSimpleResponseBuilder', () => {
     const testRequest: SelectQueryRequest = {

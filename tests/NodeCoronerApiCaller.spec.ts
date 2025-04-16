@@ -1,6 +1,7 @@
 import nock from 'nock';
-import { QuerySource, RawCoronerResponse, Result } from '../src';
+import { QuerySource, RawCoronerResponse } from '../src';
 import { NodeCoronerApiCaller } from '../src/implementation/NodeCoronerApiCaller';
+import { Result } from '@backtrace/utils';
 
 describe('NodeCoronerApiCaller', () => {
     it('should return a response from https server', async () => {
