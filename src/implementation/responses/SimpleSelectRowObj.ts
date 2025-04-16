@@ -13,11 +13,7 @@ export class SimpleSelectRowObj implements SimpleSelectRow {
             return Result.err(new Error(`Attribute "${attribute}" does not exist.`));
         }
 
-        const value = this.values[attribute as keyof typeof this.values];
-        if (value === undefined) {
-            return Result.err(new Error(`Value for attribute "${attribute} does not exist.`));
-        }
-
+        const value = this.values[attribute];
         return Result.ok(value);
     }
 }

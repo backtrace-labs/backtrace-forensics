@@ -19,7 +19,7 @@ export class SimpleFoldRowObj implements SimpleFoldRow {
             );
         }
 
-        if (!result[0]) {
+        if (!result.length) {
             return Result.err(new Error(`Attribute "${attribute}" or fold ${JSON.stringify(fold)} does not exist.`));
         }
 
