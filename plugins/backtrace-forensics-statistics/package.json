@@ -1,6 +1,6 @@
 {
     "name": "@backtrace/forensics-statistics",
-    "version": "0.0.7",
+    "version": "0.1.0",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
     "peerDependencies": {
@@ -14,7 +14,6 @@
         "test": "NODE_ENV=test jest",
         "prepack": "rm -rf lib && npm run build"
     },
-    "private": true,
     "author": "Backtrace <team@backtrace.io>",
     "license": "LicenseRef-LICENSE",
     "description": "A plugin for @backtrace/forensics enabling querying for statistics from metrics."
