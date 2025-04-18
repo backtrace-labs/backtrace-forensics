@@ -1,11 +1,11 @@
 {
     "name": "@backtrace/forensics-statistics",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
     "peerDependencies": {
-        "@backtrace/forensics": "^0.7.0",
-        "@backtrace/charon": "^1.6.0",
+        "@backtrace/forensics": "^0.7.4",
+        "@backtrace/charon": "^1.6.1",
         "@backtrace/utils": "^0.1.3"
     },
     "scripts": {
