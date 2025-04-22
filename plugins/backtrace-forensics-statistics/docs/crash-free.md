@@ -137,11 +137,15 @@ calculated first, and then the `bucket.start` date based on `bucket.end` and `bu
 To calculate `bucket.end`, use the following formula:
 
 ```
-bucket.end = timeframe.end - (timeframe.end % bucket.spacing) + bucket.spacing
+bucket.end = timeframe.end - (timeframe.end % bucket.spacing)
+if (bucket.end < timeframe.end) {
+    // add a single spacing if bucket does not cover the end
+    bucket.end += bucket.spacing
+}
 ```
 
-This formula essentially rounds up the `timeframe.end` date to `bucket.spacing` and adds a single `bucket.spacing` to
-the end, marking the end of the bucket.
+This formula essentially rounds up the `timeframe.end` date to `bucket.spacing` and adds a single `bucket.spacing`, if
+necessary, to the end, marking the end of the bucket.
 
 Calculating `bucket.start` is then straightforward:
 

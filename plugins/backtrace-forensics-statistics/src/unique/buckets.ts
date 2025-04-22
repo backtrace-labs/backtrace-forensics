@@ -142,7 +142,14 @@ function coversTimeframe(bucket: EventBucket, start: Timestamp.T, end: Timestamp
 }
 
 function closestBucket(bucket: StoredEventBucket, timeframeEnd: Timestamp.T): EventBucket {
-    const bucketEnd = Timestamp.of(timeframeEnd - (timeframeEnd % bucket.spacing) + bucket.spacing);
+    // Round down timeframe to bucket end
+    let bucketEnd = Timestamp.of(timeframeEnd - (timeframeEnd % bucket.spacing));
+
+    // If bucket does not cover the end, add spacing
+    if (bucketEnd < timeframeEnd) {
+        bucketEnd += bucket.spacing;
+    }
+
     return {
         start: bucketEnd - bucket.duration,
         end: bucketEnd,

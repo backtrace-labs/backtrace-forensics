@@ -166,6 +166,110 @@ describe('getBucket', () => {
         });
     });
 
+    describe('aligned buckets', () => {
+        const now = Timestamp.ofDate(new Date('2025-04-03T09:51:06.463Z'));
+
+        it('should resolve CRDB_BUCKET_30_MINUTES bucket', () => {
+            const start = Timestamp.ofDate(new Date('2025-04-03T00:00:00.000Z'));
+            const end = start + CRDB_BUCKET_30_MINUTES.duration;
+            const expected = expectedBucket(CRDB_BUCKET_30_MINUTES, end);
+
+            const actual = getBucket(start, end, now);
+
+            expect(actual).toEqual(expected);
+        });
+
+        it('should resolve CRDB_BUCKET_1_HOUR bucket', () => {
+            const start = Timestamp.ofDate(new Date('2025-04-03T00:00:00.000Z'));
+            const end = start + CRDB_BUCKET_1_HOUR.duration;
+            const expected = expectedBucket(CRDB_BUCKET_1_HOUR, end);
+
+            const actual = getBucket(start, end, now);
+
+            expect(actual).toEqual(expected);
+        });
+
+        it('should resolve CRDB_BUCKET_3_HOURS bucket', () => {
+            const start = Timestamp.ofDate(new Date('2025-04-03T00:00:00.000Z'));
+            const end = start + CRDB_BUCKET_3_HOURS.duration;
+            const expected = expectedBucket(CRDB_BUCKET_3_HOURS, end);
+
+            const actual = getBucket(start, end, now);
+
+            expect(actual).toEqual(expected);
+        });
+
+        it('should resolve CRDB_BUCKET_6_HOURS bucket', () => {
+            const start = Timestamp.ofDate(new Date('2025-04-03T00:00:00.000Z'));
+            const end = start + CRDB_BUCKET_6_HOURS.duration;
+            const expected = expectedBucket(CRDB_BUCKET_6_HOURS, end);
+
+            const actual = getBucket(start, end, now);
+
+            expect(actual).toEqual(expected);
+        });
+
+        it('should resolve CRDB_BUCKET_12_HOURS bucket', () => {
+            const start = Timestamp.ofDate(new Date('2025-04-03T00:00:00.000Z'));
+            const end = start + CRDB_BUCKET_12_HOURS.duration;
+            const expected = expectedBucket(CRDB_BUCKET_12_HOURS, end);
+
+            const actual = getBucket(start, end, now);
+
+            expect(actual).toEqual(expected);
+        });
+
+        it('should resolve CRDB_BUCKET_1_DAY bucket', () => {
+            const start = Timestamp.ofDate(new Date('2025-04-03T00:00:00.000Z'));
+            const end = start + CRDB_BUCKET_1_DAY.duration;
+            const expected = expectedBucket(CRDB_BUCKET_1_DAY, end);
+
+            const actual = getBucket(start, end, now);
+
+            expect(actual).toEqual(expected);
+        });
+
+        it('should resolve CRDB_BUCKET_1_WEEK bucket', () => {
+            const start = Timestamp.ofDate(new Date('2025-03-27T00:00:00.000Z'));
+            const end = start + CRDB_BUCKET_1_WEEK.duration;
+            const expected = expectedBucket(CRDB_BUCKET_1_WEEK, end);
+
+            const actual = getBucket(start, end, now);
+
+            expect(actual).toEqual(expected);
+        });
+
+        it('should resolve CRDB_BUCKET_1_MONTH bucket', () => {
+            const start = Timestamp.ofDate(new Date('2025-03-03T00:00:00.000Z'));
+            const end = start + CRDB_BUCKET_1_MONTH.duration;
+            const expected = expectedBucket(CRDB_BUCKET_1_MONTH, end);
+
+            const actual = getBucket(start, end, now);
+
+            expect(actual).toEqual(expected);
+        });
+
+        it('should resolve CRDB_BUCKET_3_MONTHS bucket', () => {
+            const start = Timestamp.ofDate(new Date('2025-01-03T00:00:00.000Z'));
+            const end = start + CRDB_BUCKET_3_MONTHS.duration;
+            const expected = expectedBucket(CRDB_BUCKET_3_MONTHS, end);
+
+            const actual = getBucket(start, end, now);
+
+            expect(actual).toEqual(expected);
+        });
+
+        it('should resolve CRDB_BUCKET_1_YEAR bucket', () => {
+            const start = Timestamp.ofDate(new Date('2024-04-03T00:00:00.000Z'));
+            const end = start + CRDB_BUCKET_1_YEAR.duration;
+            const expected = expectedBucket(CRDB_BUCKET_1_YEAR, end);
+
+            const actual = getBucket(start, end, now);
+
+            expect(actual).toEqual(expected);
+        });
+    });
+
     describe('expired buckets', () => {
         it('should resolve CRDB_BUCKET_1_HOUR bucket, because CRDB_BUCKET_30_MINUTES expired by then', () => {
             const now = Timestamp.ofDate(new Date('2025-04-03T09:51:06.463Z')) + CRDB_BUCKET_30_MINUTES.maxAge;
