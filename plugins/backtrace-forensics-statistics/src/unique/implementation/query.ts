@@ -53,7 +53,7 @@ export class UniqueMetricsQueryBuilder implements UniqueMetricsQuery {
         }
 
         const linearizationRatio = (timeframe.to - timeframe.from) / bucket.duration;
-        const linearized = Math.round(sum * linearizationRatio);
+        const linearized = Math.floor(sum * linearizationRatio);
         return Result.ok(linearized);
     }
 

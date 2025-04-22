@@ -169,7 +169,7 @@ by multiplying the result by ratio of `timeframe.duration` to `bucket.duration`:
 
 ```
 linearized_ratio = bucket.duration/timeframe.duration
-linearized = round(result * linearized_ratio)
+linearized = floor(result * linearized_ratio)
 ```
 
 For example, if we take a timeframe of 1 day, the selected bucket will have a length of 1 day and 30 minutes. The ratio
@@ -182,7 +182,7 @@ linearized_ratio = 88200/86400 = 0.9795918367
 If bucket has a `count` value of 4823, the final result will be:
 
 ```
-linearized = round(4823 * 0.9795918367) = round(4724.5714284041) = 4725
+linearized = floor(4823 * 0.9795918367) = round(4724.5714284041) = 4724
 ```
 
 ### Example
