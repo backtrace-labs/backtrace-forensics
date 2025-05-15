@@ -5,7 +5,7 @@ import { UniqueEventsRequest } from '../request';
 import { GetUniqueCountInEventsQueryData } from './unique-count-in-events';
 import { GetUniqueCountInReportsQuery } from './unique-count-in-reports';
 import { UniqueCounts } from '../models';
-import { NoUniqueAttributeError } from '../errors';
+import { NoTimeframeBucketFoundError, NoUniqueAttributeError } from '../errors';
 
 export class UniqueMetricsQueryBuilder implements UniqueMetricsQuery {
     readonly #request: UniqueEventsRequest;
@@ -49,7 +49,7 @@ export class UniqueMetricsQueryBuilder implements UniqueMetricsQuery {
 
         const sum = parseInt(result.data.first()?.fold('_count', 'sum') as string);
         if (isNaN(sum)) {
-            return Result.ok(0);
+            return Result.err(new NoTimeframeBucketFoundError());
         }
 
         const linearizationRatio = (timeframe.to - timeframe.from) / bucket.duration;
@@ -91,7 +91,7 @@ export class UniqueMetricsQueryBuilder implements UniqueMetricsQuery {
             return eventsResult;
         }
 
-        const crashFreeRate = Math.max(0, eventsResult.data === 0 ? 1 : 1 - reportsResult.data / eventsResult.data);
+        const crashFreeRate = Math.max(0, eventsResult.data === 0 ? 0 : 1 - reportsResult.data / eventsResult.data);
 
         return Result.ok({
             reports: reportsResult.data,

@@ -23,3 +23,9 @@ export class NoUniqueAggregationsError extends ForensicsError {
         super('No unique aggregation found.');
     }
 }
+
+export class NoTimeframeBucketFoundError extends ForensicsError {
+    constructor() {
+        super('Data was not found for a given timeframe.');
+    }
+}
