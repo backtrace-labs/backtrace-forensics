@@ -16,7 +16,7 @@ export class ValueConverter {
     }
 
     public static toLabelsUnsafe(value: unknown): string[] {
-        return Result.unwrap(this.toLabels(value));
+        return Result.unwrap(ValueConverter.toLabels(value));
     }
 
     public static toCallstack(value: unknown): Result<string[], Error> {
@@ -28,7 +28,7 @@ export class ValueConverter {
             return Result.err(new TypeError('Invalid value type, expected string.'));
         }
 
-        const parseResult = this.safeParse(value);
+        const parseResult = ValueConverter.safeParse(value);
         if (Result.isErr(parseResult)) {
             return parseResult;
         }
@@ -51,7 +51,7 @@ export class ValueConverter {
     }
 
     public static toCallstackUnsafe(value: unknown): string[] {
-        return Result.unwrap(this.toCallstack(value));
+        return Result.unwrap(ValueConverter.toCallstack(value));
     }
 
     public static toTickets(value: unknown): Result<Ticket[], Error> {
@@ -63,7 +63,7 @@ export class ValueConverter {
             return Result.err(new TypeError('Invalid value type, expected string.'));
         }
 
-        const parseResult = this.safeParse(value);
+        const parseResult = ValueConverter.safeParse(value);
         if (Result.isErr(parseResult)) {
             return parseResult;
         }
@@ -76,7 +76,7 @@ export class ValueConverter {
     }
 
     public static toTicketsUnsafe(value: unknown): Ticket[] {
-        return Result.unwrap(this.toTickets(value));
+        return Result.unwrap(ValueConverter.toTickets(value));
     }
 
     public static toIssueInvariants(value: unknown): Result<IssueInvariant[], Error> {
@@ -88,7 +88,7 @@ export class ValueConverter {
             return Result.err(new TypeError('Invalid value type, expected string.'));
         }
 
-        const parseResult = this.safeParse(value);
+        const parseResult = ValueConverter.safeParse(value);
         if (Result.isErr(parseResult)) {
             return parseResult;
         }
@@ -101,7 +101,7 @@ export class ValueConverter {
     }
 
     public static toIssueInvariantsUnsafe(value: unknown): IssueInvariant[] {
-        return Result.unwrap(this.toIssueInvariants(value));
+        return Result.unwrap(ValueConverter.toIssueInvariants(value));
     }
 
     private static safeParse<T = any>(json: string): Result<T, Error> {
