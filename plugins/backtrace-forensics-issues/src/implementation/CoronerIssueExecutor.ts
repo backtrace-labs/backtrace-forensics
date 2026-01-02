@@ -3,6 +3,7 @@ import { UpdateIssuesRequest } from '../coroner/issues/requests';
 import { CoronerIssuesResponse } from '../coroner/issues/responses';
 import { IssueRequestResponse } from '../coroner/issues/results';
 import { ICoronerIssueExecutor } from '../interfaces/ICoronerIssueExecutor';
+import { Result } from '@backtrace/utils'; // Ensure Result is imported
 
 export class CoronerIssueExecutor implements ICoronerIssueExecutor {
     readonly #queryMakerFactory: ICoronerApiCallerFactory;
@@ -19,14 +20,26 @@ export class CoronerIssueExecutor implements ICoronerIssueExecutor {
     ): Promise<IssueRequestResponse[]> {
         const querySource = Object.assign({}, this.#defaultSource, source);
 
-        const { url, headers } = createRequestData(querySource, '/api/issue');
+        const requestDataResult = createRequestData(querySource, '/api/issue');
+        if (Result.isErr(requestDataResult)) {
+            throw new Error(requestDataResult.data.message);
+        }
+        const { url, headers } = requestDataResult.data;
         const queryMaker = await this.#queryMakerFactory.create();
 
         return await Promise.all(
-            request.map<Promise<IssueRequestResponse>>(async (request) => ({
-                request,
-                response: await queryMaker.post<CoronerIssuesResponse>(url, JSON.stringify(request), headers),
-            })),
+            request.map<Promise<IssueRequestResponse>>(async (request) => {
+                const postResult = await queryMaker.post<CoronerIssuesResponse>(url, JSON.stringify(request), headers);
+
+                if (Result.isErr(postResult)) {
+                    throw new Error(postResult.data.message);
+                }
+
+                return {
+                    request,
+                    response: postResult.data,
+                };
+            }),
         );
     }
 }

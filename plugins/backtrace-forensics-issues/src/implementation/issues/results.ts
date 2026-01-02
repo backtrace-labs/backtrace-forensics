@@ -1,4 +1,4 @@
-import { FoldQueryResponse, ValueConverter } from '@backtrace/forensics';
+import { FoldQueryResponse, ValueConverter, IssueInvariant } from '@backtrace/forensics';
 import { OkCoronerIssueResponse } from '../../coroner';
 import {
     FailedFingerprintIssueResult,
@@ -14,19 +14,34 @@ import { DEFAULT_TICKET_WATCHER } from './query';
 import { Result } from '@backtrace/utils';
 
 function toOkIssueResult(response: OkCoronerIssueResponse): OkIssueResult {
-    const tickets = response.ticket ? ValueConverter.toTickets(response.ticket) : [];
+    const ticketsResult = response.ticket ? ValueConverter.toTickets(response.ticket) : Result.ok([]);
+    const tickets = Result.isOk(ticketsResult) ? ticketsResult.data : [];
     const assigneeTicket = tickets.find((t) => t.watcher === DEFAULT_TICKET_WATCHER) ?? tickets[0];
+
+    let invariants: IssueInvariant[] | undefined;
+    if (response.invariants) {
+        const invResult = ValueConverter.toIssueInvariants(response.invariants);
+        invariants = Result.isOk(invResult) ? invResult.data : undefined;
+    }
+
+    const tagsResult = response.tags ? ValueConverter.toLabels(response.tags) : Result.ok([]);
+
+    let tags: string[] = [];
+
+    if (Result.isOk(tagsResult) && Array.isArray(tagsResult.data)) {
+        tags = tagsResult.data;
+    }
 
     return {
         id: response.id,
         fingerprint: response.fingerprint,
         state: response.state,
-        invariants: response.invariants ? ValueConverter.toIssueInvariants(response.invariants) : undefined,
+        invariants,
         invariant_reopen_count: response.invariant_reopen_count,
         invariant_reopen_last_time: response.invariant_reopen_last_time
             ? new Date(response.invariant_reopen_last_time * 1000)
             : undefined,
-        tags: response.tags ? ValueConverter.toLabels(response.tags) : [],
+        tags,
         tickets,
         blame_last_modified: response.blame_last_modified ? new Date(response.blame_last_modified * 1000) : undefined,
         blame: response.blame,

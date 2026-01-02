@@ -36,17 +36,26 @@ export function getIssueInformation(query: CoronerQuery | FoldCoronerQuery) {
             .post(source);
 
         if (Result.isErr(queryResult)) {
-            return queryResult;
+            const coronerError = {
+                name: queryResult.data.name,
+                message: queryResult.data.message,
+                stack: queryResult.data.stack,
+            } as CoronerError;
+            return Result.err(coronerError);
         }
 
         const project = queryResult.data.json()._.project;
 
-        const issueInfo = queryResult.data.all().rows.map((row) => ({
-            fingerprint: row.group() as string,
-            project,
-            tags: row.fold(`${prefix}tags`, 'head') as string,
-            tickets: ValueConverter.toTickets(row.fold(`${prefix}ticket`, 'head')),
-        }));
+        const issueInfo = queryResult.data.all().rows.map((row) => {
+            const ticketsResult = ValueConverter.toTickets(row.fold(`${prefix}ticket`, 'head'));
+
+            return {
+                fingerprint: row.group() as string,
+                project,
+                tags: row.fold(`${prefix}tags`, 'head') as string,
+                tickets: Result.isOk(ticketsResult) ? ticketsResult.data : [],
+            };
+        });
 
         return Result.ok({ issueInfo, queryResult: queryResult.data });
     };
