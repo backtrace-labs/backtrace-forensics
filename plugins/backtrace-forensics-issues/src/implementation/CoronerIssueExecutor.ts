@@ -3,7 +3,7 @@ import { UpdateIssuesRequest } from '../coroner/issues/requests';
 import { CoronerIssuesResponse } from '../coroner/issues/responses';
 import { IssueRequestResponse } from '../coroner/issues/results';
 import { ICoronerIssueExecutor } from '../interfaces/ICoronerIssueExecutor';
-import { Result } from '@backtrace/utils'; // Ensure Result is imported
+import { Result } from '@backtrace/utils';
 
 export class CoronerIssueExecutor implements ICoronerIssueExecutor {
     readonly #queryMakerFactory: ICoronerApiCallerFactory;
