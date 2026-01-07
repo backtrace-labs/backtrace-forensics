@@ -1,7 +1,10 @@
 import { QuerySource } from '@backtrace/forensics';
 import { IssueRequestResponse } from '../coroner';
-import { IssuesRequest } from '../coroner/issues/requests';
-
+import { UpdateIssuesRequest } from '../coroner/issues/requests';
+import { Result } from '@backtrace/utils';
 export interface ICoronerIssueExecutor {
-    execute(request: IssuesRequest[], source?: Partial<QuerySource>): Promise<IssueRequestResponse[]>;
+    execute(
+        request: UpdateIssuesRequest[],
+        source?: Partial<QuerySource>,
+    ): Promise<Result<IssueRequestResponse[], Error>>;
 }
