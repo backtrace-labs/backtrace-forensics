@@ -1,5 +1,4 @@
 import {
-    CoronerError,
     CoronerQuery,
     FoldCoronerQuery,
     FoldQueryResponse,
@@ -7,7 +6,7 @@ import {
     Ticket,
     ValueConverter,
 } from '@backtrace/forensics';
-import { Result } from '@backtrace/utils';
+import { Result, pipe } from '@backtrace/utils';
 
 export interface CoronerIssueInfo {
     readonly fingerprint: string;
@@ -24,7 +23,7 @@ export interface CoronerIssueInfoResult {
 export function getIssueInformation(query: CoronerQuery | FoldCoronerQuery) {
     return async function getIssueInformation(
         source?: Partial<QuerySource>,
-    ): Promise<Result<CoronerIssueInfoResult, CoronerError>> {
+    ): Promise<Result<CoronerIssueInfoResult, Error>> {
         const currentTable = query.json().table;
         const prefix = currentTable === 'issues' ? '' : 'fingerprint;issues;';
 
@@ -41,13 +40,20 @@ export function getIssueInformation(query: CoronerQuery | FoldCoronerQuery) {
 
         const project = queryResult.data.json()._.project;
 
-        const issueInfo = queryResult.data.all().rows.map((row) => ({
-            fingerprint: row.group() as string,
-            project,
-            tags: row.fold(`${prefix}tags`, 'head') as string,
-            tickets: ValueConverter.toTickets(row.fold(`${prefix}ticket`, 'head')),
-        }));
-
-        return Result.ok({ issueInfo, queryResult: queryResult.data });
+        return pipe(
+            queryResult.data.all().rows.map((row) =>
+                pipe(
+                    ValueConverter.toTickets(row.fold(`${prefix}ticket`, 'head')),
+                    Result.map((tickets) => ({
+                        fingerprint: row.group() as string,
+                        project,
+                        tags: row.fold(`${prefix}tags`, 'head') as string,
+                        tickets,
+                    })),
+                ),
+            ),
+            Result.flat,
+            Result.map((issueInfo) => ({ issueInfo, queryResult: queryResult.data })),
+        );
     };
 }

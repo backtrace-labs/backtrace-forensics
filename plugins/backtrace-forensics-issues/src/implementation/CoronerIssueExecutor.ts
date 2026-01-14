@@ -3,6 +3,7 @@ import { UpdateIssuesRequest } from '../coroner/issues/requests';
 import { CoronerIssuesResponse } from '../coroner/issues/responses';
 import { IssueRequestResponse } from '../coroner/issues/results';
 import { ICoronerIssueExecutor } from '../interfaces/ICoronerIssueExecutor';
+import { Result } from '@backtrace/utils';
 
 export class CoronerIssueExecutor implements ICoronerIssueExecutor {
     readonly #queryMakerFactory: ICoronerApiCallerFactory;
@@ -16,17 +17,38 @@ export class CoronerIssueExecutor implements ICoronerIssueExecutor {
     public async execute(
         request: UpdateIssuesRequest[],
         source?: Partial<QuerySource>,
-    ): Promise<IssueRequestResponse[]> {
+    ): Promise<Result<IssueRequestResponse[], Error>> {
         const querySource = Object.assign({}, this.#defaultSource, source);
 
-        const { url, headers } = createRequestData(querySource, '/api/issue');
+        const requestDataResult = createRequestData(querySource, '/api/issue');
+        if (Result.isErr(requestDataResult)) {
+            return requestDataResult;
+        }
+        const { url, headers } = requestDataResult.data;
         const queryMaker = await this.#queryMakerFactory.create();
 
-        return await Promise.all(
-            request.map<Promise<IssueRequestResponse>>(async (request) => ({
-                request,
-                response: await queryMaker.post<CoronerIssuesResponse>(url, JSON.stringify(request), headers),
-            })),
+        const results = await Promise.all(
+            request.map(async (request) => {
+                const postResult = await queryMaker.post<CoronerIssuesResponse>(url, JSON.stringify(request), headers);
+
+                if (Result.isErr(postResult)) {
+                    return Result.ok({
+                        request,
+                        response: {
+                            error: {
+                                message: postResult.data.message,
+                                code: -1,
+                            },
+                        },
+                    });
+                }
+
+                return Result.ok({
+                    request,
+                    response: postResult.data,
+                });
+            }),
         );
+        return Result.flat(results);
     }
 }
