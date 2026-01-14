@@ -4,7 +4,7 @@
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
     "peerDependencies": {
-        "@backtrace/forensics": "^0.7.4",
+        "@backtrace/forensics": "^0.7.6",
         "@backtrace/charon": "^1.6.2",
         "@backtrace/utils": "^0.1.3"
     },
